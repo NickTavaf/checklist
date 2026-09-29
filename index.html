@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fall 2026 Assignments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#1a73e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Assignments">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f8fc;
+    --card-bg: #ffffff;
+    --text: #202124;
+    --text-soft: #5f6368;
+    --border: #e3e6ea;
+    --done: #1e8e3e;
+    --done-bg: #e6f4ea;
+    --turned: #1a73e8;
+    --turned-bg: #e8f0fe;
+    --vm: #ea4335;
+    --aes: #a142f4;
+    --da: #12b5cb;
+    --th: #fbbc04;
+    --sans: 'Roboto', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #16181d;
+      --card-bg: #212327;
+      --text: #e8eaed;
+      --text-soft: #9aa0a6;
+      --border: #35373b;
+      --done-bg: #16281c;
+      --turned-bg: #142236;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181d;
+    --card-bg: #212327;
+    --text: #e8eaed;
+    --text-soft: #9aa0a6;
+    --border: #35373b;
+    --done-bg: #16281c;
+    --turned-bg: #142236;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    padding: 0 0 100px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .topbar-badge {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--vm), var(--th));
+    flex-shrink: 0;
+  }
+  .topbar h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+  .topbar .sub { font-size: 0.78rem; color: var(--text-soft); margin-top: 1px; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 28px 24px 0; }
+
+  @media (min-width: 1100px) {
+    .wrap { max-width: 960px; padding: 40px 32px 0; }
+    .topbar { padding: 22px 32px; }
+    .topbar h1 { font-size: 1.3rem; }
+    .topbar .sub { font-size: 0.85rem; }
+    .date-heading { font-size: 1.05rem; }
+    .title { font-size: 1.02rem; }
+    .card { padding: 16px 18px; }
+  }
+
+  @media (max-width: 520px) {
+    body { padding-bottom: 60px; }
+    .topbar { padding: 14px 16px; gap: 10px; }
+    .topbar-badge { width: 28px; height: 28px; }
+    .topbar h1 { font-size: 1rem; }
+    .topbar .sub { font-size: 0.72rem; }
+    .wrap { padding: 18px 14px 0; }
+    .filters { gap: 6px; margin-bottom: 16px; }
+    .filter-btn { padding: 6px 12px 6px 9px; font-size: 0.76rem; }
+    .progress-wrap { padding: 13px 14px; margin-bottom: 20px; border-radius: 12px; }
+    .date-row, .today-marker-row { gap: 10px; }
+    .date-rail, .today-marker-rail { width: 16px; }
+    .date-node.is-today, .today-marker-node { width: 15px; height: 15px; }
+    .date-heading { font-size: 0.88rem; }
+    .today-chip { font-size: 0.62rem; padding: 2px 8px; margin-left: 6px; }
+    .today-marker-label { font-size: 0.85rem; }
+    .card { padding: 12px 12px; border-radius: 10px; }
+    .card-top { flex-direction: column; gap: 8px; }
+    .status-pills { flex-direction: row; align-items: flex-start; width: 100%; }
+    .title { font-size: 0.9rem; }
+    .tag { font-size: 0.64rem; padding: 3px 8px; }
+    .actions { flex-direction: column; }
+  }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 0 0 20px;
+  }
+  .filter-btn {
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-soft);
+    padding: 7px 14px 7px 10px;
+    border-radius: 100px;
+    font-size: 0.82rem;
+    font-family: var(--sans);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.15s;
+  }
+  .filter-btn .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .filter-btn.active { color: #fff; border-color: transparent; }
+  .filter-btn.active .dot { background: #fff !important; }
+
+  .progress-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 26px;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.85rem; color: var(--text-soft); margin-bottom: 9px;
+  }
+  .progress-label b { color: var(--text); font-weight: 700; }
+  .progress-track {
+    height: 8px; background: var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #1a73e8, #12b5cb); border-radius: 8px;
+    transition: width 0.3s ease;
+  }
+
+  .timeline { position: relative; }
+
+  .date-row { display: flex; gap: 16px; }
+  .date-rail { width: 20px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+  .date-node { width: 11px; height: 11px; border-radius: 50%; background: #1a73e8; margin-top: 10px; flex-shrink: 0; border: 2px solid var(--card-bg); box-shadow: 0 0 0 1.5px #1a73e8; }
+  .date-line { flex: 1; width: 2px; background: var(--border); margin-top: 6px; }
+  .date-row:last-child .date-line { background: transparent; }
+
+  .date-content { flex: 1; min-width: 0; padding-bottom: 22px; }
+  .date-heading {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--accent, #1a73e8);
+    border-radius: 12px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(60,64,67,0.08), 0 1px 3px rgba(60,64,67,0.06);
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .card-left { flex: 1; min-width: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 5px;
+    margin-bottom: 7px;
+    color: #fff;
+  }
+  .title { font-size: 0.96rem; font-weight: 500; line-height: 1.35; }
+  .time { font-size: 0.8rem; color: var(--text-soft); margin-top: 3px; }
+
+  .status-pills { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; align-items: flex-end; }
+  .pill {
+    font-size: 0.68rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    white-space: nowrap;
+  }
+  .pill.on.complete { background: var(--done-bg); color: var(--done); border-color: transparent; font-weight: 700; }
+  .pill.on.turned { background: var(--turned-bg); color: var(--turned); border-color: transparent; font-weight: 700; }
+
+  .details {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.87rem;
+    color: var(--text-soft);
+    line-height: 1.55;
+  }
+  .details.open { display: block; }
+  .actions { display: flex; gap: 8px; margin-top: 14px; }
+  .action-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: var(--sans);
+    cursor: pointer;
+  }
+  .action-btn.complete.on { background: var(--done); color: #fff; border-color: transparent; }
+  .action-btn.turned.on { background: var(--turned); color: #fff; border-color: transparent; }
+
+  .date-node.is-today {
+    width: 20px; height: 20px;
+    margin-top: 0;
+    background: #111827;
+    box-shadow: 0 0 0 2px #111827;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 2px #111827, 0 0 0 0 rgba(17,24,39,0.45); }
+    70% { box-shadow: 0 0 0 2px #111827, 0 0 0 12px rgba(17,24,39,0); }
+    100% { box-shadow: 0 0 0 2px #111827, 0 0 0 0 rgba(17,24,39,0); }
+  }
+  .today-chip {
+    display: inline-block;
+    background: #111827;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 11px;
+    border-radius: 100px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .today-marker-row { display: flex; gap: 16px; }
+  .today-marker-rail { width: 20px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+  .today-marker-node {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #111827; margin-top: 4px; flex-shrink: 0;
+    border: 3px solid var(--bg);
+    animation: pulse 2s infinite;
+  }
+  .today-marker-line { flex: 1; width: 2px; background: var(--border); margin-top: 6px; }
+  .today-marker-content {
+    flex: 1; display: flex; align-items: center;
+    padding-bottom: 26px;
+  }
+  .today-marker-label {
+    color: #111827;
+    font-weight: 900;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    letter-spacing: -0.01em;
+  }
+  .today-marker-label::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #111827, #111827 5px, transparent 5px, transparent 10px);
+  }
+
+  canvas#confetti {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .upload-btn {
+    margin-left: auto;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 100px;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card-bg);
+    border-radius: 16px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 22px;
+  }
+  .modal h2 { font-size: 1.15rem; margin: 0 0 6px; font-weight: 700; }
+  .modal .modal-sub { font-size: 0.85rem; color: var(--text-soft); margin-bottom: 16px; line-height: 1.5; }
+  .modal textarea {
+    width: 100%;
+    min-height: 160px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    color: var(--text);
+    background: var(--bg);
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .modal-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+  .modal-btn.primary { background: #1a73e8; color: #fff; }
+  .modal-btn.secondary { background: var(--border); color: var(--text); }
+  .modal-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .modal-status { font-size: 0.85rem; margin-top: 12px; }
+  .modal-status.error { color: #d93025; }
+  .modal-status.loading { color: var(--text-soft); }
+
+  .preview-list { margin-top: 14px; }
+  .preview-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .preview-item input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; }
+  .preview-item .pi-title { font-size: 0.88rem; font-weight: 500; }
+  .preview-item .pi-meta { font-size: 0.75rem; color: var(--text-soft); margin-top: 2px; }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="topbar">
+  <div class="topbar-badge"></div>
+  <div>
+    <h1>Fall 2026 Assignments</h1>
+    <div class="sub">4 classes · every due date in one place</div>
+  </div>
+  <button class="upload-btn" id="openUploadBtn">+ Add Syllabus</button>
+</div>
+<div class="wrap">
+  <div class="filters" id="filters"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span id="progressText"></span><b id="progressPct"></b></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="timeline" id="list"></div>
+</div>
+
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <h2>Add a syllabus</h2>
+    <div class="modal-sub">Paste the syllabus text below. The AI will read it and pull out every assignment and due date.</div>
+    <textarea id="syllabusInput" placeholder="Paste your syllabus text here..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="cancelUploadBtn">Cancel</button>
+      <button class="modal-btn primary" id="parseUploadBtn">Parse Syllabus</button>
+    </div>
+    <div id="modalStatus"></div>
+    <div class="preview-list" id="previewList"></div>
+    <div class="modal-actions" id="confirmActions" style="display:none">
+      <button class="modal-btn secondary" id="discardPreviewBtn">Discard</button>
+      <button class="modal-btn primary" id="addPreviewBtn">Add Selected</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const assignments = [
+  {id:"vm1", date:"2026-09-02", class:"Visual Merchandising", title:"Journal #1: Traffic Patterns", time:"12pm", desc:"Upload your Journal assignment on Traffic Patterns to the discussion board before class time."},
+  {id:"da1", date:"2026-09-02", class:"Digital Addiction", title:"Assignment 1: 24-Hour Digital Use Log", time:"11:30pm", desc:"Log every digital device use for 24 consecutive hours (time, device, reason, your own categories). Turn it into a visual postcard + key, Dear Data style. Bring a copy to class. Note: syllabus text says due before class on Sept 9, but Canvas lists this due date. Worth confirming which is correct."},
+  {id:"th1", date:"2026-09-03", class:"Thesis 1", title:"Choose First Prototype", time:"in class", desc:"Choose your first prototype direction based on your research questions."},
+  {id:"th2", date:"2026-09-08", class:"Thesis 1", title:"Blog Post 1: Intro Post", time:"in class", desc:"First blog post. Intro, dream life as an artist (vision board), what you want to make work about, timeline of 3-5 past projects."},
+  {id:"aes1", date:"2026-09-15", class:"Aesthetics", title:"Response Paper #1: Hegel and Symbolic Art", time:"10am", desc:"300-word response + ~50 word discussion question on this week's Hegel reading. Submit to your TA on Canvas before 10am. No late work accepted."},
+  {id:"vm2", date:"2026-09-16", class:"Visual Merchandising", title:"Presentation of Color and Composition", time:"12pm", desc:"Group assignment presenting on color and composition."},
+  {id:"da2", date:"2026-09-16", class:"Digital Addiction", title:"Assignment 2: 24-Hour Phone Fast", time:"before class", desc:"Stop using your phone for 24 consecutive hours. Keep a written log or postcard. Submit a 500-word reflection connecting it to readings on craving, choice, and the disease model of addiction."},
+  {id:"th3", date:"2026-09-17", class:"Thesis 1", title:"1st Prototype", time:"in class", desc:"First prototype due for internal playtest."},
+  {id:"aes2", date:"2026-09-22", class:"Aesthetics", title:"Response Paper #2: Hegel and Classical Art", time:"10am", desc:"300-word response + discussion question on classical art / Hegel reading."},
+  {id:"vm3", date:"2026-09-23", class:"Visual Merchandising", title:"Super Incisive Brand Identity Assignment", time:"11:59pm", desc:"Brand identity assignment."},
+  {id:"da3", date:"2026-09-23", class:"Digital Addiction", title:"Assignment 3: Monetizing Addiction", time:"in class", desc:"In-class screening (Web Junkie, The Social Dilemma excerpts) and assignment, details TBA."},
+  {id:"aes3", date:"2026-09-29", class:"Aesthetics", title:"Response Paper #3: Plato's Cave", time:"10am", desc:"300-word response + discussion question on Plato's Republic Book 7 / Cave of Forgotten Dreams."},
+  {id:"vm4", date:"2026-09-30", class:"Visual Merchandising", title:"Journal #2: Conveying the Brand Identity", time:"12pm", desc:"Upload your journal assignment on Conveying the Brand Identity."},
+  {id:"da4", date:"2026-09-30", class:"Digital Addiction", title:"Assignment 4: Participant Observation", time:"in class", desc:"Observe digital-device use in a public place for 30-40 min. Submit a 300-500 word fieldnote-based reflection."},
+  {id:"th4", date:"2026-10-01", class:"Thesis 1", title:"2nd Prototype", time:"in class", desc:"Second prototype due, playtest with other Games section."},
+  {id:"aes4", date:"2026-10-06", class:"Aesthetics", title:"Met Museum Visit (no response due)", time:"class time", desc:"No lecture this week. Visit the Metropolitan Museum of Art with your section. No response paper due."},
+  {id:"da5", date:"2026-10-07", class:"Digital Addiction", title:"Midterm", time:"11:59pm", desc:"Midterm exam, written in class."},
+  {id:"aes5", date:"2026-10-13", class:"Aesthetics", title:"Response Paper #4: Hegel on Painting", time:"10am", desc:"300-word response + discussion question on maternal love and Christian painting."},
+  {id:"vm5", date:"2026-10-14", class:"Visual Merchandising", title:"Journal #3: Wall Displays", time:"12pm", desc:"Upload your journal assignment on wall displays."},
+  {id:"th5", date:"2026-10-15", class:"Thesis 1", title:"3rd Prototype", time:"in class", desc:"Third prototype due, playtest with Games section + midterm discussion."},
+  {id:"aes6", date:"2026-10-20", class:"Aesthetics", title:"Response Paper #5: Hegel and Modernism", time:"10am", desc:"300-word response + discussion question on modernism, abstract painting, ready-mades."},
+  {id:"th6", date:"2026-10-20", class:"Thesis 1", title:"Midterm Presentation + Deliverables", time:"in class", desc:"Present progress so far, submit slides and a PDF documenting research and prototyping work."},
+  {id:"vm6", date:"2026-10-21", class:"Visual Merchandising", title:"Midterm", time:"12pm", desc:"Midterm given in class only, not online."},
+  {id:"da6", date:"2026-10-21", class:"Digital Addiction", title:"Assignment 5 & 6: Attention Audit / Media Time Capsule", time:"before class / in class", desc:"Attention Audit: pull weekly screen time, calculate a dollar value for your attention, respond in 300-500 words. Media Time Capsule: find a historical moral panic about media and respond in 300-500 words. Note: syllabus text says Oct 21 but the week header says Oct 23 — worth confirming with your professor."},
+  {id:"aes7", date:"2026-10-27", class:"Aesthetics", title:"Midterm Exam", time:"class time", desc:"In-class midterm, blue books, pen and paper only, no devices or extra materials."},
+  {id:"vm7", date:"2026-10-28", class:"Visual Merchandising", title:"Unique and Exciting Boutique Assignment", time:"12pm", desc:"Boutique assignment."},
+  {id:"aes8", date:"2026-11-03", class:"Aesthetics", title:"Response Paper #6: Aristotle and Tragedy", time:"10am", desc:"300-word response + discussion question on Aristotle's Poetics / tragedy."},
+  {id:"da7", date:"2026-11-04", class:"Digital Addiction", title:"Assignment 7: Landline Phone Call", time:"before class", desc:"Make a call from a landline, ideally a public phone booth. Take a photo, write a 300-500 word response."},
+  {id:"aes9", date:"2026-11-10", class:"Aesthetics", title:"Response Paper #7: Shakespeare", time:"10am", desc:"300-word response + discussion question on Hamlet."},
+  {id:"vm8", date:"2026-11-11", class:"Visual Merchandising", title:"Fashion Display Window Group Presentation", time:"12pm", desc:"Group presentation of your own creation for a fashion display window for a real brand."},
+  {id:"da8", date:"2026-11-11", class:"Digital Addiction", title:"Assignment 8: Host a Party Like It's 1996", time:"before class", desc:"Host a gathering without digital devices. No streaming music, no delivery apps. Take photos on disposable camera, write a 300-500 word reflection."},
+  {id:"aes10", date:"2026-11-17", class:"Aesthetics", title:"Response Paper #8: Adorno / Bach / Music", time:"10am", desc:"300-word response + discussion question on Adorno's Bach essay and Glenn Gould."},
+  {id:"da9", date:"2026-11-18", class:"Digital Addiction", title:"Assignment 9: Scaling Addiction", time:"in class", desc:"Details TBA, due in class."},
+  {id:"aes11", date:"2026-11-24", class:"Aesthetics", title:"Response Paper #9: Adorno and Jazz", time:"10am", desc:"300-word response + discussion question on Adorno's Jazz / Homage to Zerlina."},
+  {id:"aes12", date:"2026-12-01", class:"Aesthetics", title:"Response Paper #10: Departures", time:"10am", desc:"300-word response + discussion question on the film Departures."},
+  {id:"th7", date:"2026-12-01", class:"Thesis 1", title:"Final Presentation + Deliverables", time:"in class", desc:"Final presentation, slides, and final written design brief."},
+  {id:"vm9", date:"2026-12-02", class:"Visual Merchandising", title:"Final Group Presentation (1st half)", time:"12pm", desc:"Submit first half of final group presentation."},
+  {id:"da10", date:"2026-12-02", class:"Digital Addiction", title:"Assignment 10: Final Presentation", time:"in class", desc:"Final presentation due in class."},
+  {id:"aes13", date:"2026-12-08", class:"Aesthetics", title:"Response Papers #11 & #12", time:"10am", desc:"Two responses on Underground Railroad and Get Out, plus optional bonus response on Kant."},
+  {id:"vm10", date:"2026-12-09", class:"Visual Merchandising", title:"Final Project", time:"12pm", desc:"Complete final project posted to Discussions, with any revisions from first half. You will present it."},
+  {id:"da11", date:"2026-12-09", class:"Digital Addiction", title:"Final Project: Fieldwork Album", time:"11:30pm", desc:"Upload your final album and reflection to Canvas."},
+  {id:"aes14", date:"2026-12-15", class:"Aesthetics", title:"Final Exam", time:"class time", desc:"In-class final exam, same format as the midterm."}
+];
+
+const defaultAssignments = assignments;
+
+const knownClassColors = {
+  "Visual Merchandising": "#ea4335",
+  "Aesthetics": "#a142f4",
+  "Digital Addiction": "#12b5cb",
+  "Thesis 1": "#fbbc04"
+};
+const extraPalette = ["#e67c73","#33b679","#8e24aa","#3f51b5","#0b8043","#d50000","#f4511e","#039be5","#c2185b","#00897b"];
+function getClassColor(cls) {
+  if (knownClassColors[cls]) return knownClassColors[cls];
+  let hash = 0;
+  for (let i = 0; i < cls.length; i++) hash = cls.charCodeAt(i) + ((hash << 5) - hash);
+  return extraPalette[Math.abs(hash) % extraPalette.length];
+}
+
+let customAssignments = [];
+try { customAssignments = JSON.parse(localStorage.getItem("customAssignments") || "[]"); } catch(e) { customAssignments = []; }
+function saveCustomAssignments() { try { localStorage.setItem("customAssignments", JSON.stringify(customAssignments)); } catch(e) {} }
+function getAllAssignments() { return [...defaultAssignments, ...customAssignments]; }
+function getAllClasses() { return [...new Set(getAllAssignments().map(a => a.class))]; }
+
+let state = {};
+try { state = JSON.parse(localStorage.getItem("assignmentState") || "{}"); } catch(e) { state = {}; }
+function saveState() { try { localStorage.setItem("assignmentState", JSON.stringify(state)); } catch(e) {} }
+
+let activeFilter = "All";
+let openId = null;
+
+function fmtDate(d) {
+  const dt = new Date(d + "T00:00:00");
+  return dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function getTodayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function todayMarkerHTML() {
+  const label = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  return `
+    <div class="today-marker-row">
+      <div class="today-marker-rail">
+        <div class="today-marker-node"></div>
+        <div class="today-marker-line"></div>
+      </div>
+      <div class="today-marker-content">
+        <div class="today-marker-label">Today — ${label}</div>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  const allAssignments = getAllAssignments();
+  const classes = getAllClasses();
+  const filters = ["All", ...classes];
+  const filterEl = document.getElementById("filters");
+  filterEl.innerHTML = filters.map(f => {
+    const color = f === "All" ? "#1a73e8" : getClassColor(f);
+    const active = f === activeFilter;
+    return `<button class="filter-btn ${active?'active':''}" data-f="${f}" style="${active ? `background:${color};` : ''}">
+      <span class="dot" style="background:${color}"></span>${f}
+    </button>`;
+  }).join("");
+  filterEl.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.onclick = () => { activeFilter = btn.dataset.f; render(); };
+  });
+
+  const filtered = activeFilter === "All" ? allAssignments : allAssignments.filter(a => a.class === activeFilter);
+  const total = filtered.length;
+  const doneCount = filtered.filter(a => state[a.id]?.complete).length;
+  const pct = total ? Math.round((doneCount/total)*100) : 0;
+  document.getElementById("progressText").textContent = `${doneCount} of ${total} complete`;
+  document.getElementById("progressPct").textContent = `${pct}%`;
+  document.getElementById("progressFill").style.width = pct + "%";
+
+  const grouped = {};
+  filtered.forEach(a => { (grouped[a.date] ||= []).push(a); });
+  const dates = Object.keys(grouped).sort();
+  const todayStr = getTodayStr();
+
+  const listEl = document.getElementById("list");
+  let html = "";
+  let todayPlaced = false;
+
+  dates.forEach((date, i) => {
+    if (!todayPlaced && date > todayStr) {
+      html += todayMarkerHTML();
+      todayPlaced = true;
+    }
+    const isToday = date === todayStr;
+    if (isToday) todayPlaced = true;
+
+    const items = grouped[date].map(a => {
+      const s = state[a.id] || {};
+      const isOpen = openId === a.id;
+      return `
+        <div class="card" data-id="${a.id}" style="--accent:${getClassColor(a.class)}">
+          <div class="card-top">
+            <div class="card-left">
+              <span class="tag" style="background:${getClassColor(a.class)}">${a.class}</span>
+              <div class="title">${a.title}</div>
+              <div class="time">${a.time}</div>
+            </div>
+            <div class="status-pills">
+              <span class="pill ${s.complete?'on complete':''}">${s.complete?'Complete':'Not done'}</span>
+              <span class="pill ${s.turned?'on turned':''}">${s.turned?'Turned in':'Not submitted'}</span>
+            </div>
+          </div>
+          <div class="details ${isOpen?'open':''}">
+            <div>${a.desc}</div>
+            <div class="actions">
+              <button class="action-btn complete ${s.complete?'on':''}" data-action="complete" data-id="${a.id}">${s.complete ? 'Marked Complete' : 'Mark Complete'}</button>
+              <button class="action-btn turned ${s.turned?'on':''}" data-action="turned" data-id="${a.id}">${s.turned ? 'Marked Turned In' : 'Mark Turned In'}</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const isLast = i === dates.length - 1;
+    const nodeColor = getClassColor(grouped[date][0].class);
+    html += `
+      <div class="date-row" ${isLast && todayPlaced ? 'style="padding-bottom:0"' : ''}>
+        <div class="date-rail">
+          <div class="date-node ${isToday ? 'is-today' : ''}" style="${isToday ? '' : `background:${nodeColor};box-shadow:0 0 0 1.5px ${nodeColor}`}"></div>
+          <div class="date-line"></div>
+        </div>
+        <div class="date-content">
+          <div class="date-heading">${fmtDate(date)}${isToday ? '<span class="today-chip">Today</span>' : ''}</div>
+          ${items}
+        </div>
+      </div>
+    `;
+  });
+
+  if (!todayPlaced) html += todayMarkerHTML();
+
+  listEl.innerHTML = html;
+
+  listEl.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      if (e.target.dataset.action) return;
+      const id = card.dataset.id;
+      openId = openId === id ? null : id;
+      render();
+    });
+  });
+  listEl.querySelectorAll(".action-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      if (!state[id]) state[id] = {};
+      const turningOn = !state[id][action];
+      state[id][action] = turningOn;
+      saveState();
+      if (action === "turned" && turningOn) launchConfetti();
+      render();
+    });
+  });
+}
+
+render();
+
+/* ---- confetti ---- */
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener("resize", resize);
+
+const confettiColors = ["#ea4335", "#a142f4", "#12b5cb", "#fbbc04", "#1e8e3e", "#1a73e8"];
+let particles = [];
+let animId = null;
+
+function launchConfetti() {
+  const originX = window.innerWidth / 2;
+  const originY = window.innerHeight * 0.25;
+  for (let i = 0; i < 90; i++) {
+    particles.push({
+      x: originX + (Math.random() - 0.5) * 60,
+      y: originY,
+      vx: (Math.random() - 0.5) * 9,
+      vy: Math.random() * -8 - 4,
+      size: Math.random() * 6 + 4,
+      color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+      rot: Math.random() * 360,
+      vrot: (Math.random() - 0.5) * 14,
+      shape: Math.random() > 0.5 ? "rect" : "circle",
+      life: 0
+    });
+  }
+  if (!animId) animId = requestAnimationFrame(tick);
+}
+
+function tick() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.vy += 0.28;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += p.vrot;
+    p.life++;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot * Math.PI / 180);
+    ctx.fillStyle = p.color;
+    if (p.shape === "rect") {
+      ctx.fillRect(-p.size/2, -p.size/3, p.size, p.size*0.66);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, p.size/2, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+  particles = particles.filter(p => p.y < canvas.height + 40 && p.life < 240);
+  if (particles.length > 0) {
+    animId = requestAnimationFrame(tick);
+  } else {
+    animId = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+/* ---- syllabus upload ---- */
+
+// Replace this with your deployed Cloudflare Worker URL, e.g.
+// "https://syllabus-parser.yourname.workers.dev"
+const WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
+
+const uploadModal = document.getElementById("uploadModal");
+const syllabusInput = document.getElementById("syllabusInput");
+const modalStatus = document.getElementById("modalStatus");
+const previewList = document.getElementById("previewList");
+const confirmActions = document.getElementById("confirmActions");
+const parseBtn = document.getElementById("parseUploadBtn");
+let pendingAssignments = [];
+
+function openModal() {
+  uploadModal.classList.add("open");
+  syllabusInput.value = "";
+  modalStatus.innerHTML = "";
+  previewList.innerHTML = "";
+  confirmActions.style.display = "none";
+  pendingAssignments = [];
+  parseBtn.style.display = "block";
+}
+function closeModal() { uploadModal.classList.remove("open"); }
+
+document.getElementById("openUploadBtn").onclick = openModal;
+document.getElementById("cancelUploadBtn").onclick = closeModal;
+document.getElementById("discardPreviewBtn").onclick = closeModal;
+
+parseBtn.onclick = async () => {
+  const text = syllabusInput.value.trim();
+  if (text.length < 30) {
+    modalStatus.innerHTML = `<div class="modal-status error">Paste in more of the syllabus first.</div>`;
+    return;
+  }
+  if (!WORKER_URL || WORKER_URL === "PASTE_YOUR_WORKER_URL_HERE") {
+    modalStatus.innerHTML = `<div class="modal-status error">The AI backend isn't set up yet. Deploy the Worker and paste its URL into WORKER_URL in the code.</div>`;
+    return;
+  }
+  modalStatus.innerHTML = `<div class="modal-status loading">Reading your syllabus...</div>`;
+  parseBtn.disabled = true;
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ syllabusText: text })
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) {
+      modalStatus.innerHTML = `<div class="modal-status error">${data.error || "Something went wrong."}</div>`;
+      parseBtn.disabled = false;
+      return;
+    }
+    pendingAssignments = data.assignments || [];
+    if (pendingAssignments.length === 0) {
+      modalStatus.innerHTML = `<div class="modal-status error">No assignments found. Try pasting more of the syllabus.</div>`;
+      parseBtn.disabled = false;
+      return;
+    }
+    modalStatus.innerHTML = `<div class="modal-status">Found ${pendingAssignments.length} assignments. Uncheck any you don't want, then add.</div>`;
+    previewList.innerHTML = pendingAssignments.map((a, i) => `
+      <div class="preview-item">
+        <input type="checkbox" checked data-idx="${i}" id="pi-${i}">
+        <label for="pi-${i}">
+          <div class="pi-title">${a.title}</div>
+          <div class="pi-meta">${a.class} · ${a.date} · ${a.time || ""}</div>
+        </label>
+      </div>
+    `).join("");
+    confirmActions.style.display = "flex";
+    parseBtn.style.display = "none";
+  } catch (e) {
+    modalStatus.innerHTML = `<div class="modal-status error">Couldn't reach the AI backend. Check your Worker URL and that it's deployed.</div>`;
+  }
+  parseBtn.disabled = false;
+};
+
+document.getElementById("addPreviewBtn").onclick = () => {
+  const checked = [...previewList.querySelectorAll("input[type=checkbox]:checked")]
+    .map(cb => parseInt(cb.dataset.idx));
+  const toAdd = pendingAssignments
+    .filter((a, i) => checked.includes(i))
+    .map((a, i) => ({ ...a, id: "custom-" + Date.now() + "-" + i }));
+  customAssignments = [...customAssignments, ...toAdd];
+  saveCustomAssignments();
+  closeModal();
+  render();
+};
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
