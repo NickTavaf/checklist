@@ -113,6 +113,32 @@
     .actions { flex-direction: column; }
   }
 
+  .view-tabs {
+    display: flex; gap: 4px;
+    background: var(--border);
+    padding: 4px; border-radius: 12px;
+    margin: 0 0 18px;
+  }
+  .view-tab {
+    flex: 1; border: none; background: transparent;
+    padding: 10px 12px; border-radius: 9px;
+    font-family: var(--sans); font-size: 0.88rem; font-weight: 500;
+    color: var(--text-soft); cursor: pointer;
+  }
+  .view-tab.active { background: var(--card-bg); color: var(--text); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .view-tab .count {
+    display: inline-block; min-width: 20px; margin-left: 6px;
+    padding: 1px 7px; border-radius: 100px;
+    background: var(--bg); font-size: 0.72rem; font-weight: 700;
+  }
+  .view-tab.active .count { background: var(--turned-bg); color: var(--turned); }
+  .empty-state {
+    text-align: center; color: var(--text-soft);
+    padding: 40px 20px; font-size: 0.92rem; line-height: 1.5;
+  }
+  .empty-state b { display: block; color: var(--text); font-size: 1.05rem; margin-bottom: 4px; }
+  .done-view .card { opacity: 0.85; }
+
   .filters {
     display: flex; flex-wrap: wrap; gap: 8px;
     margin: 0 0 20px;
@@ -394,6 +420,10 @@
   <button class="upload-btn" id="openUploadBtn">+ Add Syllabus</button>
 </div>
 <div class="wrap">
+  <div class="view-tabs" id="viewTabs">
+    <button class="view-tab active" data-view="todo">To Do<span class="count" id="todoCount">0</span></button>
+    <button class="view-tab" data-view="done">Done<span class="count" id="doneCount">0</span></button>
+  </div>
   <div class="filters" id="filters"></div>
 
   <div class="progress-wrap">
@@ -496,6 +526,15 @@ function saveState() { try { localStorage.setItem("assignmentState", JSON.string
 
 let activeFilter = "All";
 let openId = null;
+let activeView = "todo";
+const lingering = new Set(); // just-finished items stay visible for a moment before moving
+
+// An assignment moves to the Done page once it's BOTH marked complete AND turned in
+function isFinished(a) { const s = state[a.id] || {}; return !!(s.complete && s.turned); }
+
+document.querySelectorAll(".view-tab").forEach(tab => {
+  tab.onclick = () => { activeView = tab.dataset.view; openId = null; render(); window.scrollTo({ top: 0 }); };
+});
 
 function fmtDate(d) {
   const dt = new Date(d + "T00:00:00");
@@ -541,22 +580,32 @@ function render() {
     btn.onclick = () => { activeFilter = btn.dataset.f; render(); };
   });
 
-  const filtered = activeFilter === "All" ? allAssignments : allAssignments.filter(a => a.class === activeFilter);
-  const total = filtered.length;
-  const doneCount = filtered.filter(a => state[a.id]?.complete).length;
+  const classFiltered = activeFilter === "All" ? allAssignments : allAssignments.filter(a => a.class === activeFilter);
+  const total = classFiltered.length;
+  const doneCount = classFiltered.filter(isFinished).length;
   const pct = total ? Math.round((doneCount/total)*100) : 0;
-  document.getElementById("progressText").textContent = `${doneCount} of ${total} complete`;
+  document.getElementById("progressText").textContent = `${doneCount} of ${total} done & turned in`;
+
+  document.getElementById("todoCount").textContent = total - doneCount;
+  document.getElementById("doneCount").textContent = doneCount;
+  document.querySelectorAll(".view-tab").forEach(t => t.classList.toggle("active", t.dataset.view === activeView));
+
+  const isDoneView = activeView === "done";
+  const filtered = classFiltered.filter(a => isDoneView ? (isFinished(a) && !lingering.has(a.id)) : (!isFinished(a) || lingering.has(a.id)));
   document.getElementById("progressPct").textContent = `${pct}%`;
   document.getElementById("progressFill").style.width = pct + "%";
 
   const grouped = {};
   filtered.forEach(a => { (grouped[a.date] ||= []).push(a); });
+  // To Do: oldest due date first. Done: most recent first.
   const dates = Object.keys(grouped).sort();
+  if (isDoneView) dates.reverse();
   const todayStr = getTodayStr();
 
   const listEl = document.getElementById("list");
+  listEl.classList.toggle("done-view", isDoneView);
   let html = "";
-  let todayPlaced = false;
+  let todayPlaced = isDoneView; // no Today marker on the Done page
 
   dates.forEach((date, i) => {
     if (!todayPlaced && date > todayStr) {
@@ -611,6 +660,12 @@ function render() {
 
   if (!todayPlaced) html += todayMarkerHTML();
 
+  if (dates.length === 0) {
+    html = isDoneView
+      ? `<div class="empty-state"><b>Nothing here yet</b>Assignments land here once they're marked complete and turned in.</div>`
+      : `<div class="empty-state"><b>All caught up 🎉</b>Everything${activeFilter === "All" ? "" : " for " + activeFilter} is done and turned in.</div>`;
+  }
+
   listEl.innerHTML = html;
 
   listEl.querySelectorAll(".card").forEach(card => {
@@ -630,6 +685,15 @@ function render() {
       const turningOn = !state[id][action];
       state[id][action] = turningOn;
       saveState();
+      const a = getAllAssignments().find(x => x.id === id);
+      if (turningOn && a && isFinished(a)) {
+        launchConfetti();
+        // brief pause so you see it get checked off before it moves to Done
+        lingering.add(id);
+        render();
+        setTimeout(() => { lingering.delete(id); if (openId === id) openId = null; render(); }, 900);
+        return;
+      }
       if (action === "turned" && turningOn) launchConfetti();
       render();
     });
