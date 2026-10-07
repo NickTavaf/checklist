@@ -13,6 +13,19 @@
 <meta name="apple-mobile-web-app-title" content="Assignments">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+// Apply the saved header colour immediately so reloads don't flash the default blue.
+try {
+  var v = JSON.parse(localStorage.getItem("posterPaletteVars") || "null");
+  if (v && v.length === 4) {
+    var r = document.documentElement.style;
+    r.setProperty("--poster-header-day", v[0]);
+    r.setProperty("--poster-header-day-ink", v[1]);
+    r.setProperty("--poster-header-night", v[2]);
+    r.setProperty("--poster-header-night-ink", v[3]);
+  }
+} catch (e) {}
+</script>
 <style>
 /* POSTER · WHITE + COLOR STUDY
    Full replacement for the original <style> block (or the previous Poster CSS).
@@ -130,6 +143,23 @@ button:disabled { opacity:.55; cursor:wait; }
   border-radius:var(--poster-control-radius); padding:0; background:none; cursor:pointer;
 }
 .class-color-empty { font-size:12px; color:var(--poster-text-soft); }
+
+/* ---- Sync section in the Customize panel ---- */
+.sync-code { font:500 22px/1.1 var(--poster-mono); letter-spacing:.06em; color:var(--poster-text); }
+.sync-status { margin-top:4px; font-size:12px; color:var(--poster-text-soft); }
+.sync-status.error { color:var(--poster-danger); }
+.sync-join { display:flex; gap:6px; margin-top:10px; }
+.sync-join input {
+  flex:1; min-width:0; min-height:40px; padding:8px; border:1px solid var(--poster-border);
+  border-radius:var(--poster-control-radius); background:var(--poster-bg); color:var(--poster-text);
+  font:500 14px/1.2 var(--poster-mono); text-transform:uppercase;
+}
+.sync-join button {
+  min-height:40px; padding:8px 12px; border:1px solid var(--poster-border);
+  border-radius:var(--poster-control-radius); background:var(--poster-text); color:var(--poster-bg);
+  font:500 12px/1.2 var(--poster-sans); text-transform:uppercase;
+}
+.sync-hint { margin-top:8px; font-size:11px; line-height:1.4; color:var(--poster-text-soft); }
 
 .wrap { width:100%; max-width:1000px; margin:0 auto; padding:24px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
 .filters { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 20px; }
@@ -450,6 +480,15 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 
       <div class="customize-section-label">Class Colors</div>
       <div class="class-color-list" id="classColorList"></div>
+
+      <div class="customize-section-label">Sync Code</div>
+      <div class="sync-code" id="syncCodeText">—</div>
+      <div class="sync-status" id="syncStatus"></div>
+      <div class="sync-join">
+        <input id="syncJoinInput" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button id="syncJoinBtn">Use Code</button>
+      </div>
+      <div class="sync-hint">On another device or browser, enter this code to share the same progress.</div>
     </div>
   </div>
 </div>
@@ -558,9 +597,17 @@ function saveCustomAssignments() { try { localStorage.setItem("customAssignments
 function getAllAssignments() { return [...defaultAssignments, ...customAssignments]; }
 function getAllClasses() { return [...new Set(getAllAssignments().map(a => a.class))]; }
 
+// state[id] = { complete, turned, t }  — t is when it last changed, so syncing
+// between devices keeps whichever change is newest.
 let state = {};
 try { state = JSON.parse(localStorage.getItem("assignmentState") || "{}"); } catch(e) { state = {}; }
 function saveState() { try { localStorage.setItem("assignmentState", JSON.stringify(state)); } catch(e) {} }
+
+// When colours / header palette last changed (for syncing those too)
+let prefsT = 0;
+try { prefsT = parseInt(localStorage.getItem("prefsUpdatedAt") || "0", 10) || 0; } catch(e) { prefsT = 0; }
+function touchPrefs() { prefsT = Date.now(); try { localStorage.setItem("prefsUpdatedAt", String(prefsT)); } catch(e) {} }
+
 // Ask the browser to treat saved progress as persistent so it isn't cleared to free up space
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
 
@@ -724,7 +771,9 @@ function render() {
       if (!state[id]) state[id] = {};
       const turningOn = !state[id][action];
       state[id][action] = turningOn;
+      state[id].t = Date.now();
       saveState();
+      scheduleSync();
       const a = getAllAssignments().find(x => x.id === id);
       if (turningOn && a && isFinished(a)) {
         launchConfetti();
@@ -776,10 +825,24 @@ function applyPalette(id) {
   root.setProperty("--poster-header-night", opt.dark);
   root.setProperty("--poster-header-night-ink", opt.darkInk);
   document.documentElement.dataset.palette = id;
+  // Saved so the <head> script can paint the right header before anything loads
+  try { localStorage.setItem("posterPaletteVars", JSON.stringify([opt.light, opt.lightInk, opt.dark, opt.darkInk])); } catch(e) {}
 }
 
 let currentPaletteId = getSavedPaletteId();
 applyPalette(currentPaletteId);
+
+// Colours picked before sync existed have no timestamp, so they'd never be
+// uploaded. Give them the oldest possible one: they get shared, but any real
+// change made on another device still wins.
+(function seedOldPrefs() {
+  let hadPalette = false;
+  try { hadPalette = !!localStorage.getItem("posterPalette"); } catch(e) {}
+  if (prefsT === 0 && (hadPalette || Object.keys(classColorOverrides).length)) {
+    prefsT = 1;
+    try { localStorage.setItem("prefsUpdatedAt", "1"); } catch(e) {}
+  }
+})();
 
 function renderCustomizePanel() {
   const swatchesEl = document.getElementById("paletteSwatches");
@@ -793,6 +856,8 @@ function renderCustomizePanel() {
       currentPaletteId = btn.dataset.paletteId;
       applyPalette(currentPaletteId);
       savePaletteId(currentPaletteId);
+      touchPrefs();
+      scheduleSync();
       renderCustomizePanel();
     });
   });
@@ -813,6 +878,8 @@ function renderCustomizePanel() {
     input.addEventListener("input", () => {
       classColorOverrides[input.dataset.class] = input.value;
       saveClassColorOverrides();
+      touchPrefs();
+      scheduleSync();
       render();
     });
   });
@@ -835,7 +902,127 @@ document.addEventListener("click", (e) => {
   }
 });
 
+/* ---- cloud sync ----
+   Progress is saved on this device AND in the cloud under a sync code.
+   Any tab, browser, home-screen app or device using the same code shares
+   the same checkmarks. */
+
+// Replace with your deployed sync Worker URL, e.g.
+// "https://coursely-sync.yourname.workers.dev"
+const SYNC_URL = "PASTE_YOUR_SYNC_WORKER_URL_HERE";
+const SYNC_CODE_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+
+function makeSyncCode() {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L mix-ups
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let s = "";
+  bytes.forEach((b, i) => { s += chars[b % chars.length]; if (i === 3) s += "-"; });
+  return s;
+}
+
+let syncCode = null;
+try { syncCode = localStorage.getItem("syncCode"); } catch(e) {}
+if (!syncCode || !SYNC_CODE_RE.test(syncCode)) {
+  syncCode = makeSyncCode();
+  try { localStorage.setItem("syncCode", syncCode); } catch(e) {}
+}
+
+const syncCodeText = document.getElementById("syncCodeText");
+const syncStatusEl = document.getElementById("syncStatus");
+syncCodeText.textContent = syncCode;
+
+function setSyncStatus(msg, isError) {
+  syncStatusEl.textContent = msg;
+  syncStatusEl.classList.toggle("error", !!isError);
+}
+
+function syncConfigured() { return SYNC_URL && SYNC_URL !== "PASTE_YOUR_SYNC_WORKER_URL_HERE"; }
+
+function localBundle() {
+  return { state, customAssignments, classColorOverrides, palette: currentPaletteId, prefsT };
+}
+
+// Newest change per assignment wins; custom assignments are combined;
+// newest colour settings win. Returns true if anything changed locally.
+function mergeRemote(remote) {
+  if (!remote) return false;
+  let changed = false;
+  for (const [id, r] of Object.entries(remote.state || {})) {
+    const l = state[id];
+    if (!l || (r.t || 0) > (l.t || 0)) { state[id] = r; changed = true; }
+  }
+  const ids = new Set(customAssignments.map(a => a.id));
+  (remote.customAssignments || []).forEach(a => {
+    if (a && a.id && !ids.has(a.id)) { customAssignments.push(a); ids.add(a.id); changed = true; }
+  });
+  if ((remote.prefsT || 0) > prefsT) {
+    classColorOverrides = remote.classColorOverrides || {};
+    if (remote.palette) { currentPaletteId = remote.palette; applyPalette(currentPaletteId); savePaletteId(currentPaletteId); }
+    prefsT = remote.prefsT;
+    try { localStorage.setItem("prefsUpdatedAt", String(prefsT)); } catch(e) {}
+    saveClassColorOverrides();
+    changed = true;
+  }
+  if (changed) { saveState(); saveCustomAssignments(); }
+  return changed;
+}
+
+let syncing = false, syncAgain = false, syncTimer = null;
+
+async function syncNow() {
+  if (!syncConfigured()) { setSyncStatus("Cloud sync not set up yet — saving on this device only."); return; }
+  if (syncing) { syncAgain = true; return; }
+  syncing = true;
+  setSyncStatus("Syncing…");
+  try {
+    // POST sends our changes; the server merges and returns everything.
+    const resp = await fetch(`${SYNC_URL}?code=${encodeURIComponent(syncCode)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(localBundle())
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || "Sync failed");
+    if (mergeRemote(data)) render();
+    setSyncStatus("Synced " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
+  } catch (e) {
+    setSyncStatus("Offline — saved on this device, will sync later.", true);
+  }
+  syncing = false;
+  if (syncAgain) { syncAgain = false; syncNow(); }
+}
+
+function scheduleSync() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncNow, 600);
+}
+
+document.getElementById("syncJoinBtn").addEventListener("click", () => {
+  const input = document.getElementById("syncJoinInput");
+  let code = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (code.length === 8) code = code.slice(0, 4) + "-" + code.slice(4);
+  if (!SYNC_CODE_RE.test(code)) { setSyncStatus("Codes look like ABCD-1234.", true); return; }
+  syncCode = code;
+  try { localStorage.setItem("syncCode", syncCode); } catch(e) {}
+  syncCodeText.textContent = syncCode;
+  input.value = "";
+  syncNow(); // anything already checked on this device is merged in, not lost
+});
+
+// Pull the latest whenever the app is opened or brought back to the front
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
+window.addEventListener("focus", () => syncNow());
+// Another tab of this same browser changed something
+window.addEventListener("storage", (e) => {
+  if (e.key === "assignmentState") {
+    try { state = JSON.parse(e.newValue || "{}"); } catch(err) {}
+    render();
+  }
+});
+
 render();
+syncNow();
 
 /* ---- confetti ---- */
 const canvas = document.getElementById("confetti");
@@ -984,6 +1171,7 @@ document.getElementById("addPreviewBtn").onclick = () => {
     .map((a, i) => ({ ...a, id: "custom-" + Date.now() + "-" + i }));
   customAssignments = [...customAssignments, ...toAdd];
   saveCustomAssignments();
+  scheduleSync();
   closeModal();
   render();
 };
