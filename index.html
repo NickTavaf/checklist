@@ -457,6 +457,27 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .completed-toggle, .undo-btn, .progress-label b { font-weight:500; }
 .tag { font-weight:500; }
 .pill.on.complete, .pill.on.turned { font-weight:500; }
+
+/* ---- Past due ---- */
+:root { --poster-overdue:#D92D20; --poster-overdue-ink:#FFFFFF; }
+.card.overdue { border-color:var(--poster-overdue); box-shadow:4px 4px 0 var(--poster-overdue); }
+.pill.overdue {
+  order:-1; color:var(--poster-overdue-ink); background:var(--poster-overdue);
+  border-color:var(--poster-overdue); font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+}
+
+/* ---- Bigger "Today" ---- */
+.today-chip {
+  margin-left:12px; padding:5px 12px 4px; vertical-align:.18em;
+  font:500 20px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.02em;
+}
+.today-marker-label { font:500 26px/1.1 var(--poster-display); }
+.date-heading.is-today { font-size:44px; line-height:1; border-top-width:6px; }
+@media (min-width:900px) {
+  .date-heading.is-today { font-size:64px; }
+  .today-chip { font-size:26px; padding:6px 14px 5px; }
+  .today-marker-label { font-size:34px; }
+}
 </style>
 </head>
 <body>
@@ -481,14 +502,8 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
       <div class="customize-section-label">Class Colors</div>
       <div class="class-color-list" id="classColorList"></div>
 
-      <div class="customize-section-label">Sync Code</div>
-      <div class="sync-code" id="syncCodeText">—</div>
+      <div class="customize-section-label">Sync</div>
       <div class="sync-status" id="syncStatus"></div>
-      <div class="sync-join">
-        <input id="syncJoinInput" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false">
-        <button id="syncJoinBtn">Use Code</button>
-      </div>
-      <div class="sync-hint">On another device or browser, enter this code to share the same progress.</div>
     </div>
   </div>
 </div>
@@ -705,8 +720,10 @@ function render() {
     const items = grouped[date].map(a => {
       const s = state[a.id] || {};
       const isOpen = openId === a.id;
+      // Past due = its date is before today and it isn't both done and turned in
+      const overdue = a.date < todayStr && !isFinished(a);
       return `
-        <div class="card" data-id="${a.id}" style="--accent:${getClassColor(a.class)}">
+        <div class="card ${overdue ? 'overdue' : ''}" data-id="${a.id}" style="--accent:${getClassColor(a.class)}">
           <div class="card-top">
             <div class="card-left">
               <span class="tag" style="background:${getClassColor(a.class)}">${a.class}</span>
@@ -714,6 +731,7 @@ function render() {
               <div class="time">${a.time}</div>
             </div>
             <div class="status-pills">
+              ${overdue ? '<span class="pill overdue">Past due</span>' : ''}
               <span class="pill ${s.complete?'on complete':''}">${s.complete?'Complete':'Not done'}</span>
               <span class="pill ${s.turned?'on turned':''}">${s.turned?'Turned in':'Not submitted'}</span>
             </div>
@@ -738,7 +756,7 @@ function render() {
           <div class="date-line"></div>
         </div>
         <div class="date-content">
-          <div class="date-heading">${fmtDate(date)}${isToday ? '<span class="today-chip">Today</span>' : ''}</div>
+          <div class="date-heading ${isToday ? 'is-today' : ''}">${fmtDate(date)}${isToday ? '<span class="today-chip">Today</span>' : ''}</div>
           ${items}
         </div>
       </div>
@@ -903,34 +921,18 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---- cloud sync ----
-   Progress is saved on this device AND in the cloud under a sync code.
-   Any tab, browser, home-screen app or device using the same code shares
-   the same checkmarks. */
+   Progress is saved on this device AND in the cloud. Every device that opens
+   this link shares the same built-in key, so they all show the same thing —
+   no code to enter. */
 
 // Replace with your deployed sync Worker URL, e.g.
 // "https://coursely-sync.yourname.workers.dev"
-const SYNC_URL = "PASTE_YOUR_SYNC_WORKER_URL_HERE";
-const SYNC_CODE_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+const SYNC_URL = "https://checklist.tavan388.workers.dev/sync";
+// One shared key for everyone who opens this link (must look like XXXX-XXXX).
+const SYNC_KEY = "NICK-MAIN";
+const LIVE_REFRESH_MS = 20000; // check for changes from other devices every 20s
 
-function makeSyncCode() {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L mix-ups
-  const bytes = new Uint8Array(8);
-  crypto.getRandomValues(bytes);
-  let s = "";
-  bytes.forEach((b, i) => { s += chars[b % chars.length]; if (i === 3) s += "-"; });
-  return s;
-}
-
-let syncCode = null;
-try { syncCode = localStorage.getItem("syncCode"); } catch(e) {}
-if (!syncCode || !SYNC_CODE_RE.test(syncCode)) {
-  syncCode = makeSyncCode();
-  try { localStorage.setItem("syncCode", syncCode); } catch(e) {}
-}
-
-const syncCodeText = document.getElementById("syncCodeText");
 const syncStatusEl = document.getElementById("syncStatus");
-syncCodeText.textContent = syncCode;
 
 function setSyncStatus(msg, isError) {
   syncStatusEl.textContent = msg;
@@ -977,7 +979,7 @@ async function syncNow() {
   setSyncStatus("Syncing…");
   try {
     // POST sends our changes; the server merges and returns everything.
-    const resp = await fetch(`${SYNC_URL}?code=${encodeURIComponent(syncCode)}`, {
+    const resp = await fetch(`${SYNC_URL}?code=${encodeURIComponent(SYNC_KEY)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(localBundle())
@@ -998,17 +1000,8 @@ function scheduleSync() {
   syncTimer = setTimeout(syncNow, 600);
 }
 
-document.getElementById("syncJoinBtn").addEventListener("click", () => {
-  const input = document.getElementById("syncJoinInput");
-  let code = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (code.length === 8) code = code.slice(0, 4) + "-" + code.slice(4);
-  if (!SYNC_CODE_RE.test(code)) { setSyncStatus("Codes look like ABCD-1234.", true); return; }
-  syncCode = code;
-  try { localStorage.setItem("syncCode", syncCode); } catch(e) {}
-  syncCodeText.textContent = syncCode;
-  input.value = "";
-  syncNow(); // anything already checked on this device is merged in, not lost
-});
+// While the app is on screen, quietly check for changes from other devices
+setInterval(() => { if (document.visibilityState === "visible") syncNow(); }, LIVE_REFRESH_MS);
 
 // Pull the latest whenever the app is opened or brought back to the front
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
