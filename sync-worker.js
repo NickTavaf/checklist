@@ -31,11 +31,15 @@ function json(body, status = 200) {
 }
 
 function emptyBundle() {
-  return { state: {}, customAssignments: [], classColorOverrides: {}, palette: null, prefsT: 0 };
+  return { state: {}, customAssignments: [], classColorOverrides: {}, palette: null, prefsT: 0, removedClasses: {} };
 }
 
+// When a custom assignment was added (its id is "custom-<timestamp>-n")
+function createdAt(a) { const m = /^custom-(\d+)/.exec((a && a.id) || ""); return m ? Number(m[1]) : 0; }
+
 // Same rules as the app: newest change per assignment wins, custom
-// assignments are combined, and the newest colour settings win.
+// assignments are combined, the newest colour settings win, and deleted
+// classes stay deleted.
 function merge(base, incoming) {
   const out = {
     state: { ...(base.state || {}) },
@@ -43,7 +47,11 @@ function merge(base, incoming) {
     classColorOverrides: base.classColorOverrides || {},
     palette: base.palette || null,
     prefsT: base.prefsT || 0,
+    removedClasses: { ...(base.removedClasses || {}) },
   };
+  for (const [cls, t] of Object.entries(incoming.removedClasses || {})) {
+    if (typeof t === "number" && t > (out.removedClasses[cls] || 0)) out.removedClasses[cls] = t;
+  }
   for (const [id, entry] of Object.entries(incoming.state || {})) {
     const current = out.state[id];
     if (!current || (entry.t || 0) > (current.t || 0)) out.state[id] = entry;
@@ -57,6 +65,11 @@ function merge(base, incoming) {
     out.palette = incoming.palette || out.palette;
     out.prefsT = incoming.prefsT;
   }
+  // Drop assignments that belong to a deleted class (added before it was deleted)
+  out.customAssignments = out.customAssignments.filter(a => {
+    const t = out.removedClasses[a.class];
+    return !t || createdAt(a) >= t;
+  });
   return out;
 }
 

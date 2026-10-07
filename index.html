@@ -143,6 +143,13 @@ button:disabled { opacity:.55; cursor:wait; }
   border-radius:var(--poster-control-radius); padding:0; background:none; cursor:pointer;
 }
 .class-color-empty { font-size:12px; color:var(--poster-text-soft); }
+.ccr-delete {
+  flex-shrink:0; min-width:32px; height:32px; padding:0 8px;
+  border:1px solid var(--poster-border); border-radius:var(--poster-control-radius);
+  background:transparent; color:var(--poster-text-soft); font:500 13px/1 var(--poster-sans);
+}
+.ccr-delete.confirm { background:#D92D20; border-color:#D92D20; color:#fff; }
+@media (hover:hover) { .ccr-delete:not(.confirm):hover { color:#D92D20; border-color:#D92D20; } }
 
 /* ---- Sync section in the Customize panel ---- */
 .sync-code { font:500 22px/1.1 var(--poster-mono); letter-spacing:.06em; color:var(--poster-text); }
@@ -499,7 +506,7 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
       <div class="customize-section-label">Header Color</div>
       <div class="palette-swatches" id="paletteSwatches"></div>
 
-      <div class="customize-section-label">Class Colors</div>
+      <div class="customize-section-label">Classes</div>
       <div class="class-color-list" id="classColorList"></div>
 
       <div class="customize-section-label">Sync</div>
@@ -609,7 +616,34 @@ function getClassColor(cls) {
 let customAssignments = [];
 try { customAssignments = JSON.parse(localStorage.getItem("customAssignments") || "[]"); } catch(e) { customAssignments = []; }
 function saveCustomAssignments() { try { localStorage.setItem("customAssignments", JSON.stringify(customAssignments)); } catch(e) {} }
-function getAllAssignments() { return [...defaultAssignments, ...customAssignments]; }
+// Deleted classes: { "Class name": timeDeleted }. Assignments in that class
+// that existed before it was deleted are hidden everywhere; if you add the same
+// class again later from a syllabus, the new ones show up normally.
+let removedClasses = {};
+try { removedClasses = JSON.parse(localStorage.getItem("removedClasses") || "{}"); } catch(e) { removedClasses = {}; }
+function saveRemovedClasses() { try { localStorage.setItem("removedClasses", JSON.stringify(removedClasses)); } catch(e) {} }
+function createdAt(a) { const m = /^custom-(\d+)/.exec(a.id || ""); return m ? Number(m[1]) : 0; }
+function isRemoved(a) { const t = removedClasses[a.class]; return !!t && createdAt(a) < t; }
+function pruneRemoved() {
+  const before = customAssignments.length;
+  customAssignments = customAssignments.filter(a => !isRemoved(a));
+  if (customAssignments.length !== before) saveCustomAssignments();
+}
+pruneRemoved();
+
+function deleteClass(cls) {
+  removedClasses[cls] = Date.now();
+  saveRemovedClasses();
+  pruneRemoved();
+  delete classColorOverrides[cls];
+  saveClassColorOverrides();
+  if (activeFilter === cls) activeFilter = "All";
+  scheduleSync();
+  render();
+  renderCustomizePanel();
+}
+
+function getAllAssignments() { return [...defaultAssignments, ...customAssignments].filter(a => !isRemoved(a)); }
 function getAllClasses() { return [...new Set(getAllAssignments().map(a => a.class))]; }
 
 // state[id] = { complete, turned, t }  — t is when it last changed, so syncing
@@ -883,15 +917,28 @@ function renderCustomizePanel() {
   const classes = getAllClasses();
   const listEl = document.getElementById("classColorList");
   if (classes.length === 0) {
-    listEl.innerHTML = `<div class="class-color-empty">Add a syllabus to set class colors.</div>`;
+    listEl.innerHTML = `<div class="class-color-empty">Add a syllabus to add a class.</div>`;
     return;
   }
-  listEl.innerHTML = classes.map(cls => `
+  listEl.innerHTML = classes.map(cls => {
+    const safe = cls.replace(/"/g, '&quot;');
+    return `
     <div class="class-color-row">
       <span class="ccr-name">${cls}</span>
-      <input type="color" value="${getClassColor(cls)}" data-class="${cls.replace(/"/g, '&quot;')}">
-    </div>
-  `).join("");
+      <input type="color" value="${getClassColor(cls)}" data-class="${safe}" aria-label="Color for ${safe}">
+      <button class="ccr-delete" data-class="${safe}" aria-label="Delete ${safe}" title="Delete class">✕</button>
+    </div>`;
+  }).join("");
+  // Two taps to delete: first tap asks, second tap within 4s deletes.
+  listEl.querySelectorAll(".ccr-delete").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("confirm")) { deleteClass(btn.dataset.class); return; }
+      const count = getAllAssignments().filter(a => a.class === btn.dataset.class).length;
+      btn.classList.add("confirm");
+      btn.textContent = `Delete ${count}?`;
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove("confirm"); btn.textContent = "✕"; } }, 4000);
+    });
+  });
   listEl.querySelectorAll('input[type="color"]').forEach(input => {
     input.addEventListener("input", () => {
       classColorOverrides[input.dataset.class] = input.value;
@@ -942,7 +989,7 @@ function setSyncStatus(msg, isError) {
 function syncConfigured() { return SYNC_URL && SYNC_URL !== "PASTE_YOUR_SYNC_WORKER_URL_HERE"; }
 
 function localBundle() {
-  return { state, customAssignments, classColorOverrides, palette: currentPaletteId, prefsT };
+  return { state, customAssignments, classColorOverrides, palette: currentPaletteId, prefsT, removedClasses };
 }
 
 // Newest change per assignment wins; custom assignments are combined;
@@ -950,14 +997,23 @@ function localBundle() {
 function mergeRemote(remote) {
   if (!remote) return false;
   let changed = false;
+  // Classes deleted on another device (keep the most recent deletion time)
+  for (const [cls, t] of Object.entries(remote.removedClasses || {})) {
+    if ((t || 0) > (removedClasses[cls] || 0)) {
+      removedClasses[cls] = t; changed = true;
+      if (activeFilter === cls) activeFilter = "All";
+    }
+  }
+  if (changed) saveRemovedClasses();
   for (const [id, r] of Object.entries(remote.state || {})) {
     const l = state[id];
     if (!l || (r.t || 0) > (l.t || 0)) { state[id] = r; changed = true; }
   }
   const ids = new Set(customAssignments.map(a => a.id));
   (remote.customAssignments || []).forEach(a => {
-    if (a && a.id && !ids.has(a.id)) { customAssignments.push(a); ids.add(a.id); changed = true; }
+    if (a && a.id && !ids.has(a.id) && !isRemoved(a)) { customAssignments.push(a); ids.add(a.id); changed = true; }
   });
+  pruneRemoved();
   if ((remote.prefsT || 0) > prefsT) {
     classColorOverrides = remote.classColorOverrides || {};
     if (remote.palette) { currentPaletteId = remote.palette; applyPalette(currentPaletteId); savePaletteId(currentPaletteId); }
