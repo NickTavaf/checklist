@@ -474,9 +474,9 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .today-marker-label { font:500 26px/1.1 var(--poster-display); }
 .date-heading.is-today { font-size:44px; line-height:1; border-top-width:6px; }
 @media (min-width:900px) {
-  .date-heading.is-today { font-size:64px; }
-  .today-chip { font-size:26px; padding:6px 14px 5px; }
-  .today-marker-label { font-size:34px; }
+  .date-heading.is-today { font-size:96px; line-height:.95; border-top-width:8px; padding-top:14px; }
+  .today-chip { font-size:40px; padding:8px 18px 6px; margin-left:18px; }
+  .today-marker-label { font-size:52px; }
 }
 </style>
 </head>
@@ -1082,7 +1082,7 @@ function tick() {
 
 // Replace this with your deployed Cloudflare Worker URL, e.g.
 // "https://syllabus-parser.yourname.workers.dev"
-const WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
+const WORKER_URL = "https://checklist.tavan388.workers.dev/parse";
 
 const uploadModal = document.getElementById("uploadModal");
 const syllabusInput = document.getElementById("syllabusInput");
@@ -1161,7 +1161,7 @@ document.getElementById("addPreviewBtn").onclick = () => {
     .map(cb => parseInt(cb.dataset.idx));
   const toAdd = pendingAssignments
     .filter((a, i) => checked.includes(i))
-    .map((a, i) => ({ ...a, id: "custom-" + Date.now() + "-" + i }));
+    .map((a, i) => ({ desc: "", time: "", ...a, id: "custom-" + Date.now() + "-" + i }));
   customAssignments = [...customAssignments, ...toAdd];
   saveCustomAssignments();
   scheduleSync();
