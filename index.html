@@ -836,6 +836,11 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .sday-add { flex-shrink:0; align-self:flex-start; margin-top:auto; min-height:38px; padding:6px 14px; border:2px dashed var(--poster-text-soft); background:transparent; color:var(--poster-text-soft); font:600 12px/1 var(--poster-mono); text-transform:uppercase; }
 .sday-add:hover { border-style:solid; color:var(--poster-text); border-color:var(--poster-text); }
 .sday.is-today .sday-add { color:inherit; border-color:currentColor; }
+/* on today's colored box, things due get a solid white card with dark text so they're always readable,
+   whatever color today and the class are */
+.sday.is-today .smark.smark { background:var(--poster-card-bg); color:var(--poster-text); }
+.sday.is-today .smark.smark.is-done { background:color-mix(in srgb, var(--mc) 22%, var(--poster-card-bg)); }
+.sday.is-today .smark.smark .mtime { color:var(--poster-text-soft); }
 .sdrop-btns { display:flex; gap:6px; flex-wrap:wrap; }
 .sdrop-btns .action-btn { flex:1 1 70px; }
 .sdrop .action-btn.danger { color:var(--poster-danger); border-color:var(--poster-danger); }
