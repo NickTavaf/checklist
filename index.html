@@ -2941,7 +2941,12 @@ function schedStep(dir) {
   renderSchedule();
 }
 
-document.querySelectorAll("#schedViews button").forEach(b => b.onclick = () => { sched.view = b.dataset.v; saveSchedPrefs(); renderSchedule(); });
+// Week always opens on today (centered on a phone); the others jump to today when it's in what you were looking at
+document.querySelectorAll("#schedViews button").forEach(b => b.onclick = () => {
+  const t = getTodayStr();
+  if (b.dataset.v === "week" || sched.date.slice(0, 7) === t.slice(0, 7)) sched.date = t;
+  sched.view = b.dataset.v; saveSchedPrefs(); renderSchedule();
+});
 document.getElementById("schedPrev").onclick = () => schedStep(-1);
 document.getElementById("schedNext").onclick = () => schedStep(1);
 document.getElementById("schedToday").onclick = () => { sched.date = getTodayStr(); renderSchedule(); };
