@@ -415,6 +415,7 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   --poster-header-night-ink:#171914;
   --poster-header-fill:var(--poster-header-day);
   --poster-header-ink:var(--poster-header-day-ink);
+  --nav-hw:var(--nav-hw-d); --nav-hw-ink:var(--nav-hw-di); --nav-sc:var(--nav-sc-d); --nav-sc-ink:var(--nav-sc-di);
 }
 :root[data-palette="blue"] {
   --poster-header-day:#2459F6; --poster-header-day-ink:#FFFFFF;
@@ -440,17 +441,20 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 :root[data-theme="dark"] {
   --poster-header-fill:var(--poster-header-night);
   --poster-header-ink:var(--poster-header-night-ink);
+  --nav-hw:var(--nav-hw-n); --nav-hw-ink:var(--nav-hw-ni); --nav-sc:var(--nav-sc-n); --nav-sc-ink:var(--nav-sc-ni);
 }
 @media (prefers-color-scheme:dark) {
   :root:not([data-theme="light"]) {
     --poster-header-fill:var(--poster-header-night);
     --poster-header-ink:var(--poster-header-night-ink);
+    --nav-hw:var(--nav-hw-n); --nav-hw-ink:var(--nav-hw-ni); --nav-sc:var(--nav-sc-n); --nav-sc-ink:var(--nav-sc-ni);
   }
 }
 /* This override comes last, so it also covers explicit and system dark mode. */
 :root[data-header-mode="fixed"] {
   --poster-header-fill:var(--poster-header-day);
   --poster-header-ink:var(--poster-header-day-ink);
+  --nav-hw:var(--nav-hw-d); --nav-hw-ink:var(--nav-hw-di); --nav-sc:var(--nav-sc-d); --nav-sc-ink:var(--nav-sc-di);
 }
 
 /* Explicit light mode wins over device and containing-app appearance. */
@@ -533,12 +537,15 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   transition:transform .12s, box-shadow .12s;
   font:800 21px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.02em;
 }
-.nav-link[data-page="homework"] { background:#FF7849; transform:rotate(-2.5deg); }
-.nav-link[data-page="schedule"] { background:#B6E35A; transform:rotate(1.8deg); }
+/* Homework and Schedule always wear their own header color, so you can tell them apart from anywhere */
+.nav-link[data-page="homework"] { background:var(--nav-hw, #FF7849); color:var(--nav-hw-ink, #171914); transform:rotate(-2.5deg); }
+.nav-link[data-page="schedule"] { background:var(--nav-sc, #B6E35A); color:var(--nav-sc-ink, #171914); transform:rotate(1.8deg); }
 .nav-link[data-page="notebook"] { background:#C9B6FF; transform:rotate(-1.4deg); }
 .nav-link:hover { transform:rotate(0) translate(-1px,-2px); box-shadow:6px 7px 0 var(--poster-border); }
 .nav-link:active { transform:rotate(0) translate(3px,3px); box-shadow:1px 1px 0 var(--poster-border); }
 .nav-link[aria-current="page"] { transform:rotate(0) scale(1.04); background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+/* two stickers the same color: the page you're on gets a darker shade */
+.nav-link[aria-current="page"].twin { background:color-mix(in srgb, var(--poster-ui-accent) 70%, #000); color:#fff; }
 .nav-link:focus-visible { outline:3px solid var(--poster-ui-accent); outline-offset:4px; }
 @media (min-width:900px) {
   .site-nav { padding-left:max(32px,calc((100% - 1176px)/2)); padding-right:max(32px,calc((100% - 1176px)/2)); }
@@ -806,23 +813,28 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
    a white name strip, and the small print along the bottom (like a Mead / Five Star 1-subject) */
 .desk-nb[data-type="spiral"] { --cv:#1E4FB8; padding:10px 9px 8px 22px; justify-content:space-between; color:#fff;
   background:linear-gradient(120deg, #ffffff26 0 18%, transparent 30% 62%, #ffffff14 70%, transparent 82%), linear-gradient(var(--cv), color-mix(in srgb, var(--cv) 82%, #000)); }
-.desk-nb[data-type="spiral"]::before { content:""; position:absolute; z-index:2; left:-8px; top:4px; bottom:4px; width:20px;
-  background:radial-gradient(ellipse 9px 4.5px at 50% 50%, transparent 5px, #c9ccd1 5.5px 7.2px, #6b6f75 7.6px, transparent 8px) 0 0/20px 10px; }
-.desk-nb[data-type="spiral"]::after { content:""; position:absolute; left:7px; top:4px; bottom:4px; width:4px; background:radial-gradient(circle, #0007 1.6px, transparent 2px) 0 0/4px 10px; }
+/* the wire coil: each loop comes up out of a punched hole and wraps around the left edge */
+.desk-nb[data-type="spiral"]::before { content:""; position:absolute; z-index:2; left:-11px; top:5px; bottom:5px; width:26px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='11' viewBox='0 0 26 11'%3E%3Cellipse cx='19' cy='6.2' rx='2.1' ry='1.9' fill='%23000a'/%3E%3Cpath d='M19 6.6C14 9.4 4.5 9.6 3.2 6.3 2.2 3.4 9 1.6 18.4 4.4' fill='none' stroke='%230007' stroke-width='2.2' stroke-linecap='round' transform='translate(.7 1)'/%3E%3Cpath d='M19 6.6C14 9.4 4.5 9.6 3.2 6.3 2.2 3.4 9 1.6 18.4 4.4' fill='none' stroke='%238d939b' stroke-width='1.9' stroke-linecap='round'/%3E%3Cpath d='M16.5 3.6C11 2.3 5 2.8 3.9 5.2' fill='none' stroke='%23eef1f4' stroke-width='.75' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/26px 11px repeat-y; pointer-events:none; }
 .dn-top { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:4px; }
 .dn-mark { font:800 11px/.9 var(--poster-display); letter-spacing:.04em; text-transform:uppercase; }
 .dn-mark b { display:block; font-size:22px; }
 .dn-color { width:22px; height:22px; padding:0; border:0; background:transparent; display:grid; place-items:center; cursor:pointer; }
-.dn-color .ds-dot { width:13px; height:13px; border:2px solid #fff; box-shadow:0 0 0 1px #0006; }
+.dn-color .ds-dot { border-radius:50%; background:var(--sn); width:13px; height:13px; border:2px solid #fff; box-shadow:0 0 0 1px #0006; }
 .desk-nb[data-type="spiral"] .dn-strip { position:relative; z-index:1; background:#fff; color:#171914; padding:5px 7px 4px; box-shadow:0 1px 2px #0004; }
 .desk-nb[data-type="spiral"] .dn-strip .dn-name { font-size:19px; }
 .desk-nb[data-type="spiral"] .dn-fine { position:relative; z-index:1; font:600 7px/1.2 var(--poster-mono); letter-spacing:.06em; text-transform:uppercase; opacity:.85; }
+.desk-nb[data-type="legal"]::before, .desk-nb[data-type="eng"]::before { content:""; position:absolute; left:0; right:0; top:-16px; height:16px; pointer-events:none;
+  background:linear-gradient(#ffffff38, #ffffff08 35%, #0000 60%, #00000045), repeating-linear-gradient(90deg, #0000 0 3px, #00000010 3px 4px); }
+.desk-nb[data-type="eng"]::before { top:-12px; height:12px; }
 .desk-nb[data-type="legal"] { border-top:16px solid #7b2f2a; background:linear-gradient(90deg, transparent 18px, #e0605a 18px 19px, transparent 19px 21px, #e0605a 21px 22px, transparent 22px), repeating-linear-gradient(#FFF4A3 0 13px, #8fb3dc 13px 14px); padding-left:28px; }
-.desk-nb[data-type="comp"] { background:#111 """+marble+r""" 0 0/300px 300px; padding:0; justify-content:center; align-items:center; }
-.desk-nb[data-type="comp"]::before { content:""; position:absolute; left:0; top:0; bottom:0; width:18px; background:#0d0d0d; border-right:2px solid #000; }
+.desk-nb[data-type="comp"] { background:#111 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.07 0.05' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -40 0 0 0 20.2'/%3E%3C/filter%3E%3Crect width='300' height='300' fill='%23f4f1ea'/%3E%3Crect width='300' height='300' filter='url(%23m)'/%3E%3C/svg%3E") 0 0/140px 140px; padding:calc(var(--w) * .2) 0 0 calc(var(--w) * .17); justify-content:flex-start; align-items:center; border-radius:2px 5px 5px 2px; }
+/* black cloth tape down the spine, with its stitching */
+.desk-nb[data-type="comp"]::before { content:""; position:absolute; left:0; top:0; bottom:0; width:17%; border-radius:2px 0 0 2px;
+  background:repeating-linear-gradient(0deg, #ffffff07 0 1px, #0000 1px 3px), linear-gradient(90deg, #000, #1d1d1d 55%, #0b0b0b); box-shadow:1px 0 0 #000, 2px 0 3px #0006; }
+.desk-nb[data-type="comp"]::after { content:""; position:absolute; top:4px; bottom:4px; left:11%; width:1px; background:repeating-linear-gradient(#8a8a8a 0 4px, #0000 4px 8px); }
 /* composition book: black-and-white marble, black cloth spine, and the white label with a double frame,
    "COMPOSITION BOOK" across the top and NAME / SUBJECT lines (the notebook's name is written on SUBJECT) */
-.desk-nb[data-type="comp"] .dn-label { position:relative; z-index:1; width:76%; margin-left:12px; padding:7px 8px 6px; background:#fff; color:#111;
+.desk-nb[data-type="comp"] .dn-label { position:relative; z-index:1; width:80%; margin-left:0; padding:7px 8px 6px; background:#fff; color:#111;
   border:1.5px solid #111; outline:1px solid #111; outline-offset:-5px; border-radius:10px / 7px; }
 .dn-title { display:block; text-align:center; font:800 10px/1 var(--poster-display); letter-spacing:.1em; padding:2px 0 5px; }
 .dn-title small { display:block; font:600 6px/1.2 var(--poster-mono); letter-spacing:.08em; margin-top:2px; }
@@ -835,11 +847,11 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-nb:focus-visible, .desk-sticky:focus-within { outline:3px solid var(--poster-ui-accent); outline-offset:3px; }
 /* sticky notes */
 .desk-sticky { --w:132px; --s:1; width:calc(var(--w) * var(--s)); height:calc(var(--w) * var(--s)); display:flex; flex-direction:column; background:var(--sc); color:#171914; box-shadow:2px 3px 0 #0003, 6px 10px 14px -6px #0006; }
-.desk-sticky .ds-grip { height:26px; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:2px; padding:0 3px; background:linear-gradient(#0000000d, #00000005); cursor:grab; }
+.desk-sticky .ds-grip { height:calc(24px * min(1, var(--s))); flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:2px; padding:0 3px; background:linear-gradient(#0000000d, #00000005); cursor:grab; }
 .desk-sticky .ds-grip button { width:20px; height:20px; padding:0; border:0; background:transparent; color:#171914b0; font:700 14px/1 var(--poster-sans); cursor:pointer; display:grid; place-items:center; }
 .desk-sticky .ds-dot { width:11px; height:11px; border-radius:50%; background:var(--sn); border:1.5px solid #17191480; }
 .desk-sticky { cursor:grab; }
-.desk-sticky textarea { flex:0 0 auto; min-height:0; max-height:calc(100% - 26px); overflow:hidden; width:100%; resize:none; cursor:text; border:0; outline:0; padding:4px 9px 8px; background:transparent; color:inherit; font:500 19px/1.15 "Caveat", cursive; touch-action:auto; }
+.desk-sticky textarea { flex:0 0 auto; min-height:1.3em; overflow:hidden; width:100%; resize:none; cursor:text; border:0; outline:0; padding:.15em .45em .3em; background:transparent; color:inherit; font:500 calc(19px * var(--s)) / 1.12 "Caveat", cursive; touch-action:auto; }
 .desk-sticky textarea::placeholder { color:#17191470; }
 /* resize from the bottom-right corner */
 .desk-sticky .ds-size { position:absolute; right:0; bottom:0; width:22px; height:22px; cursor:nwse-resize; touch-action:none;
@@ -847,11 +859,14 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 /* mic: shows on the note you're writing in */
 /* desk mic: same square box as the notebook's, in the bottom-right corner of the desk */
 .desk { position:relative; }
-.desk .nb-mic.desk-mic { right:max(28px, calc(env(safe-area-inset-right) + 12px)); bottom:28px; width:56px; height:56px; padding:0; border-radius:6px; z-index:20; }
+.desk { --in:10px; }
+.desk[data-desk="mat"] { --in:20px; } .desk[data-desk="slate"] { --in:18px; } .desk[data-desk="leather"] { --in:24px; } .desk[data-desk^="wood"] { --in:16px; }
+.desk .nb-mic.desk-mic { right:calc(max(16px, env(safe-area-inset-right)) + var(--in)); bottom:var(--in); width:56px; height:56px; padding:0; border-radius:6px; z-index:20; }
 .desk .desk-mic svg { width:32px; height:32px; stroke-width:1.8; }
 .desk .desk-mic[aria-pressed="true"] { width:auto; padding:0 14px; background:#E5251B; color:#fff; }
 .desk-sticky.listening { outline:3px solid #E5251B; outline-offset:3px; }
-.desk-note { right:28px; bottom:96px; }
+.desk-note { right:calc(16px + var(--in)); bottom:calc(var(--in) + 68px); }
+.desk:not([data-desk="scatter"]) .desk-mic, .desk:not([data-desk="scatter"]) .desk-trash { border-color:#0009; box-shadow:0 1px 1px #0004, 3px 6px 12px #0009; }
 .desk-sticky.confirm .ds-del { width:auto; padding:0 5px; font-size:10px; background:#c62828; color:#fff; }
 @media (max-width:520px) {
   .desk-bar { gap:6px; }
@@ -869,11 +884,12 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .dn-title { font-size:8px; padding-bottom:3px; } .dn-title small { display:none; }
   .dn-line { margin-top:2px; font-size:5px; }
   .desk-nb[data-type="comp"] .dn-name { font-size:13px; }
-  .desk-nb[data-type="comp"] .dn-label { width:82%; padding:5px 5px 4px; }
+  .desk-nb[data-type="comp"] .dn-label { width:84%; padding:5px 5px 4px; }
+  .desk-nb.desk-nb[data-type="comp"] { padding:calc(var(--w) * .2) 0 0 calc(var(--w) * .17); }
   .nb-bar h1 { font-size:24px; }
   .desk-nb[data-type="comp"] .dn-label::before { font-size:6.5px; }
   .desk-nb[data-type="eng"] .dn-name { font-size:10.5px; }
-  .desk-sticky textarea { font-size:16px; padding:3px 7px 6px; }
+  .desk-sticky textarea { font-size:calc(16px * var(--s)); }
   .nb-close .long { display:none; }
 }
 /* ---- desk layouts (data-desk on .desk) ----
@@ -905,14 +921,17 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk[data-desk="mat"] .desk-area::after { top:22px; bottom:8px; left:6px; width:12px;
   background:repeating-linear-gradient(#ffffff55 0 1px, transparent 1px 20px) 0 0/12px 100% no-repeat, repeating-linear-gradient(#ffffff30 0 1px, transparent 1px 4px) 7px 0/5px 100% no-repeat; }
 .desk[data-desk="mat"] .desk-item { z-index:1; }
-.desk[data-desk="mat"] .desk-nb { border-color:transparent; border-left:0; border-right:0; border-bottom:0; box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 5px 5px 0 #ccc, 10px 16px 22px #000a; }
-.desk[data-desk="mat"] .desk-nb[data-type="legal"] { box-shadow:1px 1px 0 #f3e78f, 2px 2px 0 #d9cc70, 3px 3px 0 #f3e78f, 4px 4px 0 #cfc068, 10px 16px 22px #000a; }
-.desk[data-desk="mat"] .desk-nb[data-type="eng"] { box-shadow:1px 1px 0 #dbe9d2, 2px 2px 0 #b9cdb0, 3px 3px 0 #dbe9d2, 4px 4px 0 #b0c4a6, 10px 16px 22px #000a; }
-.desk[data-desk="mat"] .desk-nb[data-type="spiral"], .desk[data-desk="mat"] .desk-nb[data-type="comp"] { border:0; }
-.desk[data-desk="mat"] .desk-nb[data-type="legal"] { border-top-color:#7b2f2a; }
-.desk[data-desk="mat"] .desk-nb[data-type="eng"] { border-top-color:#3f6b34; }
-.desk[data-desk="mat"] .desk-nb[data-type="spiral"] { box-shadow:1px 1px 0 #eee, 2px 2px 0 #ccc, 3px 3px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 color-mix(in srgb, var(--cv) 70%, #000), 10px 16px 22px #000a; }
-.desk[data-desk="mat"] .desk-nb[data-type="comp"] { box-shadow:2px 2px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 #111, 10px 16px 22px #000a; }
+/* every notebook shows the edges of its pages and a soft shadow, whatever the background */
+.desk { --drop:10px 16px 22px #000a; }
+.desk[data-desk="scatter"] { --drop:6px 10px 16px #0005; }
+.desk .desk-nb.desk-nb { border-color:transparent; border-left:0; border-right:0; border-bottom:0; box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 5px 5px 0 #ccc, var(--drop); }
+.desk .desk-nb.desk-nb[data-type="legal"] { box-shadow:1px 1px 0 #f3e78f, 2px 2px 0 #d9cc70, 3px 3px 0 #f3e78f, 4px 4px 0 #cfc068, var(--drop); }
+.desk .desk-nb.desk-nb[data-type="eng"] { box-shadow:1px 1px 0 #dbe9d2, 2px 2px 0 #b9cdb0, 3px 3px 0 #dbe9d2, 4px 4px 0 #b0c4a6, var(--drop); }
+.desk .desk-nb.desk-nb[data-type="spiral"], .desk .desk-nb.desk-nb[data-type="comp"] { border:0; }
+.desk .desk-nb.desk-nb[data-type="legal"] { border-top-color:#7b2f2a; }
+.desk .desk-nb.desk-nb[data-type="eng"] { border-top-color:#3f6b34; }
+.desk .desk-nb.desk-nb[data-type="spiral"] { box-shadow:1px 1px 0 #eee, 2px 2px 0 #ccc, 3px 3px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 color-mix(in srgb, var(--cv) 70%, #000), var(--drop); }
+.desk .desk-nb.desk-nb[data-type="comp"] { box-shadow:2px 2px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 #111, var(--drop); }
 .desk[data-desk="mat"] .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
 .desk[data-desk="mat"] .desk-sticky::after { pointer-events:none; content:""; position:absolute; right:0; bottom:0; width:18px; height:18px; background:linear-gradient(135deg, var(--sc) 50%, #00000030 50%, #0000 70%); }
 .desk[data-desk="mat"] .desk-empty { color:#ffffff90; }
@@ -925,31 +944,80 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
     repeating-linear-gradient(-12deg, #ffffff05 0 2px, transparent 2px 9px),
     #262c30;
   box-shadow:inset 0 0 30px #000a, 0 6px 18px #0006; }
-/* leather: a black desk pad with a stitched border */
-.desk[data-desk="leather"] .desk-area { border-radius:12px; border:1px solid #000;
+/* leather: a brown desk pad with a pebbled grain, a darker rolled edge and tan stitching */
+.desk[data-desk="leather"] .desk-area { border-radius:12px; border:1px solid #1f1207;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.9 0 0 0 0.55'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23l)'/%3E%3C/svg%3E") 0 0/300px 300px, radial-gradient(120% 100% at 30% 15%, #7a4b2a, #5a3519 65%, #45280f);
+  box-shadow:inset 0 0 0 9px #3d230e, inset 0 0 0 10px #ffffff14, inset 0 0 40px #0008, 0 6px 18px #0006; }
+.desk[data-desk="leather"] .desk-area::before { content:""; position:absolute; inset:14px; border:1.5px dashed #e8c79a8a; border-radius:6px; pointer-events:none; }
+/* wooden desk: long planks with grain; the wood you pick sets the color */
+.desk[data-desk^="wood"] .desk-area { border-radius:8px; border:1px solid #0008;
   background:
-    radial-gradient(circle at 30% 30%, #ffffff06 0 1px, transparent 1.5px) 0 0/5px 5px,
-    radial-gradient(circle at 70% 60%, #0000002a 0 1px, transparent 1.5px) 0 0/7px 7px,
-    radial-gradient(120% 100% at 30% 15%, #2a2a2e, #18181b 65%, #111113);
-  box-shadow:inset 0 0 0 9px #141416, inset 0 0 0 10px #ffffff10, inset 0 0 40px #000a, 0 6px 18px #0006; }
-.desk[data-desk="leather"] .desk-area::before { content:""; position:absolute; inset:14px; border:1.5px dashed #ffffff30; border-radius:6px; pointer-events:none; }
+    linear-gradient(#0000 0 calc(100% - 2px), #0000005c calc(100% - 2px)) 0 0/100% 110px,
+    repeating-linear-gradient(#ffffff0a 0 110px, #00000012 110px 220px, #0000 220px 330px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0025 0.07' numOctaves='4' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.5 0 0 0 0.92'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23w)'/%3E%3C/svg%3E") 0 0/600px 600px,
+    linear-gradient(90deg, #ffffff12, #0000 40%, #00000018),
+    var(--wood);
+  box-shadow:inset 0 0 40px #0006, 0 6px 18px #0006; }
+.desk[data-desk="wood-oak"] { --wood:#b4844f; } .desk[data-desk="wood-walnut"] { --wood:#5a3a24; } .desk[data-desk="wood-maple"] { --wood:#d8b27a; }
+.desk[data-desk="wood-cherry"] { --wood:#8c4128; } .desk[data-desk="wood-ebony"] { --wood:#2a201b; }
+.desk[data-desk^="wood"] .desk-empty { color:#fffd; text-shadow:0 1px 2px #000; }
 .desk[data-desk="slate"] .desk-empty, .desk[data-desk="leather"] .desk-empty { color:#ffffff90; }
 /* soft, real shadows on every textured background */
 .desk:not([data-desk="scatter"]) .desk-item { z-index:1; }
-.desk[data-desk="slate"] .desk-nb, .desk[data-desk="leather"] .desk-nb { border-color:transparent; border-left:0; border-right:0; border-bottom:0; }
-.desk[data-desk="slate"] .desk-nb[data-type="spiral"], .desk[data-desk="slate"] .desk-nb[data-type="comp"], .desk[data-desk="leather"] .desk-nb[data-type="spiral"], .desk[data-desk="leather"] .desk-nb[data-type="comp"] { border:0; }
-.desk[data-desk="slate"] .desk-nb[data-type="legal"], .desk[data-desk="leather"] .desk-nb[data-type="legal"] { border-top-color:#7b2f2a; }
-.desk[data-desk="slate"] .desk-nb[data-type="eng"], .desk[data-desk="leather"] .desk-nb[data-type="eng"] { border-top-color:#3f6b34; }
-.desk[data-desk="slate"] .desk-nb, .desk[data-desk="leather"] .desk-nb { box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 10px 16px 22px #000a; }
-.desk[data-desk="slate"] .desk-sticky, .desk[data-desk="leather"] .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
+.desk:not([data-desk="scatter"]) .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
 /* background picker */
 .desk-bg-btn { width:40px; padding:0; display:grid; place-items:center; }
 .desk-bg-sw { width:20px; height:20px; border:2px solid var(--poster-border); border-radius:4px; background:var(--poster-bg); }
 .desk[data-desk="mat"] .desk-bg-sw, .nb-swatch.bg-mat { background:linear-gradient(#ffffff30 1px, transparent 1px) 0 0/6px 6px, linear-gradient(90deg, #ffffff30 1px, transparent 1px) 0 0/6px 6px, #1f2b26; }
 .desk[data-desk="slate"] .desk-bg-sw, .nb-swatch.bg-slate { background:radial-gradient(circle at 30% 40%, #ffffff22, transparent 60%), #262c30; }
-.desk[data-desk="leather"] .desk-bg-sw, .nb-swatch.bg-leather { background:#18181b; box-shadow:inset 0 0 0 2px #18181b, inset 0 0 0 3px #ffffff40; }
+.desk[data-desk="leather"] .desk-bg-sw, .nb-swatch.bg-leather { background:#5a3519; box-shadow:inset 0 0 0 2px #3d230e, inset 0 0 0 3px #e8c79a80; }
+.desk[data-desk^="wood"] .desk-bg-sw, .nb-swatch.bg-wood { background:repeating-linear-gradient(#0000 0 6px, #0000003a 6px 7px), linear-gradient(100deg, #ffffff18, #0000 60%), var(--wood, #b4844f); }
+.nb-swatch.bg-wood[data-w="oak"] { --wood:#b4844f; } .nb-swatch.bg-wood[data-w="walnut"] { --wood:#5a3a24; } .nb-swatch.bg-wood[data-w="maple"] { --wood:#d8b27a; }
+.nb-swatch.bg-wood[data-w="cherry"] { --wood:#8c4128; } .nb-swatch.bg-wood[data-w="ebony"] { --wood:#2a201b; }
+.desk-wood-more { display:flex; align-items:center; gap:12px; width:100%; padding:8px 6px; border:2px solid transparent; background:transparent; color:inherit; text-align:left; font:600 15px/1.2 var(--poster-sans); cursor:pointer; }
+.desk-wood-more:hover { background:var(--poster-accent-soft); }
+.desk-wood-more small { display:block; margin-top:2px; font:500 11px/1.3 var(--poster-sans); color:var(--poster-text-soft); }
+.desk-wood-more .arrow { margin-left:auto; padding:0 4px; font:800 22px/1 var(--poster-sans); transition:transform .15s; }
+.desk-wood-more[aria-expanded="true"] .arrow { transform:rotate(90deg); }
+.desk-wood-more.on { border-color:var(--poster-border); }
+.desk-woods { display:grid; gap:2px; padding-left:20px; }
+.desk-woods[hidden] { display:none; }
+.desk-woods .nb-opt { padding:5px 6px; }
+.desk-woods .nb-swatch { width:28px; height:28px; }
 .nb-swatch.bg-none { background:var(--poster-bg); }
 .desk-bar .short { display:none; }
+.desk-bg-menu { max-height:calc(100dvh - 140px); overflow-y:auto; }
+
+/* trash can: bottom-left corner of the desk; drag things onto it */
+.desk-trash { position:absolute; z-index:20; left:calc(max(16px, env(safe-area-inset-left)) + var(--in)); bottom:var(--in); width:56px; height:56px; padding:0;
+  display:grid; place-items:center; border:2.5px solid var(--poster-border); border-radius:6px; background:var(--poster-card-bg); color:var(--poster-text);
+  box-shadow:3px 3px 0 var(--poster-border); cursor:pointer; transition:transform .15s, background .15s, color .15s; }
+.desk-trash svg, .trash-icons svg { width:36px; height:36px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; overflow:visible; }
+.desk-trash svg .f, .trash-icons svg .f { fill:currentColor; stroke:none; }
+.desk-trash svg .lid { transition:transform .2s; transform-box:view-box; transform-origin:8px 11px; }
+.desk-trash.hot { transform:scale(1.18); background:#E5251B; color:#fff; }
+.desk-trash.hot svg .lid { transform:rotate(-30deg) translate(-1px,-3px); }
+.desk-trash .dt-count { position:absolute; top:-9px; right:-9px; min-width:21px; height:21px; padding:0 5px; border-radius:11px; background:var(--poster-text); color:var(--poster-bg); font:700 11px/21px var(--poster-mono); text-align:center; }
+.desk-trash .dt-count:empty { display:none; }
+.desk-item.to-trash { scale:.82; opacity:.8; }
+.desk-sticky.crumple { background-image:linear-gradient(38deg, #0000 44%, #00000024 50%, #0000 56%), linear-gradient(-55deg, #0000 40%, #ffffff40 47%, #00000020 53%, #0000 60%), radial-gradient(circle at 35% 30%, #ffffff40, #0000 40%), radial-gradient(circle at 70% 75%, #0000, #00000030); }
+.trash-modal { max-width:460px; }
+.trash-hint { margin:-4px 0 14px; color:var(--poster-text-soft); font:500 13px/1.4 var(--poster-sans); }
+.trash-list { display:grid; grid-template-columns:minmax(0,1fr); gap:8px; margin-bottom:18px; }
+.trash-empty-msg { padding:18px; text-align:center; border:2px dashed var(--poster-border); font:600 12px/1.4 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.trash-row { display:flex; align-items:center; gap:10px; padding:8px; border:2px solid var(--poster-border); }
+.trash-row .nb-swatch, .trash-row .tr-sticky { width:30px; height:36px; flex-shrink:0; }
+.trash-row .tr-sticky { height:30px; background:var(--sc); border:1.5px solid #00000040; transform:rotate(-3deg); }
+.trash-row .tr-name { flex:1; min-width:0; font:600 15px/1.2 var(--poster-sans); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.trash-row .tr-name small { display:block; white-space:normal; margin-top:2px; font:500 11px/1.3 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.trash-row button { flex-shrink:0; }
+.trash-row .tr-back { padding:7px 10px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:700 13px/1 var(--poster-sans); cursor:pointer; }
+.trash-row .tr-del { width:32px; height:32px; border:0; background:transparent; color:var(--poster-danger); font:700 20px/1 var(--poster-sans); cursor:pointer; }
+.trash-row.confirm .tr-del { width:auto; padding:0 8px; background:var(--poster-danger); color:#fff; font-size:12px; }
+.trash-icons { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+.trash-icons button { display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 4px 8px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 11px/1.2 var(--poster-sans); cursor:pointer; }
+.trash-icons button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+#trashEmpty.confirm { background:var(--poster-danger); color:#fff; border-color:var(--poster-danger); }
 
 /* new-notebook form: pick a type */
 .nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
@@ -1022,6 +1090,10 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-mic-pos="side"] .nb-mic-note { bottom:24px; right:60px; }
 .nb-mic-note { position:absolute; z-index:9; right:22px; bottom:86px; max-width:min(300px, calc(100% - 44px)); padding:8px 10px; background:var(--poster-text); color:var(--poster-bg); font:500 13px/1.35 var(--poster-sans); }
 .nb-mic-note[hidden] { display:none; }
+/* the page can be taller than the screen now, so the mic stays put in the window's corner */
+.nb .nb-mic#nbMic { position:fixed; right:max(28px, calc((100vw - 900px) / 2 + 36px)); bottom:max(24px, calc(env(safe-area-inset-bottom) + 12px)); }
+.nb .nb-mic-note#nbMicNote { position:fixed; right:max(28px, calc((100vw - 900px) / 2 + 36px)); bottom:max(90px, calc(env(safe-area-inset-bottom) + 78px)); }
+.nb-text { overflow:hidden; }
 .nb-page { --line:32px; --ink:#1d2433; --paper:#ffffff; --rule:#c8d9f2; --margin:#f08a8a;
   position:absolute; inset:0 8px 8px 0; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); }
 .nb-head { flex-shrink:0; display:flex; align-items:baseline; justify-content:flex-end; gap:10px; padding:18px 22px 6px; }
@@ -1120,7 +1192,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 <nav class="site-nav" aria-label="Sections">
   <a class="nav-link" href="#homework" data-page="homework">Homework</a>
   <a class="nav-link" href="#schedule" data-page="schedule">Schedule</a>
-  <a class="nav-link" href="#notebook" data-page="notebook">Notebook</a>
+  <a class="nav-link" href="#notebook" data-page="notebook">Notebooks</a>
 </nav>
 <div class="page" id="page-homework">
 <div class="topbar">
@@ -1198,7 +1270,15 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
           <button type="button" class="nb-opt" role="menuitemradio" data-bg="scatter"><span class="nb-swatch bg-none"></span><span>None<small>Just the page</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-bg="mat"><span class="nb-swatch bg-mat"></span><span>Cutting mat<small>Green, with a grid and rulers</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-bg="slate"><span class="nb-swatch bg-slate"></span><span>Slate<small>Dark chalkboard, a little chalk dust</small></span></button>
-          <button type="button" class="nb-opt" role="menuitemradio" data-bg="leather"><span class="nb-swatch bg-leather"></span><span>Leather<small>Black desk pad with stitching</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-bg="leather"><span class="nb-swatch bg-leather"></span><span>Leather<small>Brown desk pad with stitching</small></span></button>
+          <button type="button" class="desk-wood-more" id="deskWoodMore" aria-expanded="false" aria-controls="deskWoods"><span class="nb-swatch bg-wood" data-w="oak"></span><span>Wooden desk<small>Pick a wood</small></span><span class="arrow" aria-hidden="true">&rsaquo;</span></button>
+          <div class="desk-woods" id="deskWoods" hidden>
+            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-oak"><span class="nb-swatch bg-wood" data-w="oak"></span><span>Oak</span></button>
+            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-walnut"><span class="nb-swatch bg-wood" data-w="walnut"></span><span>Walnut</span></button>
+            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-maple"><span class="nb-swatch bg-wood" data-w="maple"></span><span>Maple</span></button>
+            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-cherry"><span class="nb-swatch bg-wood" data-w="cherry"></span><span>Cherry</span></button>
+            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-ebony"><span class="nb-swatch bg-wood" data-w="ebony"></span><span>Ebony</span></button>
+          </div>
         </div>
       </div>
       <button type="button" class="sched-btn" id="deskTidy" title="Line everything up so nothing overlaps">Tidy<span class="long"> up</span></button>
@@ -1210,6 +1290,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <span class="nb-mic-icon" aria-hidden="true"></span><span class="nb-mic-label">Stop</span>
     </button>
     <div class="nb-mic-note desk-note" id="deskNote" role="status" hidden></div>
+    <button type="button" class="desk-trash" id="deskTrash" aria-label="Trash"><span class="dt-icon" aria-hidden="true"></span><span class="dt-count"></span></button>
   </div>
   <div class="nb" data-nb="spiral" hidden>
     <div class="nb-bar">
@@ -1229,7 +1310,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="eng"><span class="nb-swatch eng"></span><span>Engineering pad<small>Green grid, tear off each sheet</small></span></button>
           <div class="nb-menu-sep"></div>
           <button type="button" class="nb-act" id="nbRename">Rename notebook</button>
-          <button type="button" class="nb-act danger" id="nbDelete">Delete notebook</button>
+          <button type="button" class="nb-act danger" id="nbDelete">Move to trash</button>
         </div>
       </div>
     </div>
@@ -1238,10 +1319,23 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         <div class="nb-head"><span class="nb-label" id="nbLabel"></span><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
         <textarea class="nb-text" id="nbText" placeholder="Start writing…" aria-label="Notes for this day"></textarea>
       </div>
-      <button type="button" class="nb-mic" id="nbMic" aria-label="Dictate" aria-pressed="false">
-        <span class="nb-mic-icon" aria-hidden="true"></span><span class="nb-mic-label">Stop</span>
-      </button>
-      <div class="nb-mic-note" id="nbMicNote" role="status" hidden></div>
+    </div>
+    <button type="button" class="nb-mic" id="nbMic" aria-label="Dictate" aria-pressed="false">
+      <span class="nb-mic-icon" aria-hidden="true"></span><span class="nb-mic-label">Stop</span>
+    </button>
+    <div class="nb-mic-note" id="nbMicNote" role="status" hidden></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="trashModal">
+  <div class="modal trash-modal" role="dialog" aria-modal="true" aria-labelledby="trashTitle">
+    <h2 id="trashTitle">Trash</h2>
+    <p class="trash-hint">Things stay in here for 4 days, then they're deleted for good.</p>
+    <div class="trash-list" id="trashList"></div>
+    <div class="ev-field"><span>Trash can</span><div class="trash-icons" id="trashIcons"></div></div>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn secondary" id="trashEmpty">Empty trash</button>
+      <button type="button" class="modal-btn primary" id="trashDone">Done</button>
     </div>
   </div>
 </div>
@@ -1667,6 +1761,23 @@ function applyPalette(id, page) {
   document.documentElement.dataset.palette = id;
   // Saved so the <head> script can paint the right header before anything loads
   try { localStorage.setItem(page === "schedule" ? "posterPaletteVarsSchedule" : "posterPaletteVars", JSON.stringify([opt.light, opt.lightInk, opt.dark, opt.darkInk])); } catch(e) {}
+  if (typeof paintNav === "function") paintNav();
+}
+// Each nav sticker shows its own page's header color. Notebooks keeps its lilac (it uses Homework's color when open).
+function paletteOpt(id) { return customPalette(id) || PALETTE_OPTIONS.find(p => p.id === id) || PALETTE_OPTIONS[0]; }
+function paintNav() {
+  try { paintNavNow(); } catch(e) {}   // runs before the page's other bits are set up on first paint
+}
+function paintNavNow() {
+  const hw = paletteOpt(currentPaletteId), sc = paletteOpt(schedPaletteId || currentPaletteId), root = document.documentElement.style;
+  [["hw", hw], ["sc", sc]].forEach(([k, o]) => {
+    root.setProperty(`--nav-${k}-d`, o.light); root.setProperty(`--nav-${k}-di`, o.lightInk);
+    root.setProperty(`--nav-${k}-n`, o.dark); root.setProperty(`--nav-${k}-ni`, o.darkInk);
+  });
+  const page = (location.hash || "").slice(1), cur = page === "schedule" ? sc : hw;   // the open page's color
+  const others = { homework: [sc], schedule: [hw], notebook: [hw, sc] }[PAGES.includes(page) ? page : "homework"];
+  const twin = others.some(o => o.light.toUpperCase() === cur.light.toUpperCase());
+  document.querySelectorAll(".nav-link").forEach(a => a.classList.toggle("twin", twin && a.hasAttribute("aria-current")));
 }
 
 let currentPaletteId = getSavedPaletteId();
@@ -2205,6 +2316,7 @@ function showPage() {
   document.querySelectorAll(".nav-link").forEach(a => {
     if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
+  if (typeof paintNav === "function") paintNav();
 }
 window.addEventListener("hashchange", () => { showPage(); window.scrollTo(0, 0); });
 showPage();
@@ -2597,7 +2709,13 @@ function fitNotebook() {
   if (document.getElementById("page-notebook").hidden) return;
   if (!openNbId) { fitDesk(); return; }
   const top = body.getBoundingClientRect().top + window.scrollY;
-  body.style.height = Math.max(320, window.innerHeight - top - 12) + "px";
+  const screen = Math.max(320, window.innerHeight - top - 12);
+  const letter = Math.round((body.clientWidth - 8) * 11 / 8.5) + 8;   // a letter-size page, like Google Docs
+  // and taller still when the writing runs past the bottom of the page
+  nbText.style.flex = "none"; nbText.style.height = "0px";
+  const need = nbText.scrollHeight + nbText.offsetTop + 56;
+  nbText.style.height = ""; nbText.style.flex = "";
+  body.style.height = Math.max(screen, letter, need) + "px";
 }
 function fillNbPage(page, day) {
   const d = sParse(day), today = day === getTodayStr();
@@ -2746,6 +2864,8 @@ function saveNbPage() {
   nbStore("notebookPagesBy", nbAllPages);
   document.getElementById("nbSaved").textContent = text ? "Saved" : "";
 }
+let nbFitQueued = false;
+nbText.addEventListener("input", () => { if (!nbFitQueued) { nbFitQueued = true; requestAnimationFrame(() => { nbFitQueued = false; fitNotebook(); }); } });
 nbText.addEventListener("input", () => { document.getElementById("nbSaved").textContent = "Saving…"; clearTimeout(nbTimer); nbTimer = setTimeout(saveNbPage, 400); });
 function flipNb(n) { stopDictation(); saveNbPage(); nbDay = sAdd(nbDay, n); showNbPage(n); }
 
@@ -2766,7 +2886,7 @@ function setMicStyle(pos, icon) {
   const btn = document.getElementById("nbMic");
   btn.querySelector(".nb-mic-icon").innerHTML = MIC_ICONS[icon];
   if (pos === "bar") document.querySelector(".nb-bar .nb-menu-wrap").before(btn);
-  else document.getElementById("nbBody").appendChild(btn);
+  else nbEl.appendChild(btn);   // outside the page, so it can stay in the window corner while you scroll
 }
 setMicStyle("corner", "studio");   // chosen: bottom-right corner, square box
 
@@ -2866,10 +2986,18 @@ function placeDeskItems() {
     el.style.transform = `translate(${x}px, ${y}px) rotate(${item.r || 0}deg)`;
   });
 }
-function setDeskStyle(s) {
-  desk.dataset.desk = ["scatter", "mat", "slate", "leather"].includes(s) ? s : "mat";   // scatter = no background
-  try { localStorage.setItem("deskStyle", desk.dataset.desk); } catch(e) {}
+const DESK_BGS = ["scatter", "mat", "slate", "leather", "wood-oak", "wood-walnut", "wood-maple", "wood-cherry", "wood-ebony"];
+function paintBgMenu() {
   document.querySelectorAll("#deskBgMenu .nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.bg === desk.dataset.desk)));
+  const wood = desk.dataset.desk.startsWith("wood"), more = document.getElementById("deskWoodMore");
+  more.classList.toggle("on", wood);
+  if (wood) more.querySelector(".nb-swatch").dataset.w = desk.dataset.desk.slice(5);
+  if (wood) { document.getElementById("deskWoods").hidden = false; more.setAttribute("aria-expanded", "true"); }
+}
+function setDeskStyle(s) {
+  desk.dataset.desk = DESK_BGS.includes(s) ? s : "mat";   // scatter = no background
+  try { localStorage.setItem("deskStyle", desk.dataset.desk); } catch(e) {}
+  paintBgMenu();
   renderDesk();
 }
 function pageCount(id) { return Object.keys(nbAllPages[id] || {}).length; }
@@ -2909,7 +3037,15 @@ function renderDesk() {
         <textarea placeholder="Write a note…" aria-label="Sticky note">${sEsc(item.text)}</textarea><div class="ds-size" aria-hidden="true"></div>`;
       const ta = el.querySelector("textarea");
       // the text box grows with the writing; the empty space under it is for grabbing the note
-      const grow = () => { ta.style.height = "0px"; ta.style.height = Math.min(ta.scrollHeight + 2, el.clientHeight - 26) + "px"; ta.style.overflowY = ta.scrollHeight + 2 > el.clientHeight - 26 ? "auto" : "hidden"; };
+      // and the writing gets smaller when it would not fit (a small note, or a lot of words)
+      const grow = () => {
+        const room = el.clientHeight - el.querySelector(".ds-grip").offsetHeight - 4;
+        ta.style.fontSize = ""; let fs = parseFloat(getComputedStyle(ta).fontSize);
+        const fit = () => { ta.style.height = "0px"; return ta.scrollHeight + 2; };
+        while (fit() > room && fs > 9) { fs -= 1; ta.style.fontSize = fs + "px"; }
+        ta.style.height = Math.min(fit(), room) + "px"; ta.style.overflowY = fit() > room ? "auto" : "hidden";
+        ta.style.height = Math.min(ta.scrollHeight + 2, room) + "px";
+      };
       ta.addEventListener("input", grow); el._grow = grow;
       ta.addEventListener("focus", () => { lastStickyId = item.id; });
       // drag the corner to make the note bigger or smaller
@@ -2926,10 +3062,8 @@ function renderDesk() {
       ta.addEventListener("input", () => { item.text = ta.value; clearTimeout(t); t = setTimeout(() => nbStore("stickyNotes", stickies), 300); });
       el.querySelector(".ds-color").onclick = () => { item.color = next; nbStore("stickyNotes", stickies); renderDesk(); };
       const del = el.querySelector(".ds-del");
-      del.onclick = () => {
-        if (item.text.trim() && !el.classList.contains("confirm")) { el.classList.add("confirm"); del.textContent = "Delete?"; setTimeout(() => { el.classList.remove("confirm"); del.innerHTML = "&times;"; }, 2500); return; }
-        stickies = stickies.filter(s => s !== item); nbStore("stickyNotes", stickies); renderDesk();
-      };
+      del.onclick = () => throwAway(el);   // into the trash (you can get it back for 4 days)
+      del.setAttribute("aria-label", "Move sticky note to the trash");
     }
     el._item = item; el._kind = kind;
     if (grid) {
@@ -2966,10 +3100,13 @@ function makeDraggable(el) {
       }
       item.x = Math.max(0, Math.min(1, ox + dx / fw)); item.y = Math.max(0, Math.min(1, oy + dy / fh));
       el.style.transform = `translate(${item.x * fw}px, ${item.y * fh}px) rotate(${item.r || 0}deg)`;
+      const over = overTrash(ev); trashBtn.classList.toggle("hot", over); el.classList.toggle("to-trash", over);
     };
-    const up = () => {
+    const up = ev => {
       el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up);
-      el.classList.remove("dragging");
+      el.classList.remove("dragging"); trashBtn.classList.remove("hot");
+      if (moved && ev.type === "pointerup" && overTrash(ev)) { item.x = ox; item.y = oy; throwAway(el); return; }
+      el.classList.remove("to-trash");
       if (moved) nbStore(el._kind === "nb" ? "notebooks" : "stickyNotes", el._kind === "nb" ? notebooks : stickies);
       else if (el._kind === "nb") openNotebook(item.id);
       else { const ta = el.querySelector("textarea"); ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; }   // tap a note to write in it
@@ -2982,7 +3119,7 @@ function freeSpot() {
   const taken = [...notebooks, ...stickies].map(i => [i.x, i.y]);
   let best = [.5, .5], bestD = -1;
   for (let gy = 0; gy <= 3; gy++) for (let gx = 0; gx <= 4; gx++) {
-    if (gx >= 3 && gy === 3) continue;   // bottom-right corner is where the mic sits
+    if ((gx >= 3 || gx === 0) && gy === 3) continue;   // bottom corners: the mic (right) and the trash (left)
     const p = [gx / 4, gy / 3], d = taken.length ? Math.min(...taken.map(([x, y]) => Math.hypot((x - p[0]) * 1.4, y - p[1]))) : 1;
     if (d > bestD + 1e-6) { best = p; bestD = d; }
   }
@@ -2996,6 +3133,126 @@ function addSticky() {
   const el = [...deskArea.querySelectorAll(".desk-sticky")].find(x => x._item === s);
   if (el) el.querySelector("textarea").focus();
 }
+/* ---- trash: drop a notebook or sticky note on the can. It stays in there 4 days, then it's deleted for good ---- */
+const TRASH_DAYS = 4, trashBtn = document.getElementById("deskTrash"), trashModal = document.getElementById("trashModal");
+let trash = nbLoad("deskTrash", []);
+const TRASH_ICONS = {
+  can: { label: "Metal can", svg: `<svg viewBox="0 0 40 40"><g class="lid"><path d="M7 11.5h26"/><path d="M16 11V8.2c0-.7.5-1.2 1.2-1.2h5.6c.7 0 1.2.5 1.2 1.2V11"/></g><path d="M9.5 14.5h21l-1.7 20.2a2 2 0 0 1-2 1.8H13.2a2 2 0 0 1-2-1.8z"/><path d="M15.5 19v13M20 19v13M24.5 19v13"/></svg>` },
+  basket: { label: "Mesh basket", svg: `<svg viewBox="0 0 40 40"><ellipse cx="20" cy="10.5" rx="13" ry="3"/><path d="M7 10.5l3 23.5c.2 1.4 4.6 2.5 10 2.5s9.8-1.1 10-2.5l3-23.5"/><path d="M12 14l13 19M18 13.6l11 16M25 13.4l5.5 8M28 13.6L15 33M22 13.4l-11 16M15 13.4l-5.5 8" stroke-width="1.1" opacity=".75"/><path class="lid" d="M0 0"/></svg>` },
+  bin: { label: "Office bin", svg: `<svg viewBox="0 0 40 40"><path class="f" d="M15 11.8c-1.5-3.6 1.6-6.3 4.8-5.4 2.3-2.4 6.6-.6 6 2.6 2.6 1 1.6 3.4 1.2 2.8z" opacity=".55"/><path d="M8 12h24"/><path d="M9.5 12l2.3 22.4a2 2 0 0 0 2 1.6h12.4a2 2 0 0 0 2-1.6L30.5 12"/><path d="M11 17.5h18" stroke-width="1.4"/><path class="lid" d="M0 0"/></svg>` },
+  recycle: { label: "Recycling", svg: `<svg viewBox="0 0 40 40"><g class="lid"><path d="M7 11h26v-2.5a1.5 1.5 0 0 0-1.5-1.5h-23A1.5 1.5 0 0 0 7 8.5z"/></g><path d="M9 14h22v20.5a1.5 1.5 0 0 1-1.5 1.5h-19A1.5 1.5 0 0 1 9 34.5z"/><path d="M17.6 21.3l2.4-3.8 2.4 3.8M23.6 24l1.9 3.4h-4.3M16.4 28.3h-3l2.1-3.6M20 17.5l1.9 3.2M14.5 26.3l1.8-3.1M25.5 27.4l-3.4.1" stroke-width="1.5"/></svg>` },
+};
+let trashIcon = "can"; try { trashIcon = localStorage.getItem("trashIcon") || "can"; } catch(e) {}
+if (!TRASH_ICONS[trashIcon]) trashIcon = "can";
+function paintTrash() {
+  trashBtn.querySelector(".dt-icon").innerHTML = TRASH_ICONS[trashIcon].svg;
+  trashBtn.querySelector(".dt-count").textContent = trash.length || "";
+  trashBtn.setAttribute("aria-label", trash.length ? `Trash, ${trash.length} item${trash.length === 1 ? "" : "s"}` : "Trash (empty)");
+}
+function purgeTrash() {
+  const keep = trash.filter(e => Date.now() - e.t < TRASH_DAYS * 864e5);
+  if (keep.length === trash.length) return;
+  trash.filter(e => !keep.includes(e) && e.kind === "nb").forEach(e => { delete nbAllPages[e.item.id]; });
+  trash = keep; nbStore("deskTrash", trash); nbStore("notebookPagesBy", nbAllPages);
+}
+function moveToTrash(kind, item, quiet) {
+  if (kind === "nb") { notebooks = notebooks.filter(n => n !== item); nbStore("notebooks", notebooks); }
+  else { stickies = stickies.filter(s => s !== item); nbStore("stickyNotes", stickies); if (lastStickyId === item.id) lastStickyId = null; }
+  trash.push({ kind, item, t: Date.now() }); nbStore("deskTrash", trash);
+  paintTrash();
+  if (!quiet) renderDesk();
+}
+const overTrash = ev => { const r = trashBtn.getBoundingClientRect(), pad = 16; return ev.clientX > r.left - pad && ev.clientX < r.right + pad && ev.clientY > r.top - pad && ev.clientY < r.bottom + pad; };
+// sticky notes crumple into a ball; notebooks tip over and fall in
+const ring = (n, fn) => "polygon(" + Array.from({ length: n }, (_, i) => { const a = i / n * 2 * Math.PI, [rx, ry] = fn(a, i); return `${(50 + rx * Math.cos(a)).toFixed(1)}% ${(50 + ry * Math.sin(a)).toFixed(1)}%`; }).join(", ") + ")";
+const SQUARE = ring(16, a => { const m = Math.max(Math.abs(Math.cos(a)), Math.abs(Math.sin(a))); return [50 / m, 50 / m]; });
+const CRUMPLE1 = ring(16, (a, i) => { const m = Math.max(Math.abs(Math.cos(a)), Math.abs(Math.sin(a))), k = [.86, .66, .8, .6, .9, .7, .78, .62][i % 8]; return [50 * k / m, 50 * k / m]; });
+const BALL = ring(16, (a, i) => { const r = [36, 30, 34, 28, 37, 31, 33, 29][i % 8]; return [r, r]; });
+function throwAway(el) {
+  const item = el._item, kind = el._kind;
+  const tr = trashBtn.getBoundingClientRect(), ar = deskArea.getBoundingClientRect();
+  const m = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(el.style.transform) || [0, 0, 0], x = +m[1], y = +m[2], r = item.r || 0;
+  const tx = tr.left + tr.width / 2 - ar.left - el.offsetWidth / 2, ty = tr.top + tr.height / 2 - ar.top - el.offsetHeight / 2;
+  el.classList.remove("to-trash", "dragging"); el.style.zIndex = 999; el.style.pointerEvents = "none";
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !el.animate) { moveToTrash(kind, item); return; }
+  let frames, ms;
+  if (kind === "sticky") {
+    el.classList.add("crumple"); el.querySelectorAll("textarea, .ds-grip, .ds-size").forEach(c => c.style.visibility = "hidden");
+    ms = 950;
+    frames = [
+      { transform: `translate(${x}px, ${y}px) rotate(${r}deg) scale(1)`, clipPath: SQUARE, offset: 0 },
+      { transform: `translate(${x}px, ${y}px) rotate(${r + 18}deg) scale(.78)`, clipPath: CRUMPLE1, filter: "brightness(.95)", offset: .28 },
+      { transform: `translate(${x}px, ${y - 8}px) rotate(${r + 110}deg) scale(.42)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", offset: .5 },
+      { transform: `translate(${(x + tx) / 2}px, ${Math.min(y, ty) - 70}px) rotate(${r + 230}deg) scale(.36)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", offset: .74 },
+      { transform: `translate(${tx}px, ${ty}px) rotate(${r + 330}deg) scale(.2)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", opacity: .2, offset: 1 },
+    ];
+  } else {
+    ms = 800;
+    frames = [
+      { transform: `translate(${x}px, ${y}px) rotate(${r}deg) scale(1)`, offset: 0 },
+      { transform: `translate(${x}px, ${y - 16}px) rotate(${r - 10}deg) scale(1.04)`, offset: .2 },
+      { transform: `translate(${(x + tx) / 2}px, ${Math.min(y, ty) - 60}px) rotate(${r + 35}deg) scale(.55)`, offset: .62 },
+      { transform: `translate(${tx}px, ${ty}px) rotate(${r + 85}deg) scale(.12)`, opacity: .15, offset: 1 },
+    ];
+  }
+  trashBtn.classList.add("hot");
+  const anim = el.animate(frames, { duration: ms, easing: "cubic-bezier(.45,0,.55,1)", fill: "forwards" });
+  anim.onfinish = () => {
+    trashBtn.classList.remove("hot");
+    moveToTrash(kind, item);
+    trashBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.16) rotate(-7deg)" }, { transform: "scale(.94) rotate(3deg)" }, { transform: "scale(1)" }], { duration: 420, easing: "ease-out" });
+  };
+}
+function renderTrash() {
+  const list = document.getElementById("trashList");
+  const left = e => { const d = Math.ceil((e.t + TRASH_DAYS * 864e5 - Date.now()) / 864e5); return d <= 1 ? "Deleted within a day" : `${d} days left`; };
+  list.innerHTML = trash.length ? trash.slice().reverse().map(e => {
+    const i = trash.indexOf(e), it = e.item;
+    const thumb = e.kind === "nb" ? `<span class="nb-swatch ${it.type}"></span>` : `<span class="tr-sticky" style="--sc:${it.color}"></span>`;
+    const name = e.kind === "nb" ? sEsc(it.name) : (sEsc((it.text || "").trim().split("\n")[0]) || "Empty sticky note");
+    const what = e.kind === "nb" ? `Notebook · ${pageCount(it.id)} page${pageCount(it.id) === 1 ? "" : "s"}` : "Sticky note";
+    return `<div class="trash-row" data-i="${i}">${thumb}<span class="tr-name">${name}<small>${what} · ${left(e)}</small></span>
+      <button type="button" class="tr-back" data-back="${i}">Put back</button><button type="button" class="tr-del" data-del="${i}" aria-label="Delete for good">&times;</button></div>`;
+  }).join("") : `<div class="trash-empty-msg">The trash is empty.<br>Drag a notebook or sticky note onto the can.</div>`;
+  document.getElementById("trashEmpty").disabled = !trash.length;
+  document.getElementById("trashIcons").innerHTML = Object.entries(TRASH_ICONS).map(([k, v]) =>
+    `<button type="button" data-icon="${k}" aria-pressed="${k === trashIcon}">${v.svg}${v.label}</button>`).join("");
+}
+function deleteForGood(entries) {
+  entries.forEach(e => { if (e.kind === "nb") delete nbAllPages[e.item.id]; });
+  trash = trash.filter(e => !entries.includes(e));
+  nbStore("deskTrash", trash); nbStore("notebookPagesBy", nbAllPages); paintTrash(); renderTrash();
+}
+trashBtn.onclick = () => { purgeTrash(); paintTrash(); renderTrash(); trashModal.classList.add("open"); };
+const closeTrash = () => { trashModal.classList.remove("open"); const b = document.getElementById("trashEmpty"); b.classList.remove("confirm"); b.textContent = "Empty trash"; };
+document.getElementById("trashDone").onclick = closeTrash;
+trashModal.addEventListener("click", e => {
+  if (e.target === trashModal) { closeTrash(); return; }
+  const back = e.target.closest("[data-back]"), del = e.target.closest("[data-del]"), icon = e.target.closest("[data-icon]");
+  if (back) {
+    const entry = trash[+back.dataset.back]; if (!entry) return;
+    const [x, y] = freeSpot(); Object.assign(entry.item, { x, y, z: Date.now(), loose: null });
+    (entry.kind === "nb" ? notebooks : stickies).push(entry.item);
+    nbStore(entry.kind === "nb" ? "notebooks" : "stickyNotes", entry.kind === "nb" ? notebooks : stickies);
+    trash = trash.filter(t => t !== entry); nbStore("deskTrash", trash);
+    paintTrash(); renderTrash(); renderDesk();
+  } else if (del) {
+    const row = del.closest(".trash-row"), entry = trash[+del.dataset.del];
+    if (!row.classList.contains("confirm")) { row.classList.add("confirm"); del.textContent = "Delete"; setTimeout(() => { if (row.isConnected) { row.classList.remove("confirm"); del.innerHTML = "&times;"; } }, 2500); return; }
+    deleteForGood([entry]);
+  } else if (icon) {
+    trashIcon = icon.dataset.icon; try { localStorage.setItem("trashIcon", trashIcon); } catch(err) {}
+    paintTrash(); renderTrash();
+  }
+});
+document.getElementById("trashEmpty").onclick = e => {
+  const b = e.currentTarget;
+  if (!b.classList.contains("confirm")) { b.classList.add("confirm"); b.textContent = "Tap again to delete all"; setTimeout(() => { b.classList.remove("confirm"); b.textContent = "Empty trash"; }, 3000); return; }
+  b.classList.remove("confirm"); b.textContent = "Empty trash"; deleteForGood(trash.slice());
+};
+document.addEventListener("keydown", e => { if (e.key === "Escape" && trashModal.classList.contains("open")) closeTrash(); });
+purgeTrash(); paintTrash();
+
 // Desk mic: talks into the sticky note you were last writing in, or starts a new one
 let lastStickyId = null;
 const deskMic = document.getElementById("deskMic");
@@ -3119,19 +3376,16 @@ document.getElementById("newNbForm").addEventListener("submit", e => {
 document.getElementById("nbRename").onclick = e => { e.stopPropagation(); toggleNbMenu(false); openNewNb(true); };
 document.getElementById("nbDelete").onclick = e => {
   e.stopPropagation();
-  const b = e.currentTarget;
-  if (!b.classList.contains("confirm")) { b.classList.add("confirm"); b.textContent = "Tap again to delete (pages too)"; setTimeout(() => { b.classList.remove("confirm"); b.textContent = "Delete notebook"; }, 3000); return; }
-  b.classList.remove("confirm"); b.textContent = "Delete notebook";
-  const id = openNbId;
-  notebooks = notebooks.filter(n => n.id !== id); delete nbAllPages[id];
-  nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
-  openNbId = null; closeNotebook();
+  const cur = notebooks.find(n => n.id === openNbId);
+  toggleNbMenu(false); saveNbPage(); openNbId = null;
+  if (cur) moveToTrash("nb", cur, true);
+  closeNotebook();
 };
 
 // Start where you left off: the notebook you had open, or the desk
 { let s = "mat"; try { s = localStorage.getItem("deskStyle") || "mat"; } catch(e) {}
-  desk.dataset.desk = ["scatter", "mat", "slate", "leather"].includes(s) ? s : "mat";
-  document.querySelectorAll("#deskBgMenu .nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.bg === desk.dataset.desk))); }
+  desk.dataset.desk = DESK_BGS.includes(s) ? s : "mat";
+  paintBgMenu(); }
 { const btn = document.getElementById("deskBgBtn"), menu = document.getElementById("deskBgMenu");
   const show = open => {
     menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
@@ -3142,7 +3396,15 @@ document.getElementById("nbDelete").onclick = e => {
     }
   };
   btn.onclick = e => { e.stopPropagation(); show(menu.hidden); };
-  menu.addEventListener("click", e => { e.stopPropagation(); const o = e.target.closest("[data-bg]"); if (o) { setDeskStyle(o.dataset.bg); show(false); } });
+  menu.addEventListener("click", e => {
+    e.stopPropagation();
+    const more = e.target.closest("#deskWoodMore");
+    if (more) {   // the arrow opens and closes the list of woods
+      const list = document.getElementById("deskWoods"); list.hidden = !list.hidden;
+      more.setAttribute("aria-expanded", String(!list.hidden)); return;
+    }
+    const o = e.target.closest("[data-bg]"); if (o) { setDeskStyle(o.dataset.bg); show(false); }
+  });
   document.addEventListener("click", () => { if (!menu.hidden) show(false); }); }
 { let last = null; try { last = localStorage.getItem("openNotebook"); } catch(e) {}
   if (last && notebooks.some(n => n.id === last)) openNotebook(last); else { nbEl.hidden = true; renderDesk(); requestAnimationFrame(fitNotebook); } }
