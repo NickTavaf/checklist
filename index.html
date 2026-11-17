@@ -566,6 +566,12 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .sched-views { order:5; } .sb-space2 { order:6; } .sb-today { order:7; } .sched-toggle { order:8; } .sched-add { order:9; }
 .sched-bar .sb-prev { margin-right:-4px; } .sched-bar .sb-next { margin-left:-4px; }
 
+/* wide screens: the view switch is pinned to the middle, so a longer or shorter title never moves it */
+@media (min-width:900px) {
+  .sched-bar { position:relative; }
+  .sched-views { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); }
+  .sched-title { max-width:calc(50% - 190px); }
+}
 @media (max-width:899px) {
   .sb-break { display:block; order:5; }
   .sched-add { order:4; margin-left:auto; }
