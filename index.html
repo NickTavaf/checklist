@@ -563,7 +563,12 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .sched-toggle .short { display:none; }
 
 .sb-prev { order:1; } .sched-title { order:2; } .sb-next { order:3; } .sb-space { order:4; }
-.sched-views { order:5; } .sb-space2 { order:6; } .sb-today { order:7; } .sched-toggle { order:8; } .sched-add { order:9; }
+.sched-views { order:5; } .sb-space2 { order:6; } .sb-today { order:7; } .sched-toggle { order:8; } .sched-add { order:9; } .sched-menu-wrap { order:10; }
+/* ☰ opens the same Customize panel as the Homework page (header color + class colors color the calendar too) */
+.sched-menu-wrap { position:relative; }
+.sched-menu-btn { width:36px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+.sched-menu-btn span { display:block; width:16px; height:2px; background:currentColor; }
+.sched-menu-wrap .customize-panel { top:calc(100% + 8px); right:0; text-align:left; text-transform:none; }
 .sched-bar .sb-prev { margin-right:-4px; } .sched-bar .sb-next { margin-left:-4px; }
 
 /* wide screens: the view switch is pinned to the middle, so a longer or shorter title never moves it */
@@ -574,7 +579,7 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 }
 @media (max-width:899px) {
   .sb-break { display:block; order:5; }
-  .sched-add { order:4; margin-left:auto; }
+  .sched-add { order:4; margin-left:auto; } .sched-menu-wrap { order:4; }
   .sb-space, .sb-space2 { display:none; }
   .sched-views { order:6; } .sb-today { order:7; margin-left:auto; } .sched-toggle { order:8; }
 }
@@ -582,6 +587,7 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   .sched-bar { gap:8px; margin-bottom:10px; }
   .sched-title { font-size:26px; }
   .sched-btn { min-height:32px; padding:4px 8px; font-size:14px; }
+  .sched-menu-btn { width:32px; min-width:32px; padding:0; }
   .sched-seg button { min-height:30px; padding:3px 10px; font-size:14px; }
   .sched-toggle { min-height:32px; padding:3px 8px; gap:6px; }
   .sched-toggle .long { display:none; }
@@ -776,6 +782,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   padding:0 22px 22px; font:400 17px/var(--line) var(--poster-sans); background-attachment:local; }
 .nb-text:focus-visible { outline:none; }
 .nb-text::placeholder { color:inherit; opacity:.35; }
+/* the back of a page while it peels over (see nbPeel) */
+.nb-flap { position:absolute; z-index:6; pointer-events:none; filter:drop-shadow(-6px 6px 10px #0005); }
+.nb-flap > div { position:absolute; inset:0; transform-origin:0 0; }
 /* the page that's turning (a copy laid on top while it animates) */
 .nb-turn { z-index:5; pointer-events:none; backface-visibility:hidden; will-change:transform; }
 .nb-turn::selection { background:transparent; }
@@ -791,14 +800,6 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-nb="spiral"] .nb-date { font:700 30px/1 "Caveat", cursive; text-transform:none; }
 .nb[data-nb="spiral"] .nb-text { padding-left:66px; font:500 24px/var(--line) "Caveat", cursive;
   background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
-.nb[data-nb="spiral"] .nb-turn { transform-origin:0 50%; }
-.nb[data-nb="spiral"] .nb-turn.go-next { animation:spiralOut .62s cubic-bezier(.45,.05,.35,1) forwards; }
-.nb[data-nb="spiral"] .nb-turn.go-prev { animation:spiralOut .62s cubic-bezier(.45,.05,.35,1) reverse forwards; }
-@keyframes spiralOut {
-  0%   { transform:rotateY(0); box-shadow:4px 4px 0 var(--poster-border); filter:brightness(1); }
-  45%  { filter:brightness(.92); box-shadow:-30px 10px 40px #0004; }
-  100% { transform:rotateY(-178deg); box-shadow:none; filter:brightness(.8); }
-}
 
 /* ---- 2. Legal pad: yellow, blue rules, double red margin; pages flip up over the glued top ---- */
 .nb[data-nb="legal"] .nb-page { --paper:#FFF4A3; --ink:#1f2a3a; --rule:#8fb3dc; --margin:#e0605a; box-shadow:4px 6px 0 var(--poster-border); }
@@ -810,36 +811,22 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-nb="legal"] .nb-date { font:600 20px/1 var(--poster-mono); letter-spacing:-.02em; }
 .nb[data-nb="legal"] .nb-text { padding-left:84px; font:400 16px/var(--line) var(--poster-sans);
   background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
-.nb[data-nb="legal"] .nb-turn { transform-origin:50% 0; }
-.nb[data-nb="legal"] .nb-turn.go-next { animation:legalUp .6s cubic-bezier(.5,0,.3,1) forwards; }
-.nb[data-nb="legal"] .nb-turn.go-prev { animation:legalUp .6s cubic-bezier(.5,0,.3,1) reverse forwards; }
-@keyframes legalUp {
-  0%   { transform:rotateX(0); filter:brightness(1); }
-  50%  { filter:brightness(.9); box-shadow:0 -20px 40px #0003; }
-  100% { transform:rotateX(178deg); filter:brightness(.75); box-shadow:none; }
-}
 
-/* ---- 3. Composition book: marbled cover around the page, college rule, DATE line; turns like a book ---- */
-.nb[data-nb="comp"] .nb-body { padding:0 8px 8px 0; }
-.nb[data-nb="comp"] .nb-page { --line:28px; --rule:#a9c4e8; --margin:#e57373; border:12px solid #111; border-left-width:16px;
-  border-image:repeating-conic-gradient(#111 0 12deg, #f2f2f2 12deg 16deg, #111 16deg 33deg, #cfcfcf 33deg 36deg) 12; box-shadow:4px 4px 0 var(--poster-border); }
-.nb[data-nb="comp"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:56px; width:1.5px; background:var(--margin); }
-.nb[data-nb="comp"] .nb-head { justify-content:space-between; align-items:flex-end; padding:16px 18px 8px 70px; }
-.nb[data-nb="comp"] .nb-label { display:flex; align-items:baseline; gap:8px; flex:1; max-width:280px; font:600 11px/1 var(--poster-mono); letter-spacing:.08em; color:#555; }
-.nb[data-nb="comp"] .nb-label b { flex:1; border-bottom:1.5px solid #555; padding:0 4px 2px; font:700 22px/1 "Caveat", cursive; color:var(--ink); letter-spacing:0; }
-.nb[data-nb="comp"] .nb-date { display:none; }
-.nb[data-nb="comp"] .nb-dow { font:700 20px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; }
-.nb[data-nb="comp"] .nb-text { padding-left:70px; font:500 22px/var(--line) "Caveat", cursive;
+/* ---- 3. Composition book: black-and-white marbled cover showing around the page, black cloth tape
+   spine with stitching, wide-ruled white page with a pink margin and a DATE line; turns from the bottom corner ---- */
+.nb[data-nb="comp"] .nb-body { padding:10px 12px 12px 10px; background:#111 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.07 0.05' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -40 0 0 0 20.2'/%3E%3C/filter%3E%3Crect width='300' height='300' fill='%23f4f4f0'/%3E%3Crect width='300' height='300' filter='url(%23m)'/%3E%3C/svg%3E") 0 0/300px 300px; box-shadow:4px 4px 0 var(--poster-border); margin-right:8px; }
+.nb[data-nb="comp"] .nb-body::before { content:""; position:absolute; z-index:6; top:0; bottom:0; left:0; width:30px; background:#0d0d0d;
+  box-shadow:inset -3px 0 4px #0008; }
+.nb[data-nb="comp"] .nb-body::after { content:""; position:absolute; z-index:7; top:6px; bottom:6px; left:21px; width:2px;
+  background:repeating-linear-gradient(#777 0 5px, transparent 5px 11px); }
+.nb[data-nb="comp"] .nb-page { --line:30px; --rule:#9ec0e6; --margin:#f2a0a8; inset:10px 12px 12px 26px; box-shadow:2px 2px 0 #0003; }
+.nb[data-nb="comp"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:54px; width:1.5px; background:var(--margin); }
+.nb[data-nb="comp"] .nb-head { justify-content:flex-end; align-items:flex-end; padding:20px 20px 10px 66px; border-bottom:1.5px solid var(--rule); }
+.nb[data-nb="comp"] .nb-label { display:flex; align-items:baseline; gap:8px; width:min(260px, 100%); font:600 11px/1 var(--poster-sans); letter-spacing:.1em; text-transform:uppercase; color:#666; }
+.nb[data-nb="comp"] .nb-label b { flex:1; border-bottom:1.5px solid #666; padding:0 4px 2px; font:700 22px/1 "Caveat", cursive; color:var(--ink); letter-spacing:0; text-transform:none; }
+.nb[data-nb="comp"] .nb-date, .nb[data-nb="comp"] .nb-dow { display:none; }
+.nb[data-nb="comp"] .nb-text { padding:0 16px 16px 66px; font:500 23px/var(--line) "Caveat", cursive;
   background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
-.nb[data-nb="comp"] .nb-turn { transform-origin:0 50%; }
-.nb[data-nb="comp"] .nb-turn.go-next { animation:compTurn .8s cubic-bezier(.55,.1,.3,1) forwards; }
-.nb[data-nb="comp"] .nb-turn.go-prev { animation:compTurn .8s cubic-bezier(.55,.1,.3,1) reverse forwards; }
-@keyframes compTurn {
-  0%   { transform:rotateY(0) skewY(0); filter:brightness(1); }
-  30%  { transform:rotateY(-40deg) skewY(-2deg); filter:brightness(.97); box-shadow:-20px 0 40px #0003; }
-  70%  { transform:rotateY(-140deg) skewY(2deg); filter:brightness(.85); }
-  100% { transform:rotateY(-180deg) skewY(0); filter:brightness(.8); box-shadow:none; }
-}
 
 /* ---- 4. Engineering pad: pale green grid, DATE / PAGE header boxes; the sheet tears off ---- */
 .nb[data-nb="eng"] .nb-page { --line:24px; --paper:#EAF4E2; --ink:#1f3324; border-top:4px solid #2f5d34; box-shadow:4px 4px 0 var(--poster-border); }
@@ -849,9 +836,10 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-nb="eng"] .nb-label b { display:block; margin-top:4px; font:600 18px/1 var(--poster-mono); color:var(--ink); letter-spacing:-.02em; }
 .nb[data-nb="eng"] .nb-dow { order:-1; display:flex; flex-direction:column; justify-content:center; font:600 10px/1.2 var(--poster-mono); opacity:1; color:#4b6b4f; }
 .nb[data-nb="eng"] .nb-date { order:-1; font:600 18px/1 var(--poster-mono); letter-spacing:-.02em; display:flex; align-items:center; }
-.nb[data-nb="eng"] .nb-text { padding:12px 24px 24px; font:500 15px/var(--line) var(--poster-mono); text-transform:uppercase;
+.nb[data-nb="eng"] .nb-text { padding:0 24px 24px; font:500 14px/var(--line) var(--poster-mono); text-transform:uppercase; background-position:0 0;
   background-image:linear-gradient(#c6dcba 1px, transparent 1px), linear-gradient(90deg, #c6dcba 1px, transparent 1px), linear-gradient(#a8c79a 1px, transparent 1px), linear-gradient(90deg, #a8c79a 1px, transparent 1px);
   background-size:var(--line) var(--line), var(--line) var(--line), calc(var(--line) * 5) calc(var(--line) * 5), calc(var(--line) * 5) calc(var(--line) * 5); }
+.nb[data-nb="eng"] .nb-text::placeholder { text-transform:uppercase; }
 .nb[data-nb="eng"] .nb-turn { transform-origin:50% 0; }
 .nb[data-nb="eng"] .nb-turn.go-next { animation:engTear .7s cubic-bezier(.5,0,.75,0) forwards; }
 .nb[data-nb="eng"] .nb-turn.go-prev { animation:engTear .55s cubic-bezier(.25,1,.5,1) reverse forwards; }
@@ -868,8 +856,8 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .nb[data-nb="spiral"] .nb-text { padding-left:40px; padding-right:12px; }
   .nb[data-nb="legal"] .nb-page::before { left:36px; } .nb[data-nb="legal"] .nb-page::after { left:41px; }
   .nb[data-nb="legal"] .nb-text { padding-left:52px; padding-right:12px; }
-  .nb[data-nb="comp"] .nb-page::after { left:40px; }
-  .nb[data-nb="comp"] .nb-head { padding-left:48px; }
+  .nb[data-nb="comp"] .nb-page::after { left:38px; }
+  .nb[data-nb="comp"] .nb-head { padding-left:48px; padding-right:12px; }
   .nb[data-nb="comp"] .nb-text { padding-left:48px; padding-right:10px; }
   .nb[data-nb="eng"] .nb-head > * { padding:8px 10px; }
   .nb-head { padding-left:12px; padding-right:12px; }
@@ -942,6 +930,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         <span class="sb-space2" aria-hidden="true"></span>
         <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span class="long">Show assignments</span><span class="short">Homework</span></button>
         <button type="button" class="sched-btn sched-add" id="schedAdd">+<span class="long"> Add</span></button>
+        <div class="sched-menu-wrap"><button type="button" class="sched-btn sched-menu-btn" id="schedMenuBtn" aria-label="Customize colors" aria-expanded="false"><span></span><span></span><span></span></button></div>
       </div>
     </div>
     <div id="schedBody"></div>
@@ -1422,12 +1411,27 @@ hamburgerBtn.addEventListener("click", (e) => {
   if (isOpen) renderCustomizePanel();
   hamburgerBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 });
+// The Schedule page's ☰ opens the same panel, moved next to that button while it's open
+const customizeHome = customizePanel.parentElement;
+const schedMenuBtn = document.getElementById("schedMenuBtn");
+schedMenuBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const here = customizePanel.parentElement === schedMenuBtn.parentElement;
+  const isOpen = !(here && customizePanel.classList.contains("open"));
+  if (isOpen) { schedMenuBtn.parentElement.appendChild(customizePanel); renderCustomizePanel(); }
+  customizePanel.classList.toggle("open", isOpen);
+  schedMenuBtn.setAttribute("aria-expanded", String(isOpen));
+});
+hamburgerBtn.addEventListener("click", () => {
+  if (customizePanel.parentElement !== customizeHome) { customizeHome.appendChild(customizePanel); customizePanel.classList.add("open"); renderCustomizePanel(); hamburgerBtn.setAttribute("aria-expanded", "true"); }
+});
 // Clicks inside the panel (like picking a swatch) shouldn't close it
 customizePanel.addEventListener("click", (e) => e.stopPropagation());
 document.addEventListener("click", (e) => {
   if (!customizePanel.contains(e.target) && e.target !== hamburgerBtn) {
     customizePanel.classList.remove("open");
     hamburgerBtn.setAttribute("aria-expanded", "false");
+    schedMenuBtn.setAttribute("aria-expanded", "false");
   }
 });
 
@@ -1692,6 +1696,7 @@ document.getElementById("addPreviewBtn").onclick = () => {
 /* ---- site nav: show one page at a time, chosen by the link's #hash ---- */
 const PAGES = ["homework", "schedule", "notebook"];
 function showPage() {
+  { const cp = document.getElementById("customizePanel"); if (cp) cp.classList.toggle("open", false); }
   const id = (location.hash || "").slice(1);
   const page = PAGES.includes(id) ? id : "homework";
   PAGES.forEach(p => { document.getElementById("page-" + p).hidden = p !== page; });
@@ -2091,6 +2096,79 @@ function nbCopy(page) {
   c.classList.add("nb-turn"); c.setAttribute("aria-hidden", "true");
   return c;
 }
+// Corner peel, built the way page-flip libraries (e.g. StPageFlip) do it: the page is cut along a
+// moving fold line, the folded part is drawn mirrored over it, and two gradient strips that follow the
+// fold give the curl: a highlight/shade band on the back of the flap, and a soft shadow it casts on the
+// page underneath. The flap disappears past the binding (left edge for spiral/composition, top for legal).
+// corner: "tr" (top-right, spiral), "br-up" (bottom-right pulled up, legal pad), "br" (bottom-right, composition).
+function nbPeel(front, corner, reverse, done) {
+  const W = front.offsetWidth, H = front.offsetHeight, L = front.offsetLeft, T = front.offsetTop;
+  const D = Math.hypot(W, H) * 2;
+  const mk = (cls, css, parent) => { const d = document.createElement("div"); if (cls) d.className = cls; if (css) d.style.cssText = css; if (parent) parent.appendChild(d); return d; };
+  const box = `position:absolute;left:${L}px;top:${T}px;width:${W}px;height:${H}px;pointer-events:none;`;
+  // shadow cast on the page underneath (on the revealed side of the fold)
+  const castWrap = mk("", box + "z-index:5;overflow:hidden;");
+  const cast = mk("", `position:absolute;height:${D}px;transform-origin:0 50%;`, castWrap);
+  // the folded flap: back of the page + the shade band, hidden past the binding
+  const flap = mk("nb-flap", box);
+  flap.style.clipPath = corner === "br-up" ? "inset(0 -14px -40px -14px)" : "inset(-30px -40px -30px 0)";
+  const back = mk("", "", flap);
+  const shadeWrap = mk("", "position:absolute;inset:0;transform-origin:0 0;overflow:hidden;", flap);
+  const shade = mk("", `position:absolute;height:${D}px;transform-origin:0 50%;`, shadeWrap);
+  const paper = getComputedStyle(front).backgroundColor;
+  back.style.background = paper;
+  front.after(castWrap, flap);
+  const C = corner === "tr" ? [W, 0] : [W, H];
+  const path = e => corner === "tr" ? [W * Math.cos(Math.PI * e), H * 0.3 * Math.sin(Math.PI * e)]
+                  : corner === "br" ? [W * Math.cos(Math.PI * e), H - H * 0.25 * Math.sin(Math.PI * e)]
+                  : [W - W * 0.3 * Math.sin(Math.PI * e), H * Math.cos(Math.PI * e)];
+  const poly = pts => pts.length ? `polygon(${pts.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(",")})` : "polygon(0 0,0 0,0 0)";
+  // part of the page rectangle on one side of the fold line (sign: -1 = P side, +1 = corner side)
+  const cut = (P, sign) => {
+    const f = ([x, y]) => sign * ((x - P[0]) ** 2 + (y - P[1]) ** 2 - (x - C[0]) ** 2 - (y - C[1]) ** 2) * -1;
+    const pts = [[0,0],[W,0],[W,H],[0,H]], out = [];
+    for (let i = 0; i < 4; i++) {
+      const a = pts[i], b = pts[(i + 1) % 4], fa = f(a), fb = f(b);
+      if (fa <= 0) out.push(a);
+      if ((fa < 0 && fb > 0) || (fa > 0 && fb < 0)) { const t = fa / (fa - fb); out.push([a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]); }
+    }
+    return out;
+  };
+  const strip = (el, M, ang, width, bg) => {
+    el.style.width = width + "px"; el.style.background = bg;
+    el.style.transform = `translate(${M[0]}px, ${M[1] - D / 2}px) rotate(${ang}rad)`;
+  };
+  const ease = t => t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+  const dur = corner === "br" ? 950 : 800, t0 = performance.now();
+  function frame(now) {
+    const t = Math.min(1, (now - t0) / dur);
+    const e = Math.max(0.001, Math.min(0.999, ease(reverse ? 1 - t : t)));
+    const P = path(e);
+    let nx = C[0] - P[0], ny = C[1] - P[1]; const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+    const M = [(C[0] + P[0]) / 2, (C[1] + P[1]) / 2], d = M[0] * nx + M[1] * ny;
+    const R = [1 - 2*nx*nx, -2*nx*ny, -2*nx*ny, 1 - 2*ny*ny, 2*d*nx, 2*d*ny];
+    const refl = ([x, y]) => [R[0]*x + R[2]*y + R[4], R[1]*x + R[3]*y + R[5]];
+    const keep = cut(P, -1), lifted = cut(P, 1);
+    front.style.clipPath = poly(keep);
+    back.style.clipPath = poly(lifted);
+    back.style.transform = `matrix(${R.join(",")})`;
+    back.style.transformOrigin = "0 0";
+    const angN = Math.atan2(ny, nx);              // pointing from the fold toward the corner side
+    const lift = Math.sin(Math.PI * e);           // 0 at rest, 1 mid-turn
+    const reach = Math.min(len / 2, W);           // how far the flap extends from the fold
+    // shade band on the back of the flap (the flap lies on the -n side of the fold)
+    shadeWrap.style.clipPath = poly(lifted.map(refl));
+    strip(shade, M, angN + Math.PI, Math.max(8, reach),
+      `linear-gradient(to right, rgba(0,0,0,${.28 * lift + .05}) 0, rgba(255,255,255,.35) 12%, rgba(0,0,0,${.14 * lift}) 40%, rgba(0,0,0,0) 100%)`);
+    // soft shadow the flap casts on the revealed page, strongest mid-turn
+    strip(cast, M, angN, Math.max(10, Math.min(60, reach * .5) * lift + 10),
+      `linear-gradient(to right, rgba(0,0,0,${.32 * lift}), rgba(0,0,0,0))`);
+    if (t < 1) requestAnimationFrame(frame);
+    else { flap.remove(); castWrap.remove(); done && done(); }
+  }
+  frame(t0);
+}
+
 function showNbPage(dir) {
   const page = document.getElementById("nbPage");
   document.querySelectorAll("#nbBody .nb-turn").forEach(x => x.remove());
@@ -2100,8 +2178,9 @@ function showNbPage(dir) {
     const old = nbCopy(page);
     page.after(old);
     fillNbPage(page, nbDay);
-    old.classList.add("go-next");
-    old.addEventListener("animationend", () => old.remove(), { once: true });
+    const style = nbEl.dataset.nb;
+    if (style === "eng") { old.classList.add("go-next"); old.addEventListener("animationend", () => old.remove(), { once: true }); }
+    else nbPeel(old, style === "spiral" ? "tr" : style === "legal" ? "br-up" : "br", false, () => old.remove());
   } else if (dir < 0 && !reduce) {
     // the previous page turns back down on top of the current one
     const under = nbCopy(page); under.classList.remove("nb-turn"); under.style.zIndex = 4; under.setAttribute("aria-hidden", "true");
@@ -2109,8 +2188,9 @@ function showNbPage(dir) {
     fillNbPage(page, nbDay);
     const incoming = nbCopy(page);
     under.after(incoming);
-    incoming.classList.add("go-prev");
-    incoming.addEventListener("animationend", () => { incoming.remove(); under.remove(); }, { once: true });
+    const style = nbEl.dataset.nb;
+    if (style === "eng") { incoming.classList.add("go-prev"); incoming.addEventListener("animationend", () => { incoming.remove(); under.remove(); }, { once: true }); }
+    else nbPeel(incoming, style === "spiral" ? "tr" : style === "legal" ? "br-up" : "br", true, () => { incoming.remove(); under.remove(); });
   } else {
     fillNbPage(page, nbDay);
   }
