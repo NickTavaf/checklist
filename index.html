@@ -556,8 +556,8 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   .nav-link[aria-current="page"] { transform:rotate(0) scale(1.02); }
 }
 @media (max-width:480px) {
-  .site-nav { gap:10px; }
-  .nav-link { min-height:44px; padding:8px 4px; font-size:17px; white-space:nowrap; border-width:2.5px; box-shadow:4px 4px 0 var(--poster-border); }
+  .site-nav { gap:10px; padding-top:calc(12px + env(safe-area-inset-top)); padding-bottom:14px; }
+  .nav-link { min-height:36px; padding:5px 4px; font-size:15px; white-space:nowrap; border-width:2.5px; box-shadow:3px 3px 0 var(--poster-border); }
 }
 @media (prefers-reduced-motion:reduce) { .nav-link { transition:none; } }
 .site-nav ~ .page .topbar { padding-top:24px; }
@@ -625,12 +625,15 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   .sched-views { order:6; } .sb-today { order:7; margin-left:auto; } .sched-toggle { order:8; }
 }
 @media (max-width:520px) {
-  .sched-bar { gap:8px; margin-bottom:10px; }
-  .sched-title { font-size:26px; }
-  .sched-btn { min-height:32px; padding:4px 8px; font-size:14px; }
-  .sched-menu-btn { width:32px; min-width:32px; padding:0; }
-  .sched-seg button { min-height:30px; padding:3px 10px; font-size:14px; }
-  .sched-toggle { min-height:32px; padding:3px 8px; gap:6px; }
+  .sched-bar { gap:6px; margin-bottom:8px; }
+  .sched-title { font-size:22px; }
+  .sched-btn { min-height:28px; min-width:28px; padding:3px 7px; font-size:12.5px; }
+  .sched-btn.sched-add { box-shadow:2px 2px 0 var(--poster-border); }
+  .sched-menu-btn { width:28px; min-width:28px; padding:0; }
+  .sched-menu-btn span { width:13px; }
+  .sched-seg button { min-height:26px; padding:2px 8px; font-size:12.5px; }
+  .sched-toggle { min-height:28px; padding:2px 7px; gap:5px; font-size:11.5px; }
+  .sched-bar .sb-arrow { font-size:22px; width:22px; min-width:22px; }
   .sched-toggle .long { display:none; }
   .sched-toggle .short { display:inline; }
   .sched-add .long { display:none; }
@@ -696,6 +699,18 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .sweek .smark.is-done { background:color-mix(in srgb, var(--mc) 26%, transparent); }
   .sweek .smark.is-done .mt { text-decoration:line-through; }
   .sweek .smore { font-size:9.5px; }
+  .sweek .sday.is-next { opacity:.4; }
+  /* rows look: one line per day, the day on the left and its things side by side */
+  .sweek.rows { grid-template-columns:minmax(0,1fr); grid-template-rows:repeat(7, minmax(0,1fr)); gap:4px; }
+  .sweek.rows .sday { flex-direction:row; align-items:stretch; gap:8px; padding:4px 6px; }
+  .sweek.rows .sday-head { flex-direction:column; align-items:center; justify-content:center; gap:0; width:34px; flex-shrink:0; }
+  .sweek.rows .sday-num { order:0; font-size:18px; }
+  .sweek.rows .sday-dow { order:-1; font-size:9px; }
+  .sweek.rows .sday-empty { align-self:center; }
+  .sweek.rows .shol-line { align-self:center; max-width:30%; }
+  .sweek.rows .smarks { flex-direction:row; flex-wrap:wrap; align-content:center; align-items:center; gap:3px; }
+  .sweek.rows .smark { width:auto; max-width:100%; flex:0 1 auto; }
+  .sweek.rows .smore { align-self:center; }
 }
 
 /* month: the whole month fits; rows share the height */
@@ -732,6 +747,7 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .smonth.has-pick { flex:0 0 auto; height:min(52%, 320px); }
   .smonth .sday.is-picked { outline:3px solid var(--poster-ui-accent); outline-offset:1px; }
   .smonth .sday .shol-inline { display:none !important; }
+  .sday-blank { visibility:hidden; }
   .smonth .sday.is-today.is-picked { outline-color:var(--poster-text); }
 }
 /* the day you tapped in the phone's month view, with every name written out */
@@ -2598,6 +2614,8 @@ function schedDayRange() {
   return [sAdd(start, -14), sAdd(end, 14)];
 }
 
+// phone week look: "boxes" (two columns) or "rows" (one line per day)
+function weekLook() { try { return localStorage.getItem("weekLook") === "rows" ? "rows" : "boxes"; } catch (e) { return "boxes"; } }
 function openDay(key) { sched.view = "day"; sched.date = key; saveSchedPrefs(); renderSchedule(); }
 
 // Size the calendar area so the view fills the rest of the screen exactly
@@ -2636,7 +2654,10 @@ function renderSchedule() {
     title.textContent = a.getMonth() === b.getMonth()
       ? `${a.toLocaleDateString("en-US",{month:"short"})} ${a.getDate()} – ${b.getDate()}`
       : `${a.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
-    root.innerHTML = `<div class="sweek">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}</div>`;
+    const phoneWeek = window.innerWidth < 700, rows = phoneWeek && weekLook() === "rows";
+    // phone boxes come in pairs, so next Monday fills the 8th spot (faded, like other months' days)
+    const extra = phoneWeek && !rows ? dayBoxHTML(sAdd(mon, 7), items[sAdd(mon, 7)], {}).replace('class="sday', 'class="sday is-out is-next') : "";
+    root.innerHTML = `<div class="sweek${rows ? " rows" : ""}">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}${extra}</div>`;
     root.querySelectorAll(".sweek .sday").forEach(el => { el.insertAdjacentHTML("beforeend", `<span class="smore"></span>`); el.onclick = e => { if (!e.target.closest(".smark, .sopen, button")) openDay(el.dataset.date); }; });
     if (window.innerWidth < 700) fitMarks(root.querySelectorAll(".sweek .smarks"));
   } else if (sched.view === "month") {
@@ -2650,9 +2671,10 @@ function renderSchedule() {
     // On a phone the boxes are too small for names, so the month gets a little shorter and the day
     // you tap is written out underneath (today to start)
     const phone = false;   // phone: names go right in the boxes (no panel underneath)
+    const blankOut = window.innerWidth < 700;   // phone: leave other months' days blank to save room
     if (phone && (!sched.pick || sched.pick.slice(0, 7) !== sKey(m).slice(0, 7))) sched.pick = getTodayStr().slice(0, 7) === sKey(m).slice(0, 7) ? getTodayStr() : sKey(m);
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
-      <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
+      <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => blankOut && sParse(k).getMonth() !== m.getMonth() ? `<div class="sday-blank" aria-hidden="true"></div>` : dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
     markHTML.inMonth = false;
     if (phone) {
       const pick = document.createElement("div"); pick.className = "smonth-pick";
