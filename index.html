@@ -845,13 +845,13 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-sticky .ds-size { position:absolute; right:0; bottom:0; width:22px; height:22px; cursor:nwse-resize; touch-action:none;
   background:linear-gradient(135deg, transparent 50%, #17191440 50% 56%, transparent 56% 66%, #17191440 66% 72%, transparent 72% 82%, #17191440 82% 88%, transparent 88%); }
 /* mic: shows on the note you're writing in */
-.desk-sticky .ds-mic { display:none; margin-right:auto; }
-.desk-sticky:focus-within .ds-mic, .desk-sticky.listening .ds-mic { display:grid; }
-.desk-sticky .ds-mic svg { width:15px; height:15px; fill:currentColor; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
-.desk-sticky .ds-mic svg .o { fill:none; }
-.desk-sticky .ds-mic[aria-pressed="true"] { width:auto; padding:0 6px; border-radius:10px; background:#E5251B; color:#fff; font:700 10px/1 var(--poster-display); gap:3px; grid-auto-flow:column; }
-.desk-sticky .ds-mic[aria-pressed="true"]::after { content:"STOP"; }
-.desk-note { position:fixed; left:50%; right:auto; bottom:60px; transform:translateX(-50%); }
+/* desk mic: same square box as the notebook's, in the bottom-right corner of the desk */
+.desk { position:relative; }
+.desk .nb-mic.desk-mic { right:max(28px, calc(env(safe-area-inset-right) + 12px)); bottom:28px; width:56px; height:56px; padding:0; border-radius:6px; z-index:20; }
+.desk .desk-mic svg { width:32px; height:32px; stroke-width:1.8; }
+.desk .desk-mic[aria-pressed="true"] { width:auto; padding:0 14px; background:#E5251B; color:#fff; }
+.desk-sticky.listening { outline:3px solid #E5251B; outline-offset:3px; }
+.desk-note { right:28px; bottom:96px; }
 .desk-sticky.confirm .ds-del { width:auto; padding:0 5px; font-size:10px; background:#c62828; color:#fff; }
 @media (max-width:520px) {
   .desk-bar { gap:6px; }
@@ -1206,6 +1206,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <button type="button" class="sched-btn sched-add" id="deskAddNb">+ <span class="long">Notebook</span><span class="short">Book</span></button>
     </div>
     <div class="desk-area" id="deskArea" aria-label="Your notebooks and sticky notes"></div>
+    <button type="button" class="nb-mic desk-mic" id="deskMic" aria-label="Dictate a sticky note" aria-pressed="false">
+      <span class="nb-mic-icon" aria-hidden="true"></span><span class="nb-mic-label">Stop</span>
+    </button>
     <div class="nb-mic-note desk-note" id="deskNote" role="status" hidden></div>
   </div>
   <div class="nb" data-nb="spiral" hidden>
@@ -2825,14 +2828,14 @@ function startDictation(target, btn) {
   try { rec.start(); } catch (err) { micNote("Couldn't start the microphone."); return; }
   dictating = true; micNote("");
   dictBtn.setAttribute("aria-pressed", "true"); dictBtn.setAttribute("aria-label", "Stop dictation");
-  dictBtn.closest(".desk-sticky")?.classList.add("listening");
+  dictTarget.closest(".desk-sticky")?.classList.add("listening");
 }
 function stopDictation() {
   if (!dictating && !rec) return;
   dictating = false;
   if (rec) { try { rec.stop(); } catch (err) {} rec = null; }
   dictBtn.setAttribute("aria-pressed", "false"); dictBtn.setAttribute("aria-label", "Dictate");
-  dictBtn.closest(".desk-sticky")?.classList.remove("listening");
+  dictTarget.closest(".desk-sticky")?.classList.remove("listening");
   dictTarget.dispatchEvent(new Event("input"));
   if (dictTarget === nbText) saveNbPage();
 }
@@ -2902,15 +2905,13 @@ function renderDesk() {
       el.style.setProperty("--sc", item.color);
       el.style.setProperty("--s", item.s || 1);
       const next = STICKY_COLORS[(STICKY_COLORS.indexOf(item.color) + 1) % STICKY_COLORS.length];
-      el.innerHTML = `<div class="ds-grip"><button type="button" class="ds-mic" aria-label="Dictate" aria-pressed="false">${MIC_ICONS.classic}</button><button type="button" class="ds-color" aria-label="Change color"><span class="ds-dot" style="--sn:${next}"></span></button><button type="button" class="ds-del" aria-label="Delete sticky note">&times;</button></div>
+      el.innerHTML = `<div class="ds-grip"><button type="button" class="ds-color" aria-label="Change color"><span class="ds-dot" style="--sn:${next}"></span></button><button type="button" class="ds-del" aria-label="Delete sticky note">&times;</button></div>
         <textarea placeholder="Write a note…" aria-label="Sticky note">${sEsc(item.text)}</textarea><div class="ds-size" aria-hidden="true"></div>`;
       const ta = el.querySelector("textarea");
       // the text box grows with the writing; the empty space under it is for grabbing the note
       const grow = () => { ta.style.height = "0px"; ta.style.height = Math.min(ta.scrollHeight + 2, el.clientHeight - 26) + "px"; ta.style.overflowY = ta.scrollHeight + 2 > el.clientHeight - 26 ? "auto" : "hidden"; };
       ta.addEventListener("input", grow); el._grow = grow;
-      const mic = el.querySelector(".ds-mic");
-      mic.addEventListener("pointerdown", e => e.preventDefault());   // keep the cursor in the note
-      mic.onclick = () => dictating && dictTarget === ta ? stopDictation() : startDictation(ta, mic);
+      ta.addEventListener("focus", () => { lastStickyId = item.id; });
       // drag the corner to make the note bigger or smaller
       const size = el.querySelector(".ds-size");
       size.addEventListener("pointerdown", e => {
@@ -2981,6 +2982,7 @@ function freeSpot() {
   const taken = [...notebooks, ...stickies].map(i => [i.x, i.y]);
   let best = [.5, .5], bestD = -1;
   for (let gy = 0; gy <= 3; gy++) for (let gx = 0; gx <= 4; gx++) {
+    if (gx >= 3 && gy === 3) continue;   // bottom-right corner is where the mic sits
     const p = [gx / 4, gy / 3], d = taken.length ? Math.min(...taken.map(([x, y]) => Math.hypot((x - p[0]) * 1.4, y - p[1]))) : 1;
     if (d > bestD + 1e-6) { best = p; bestD = d; }
   }
@@ -2993,6 +2995,44 @@ function addSticky() {
   stickies.push(s); nbStore("stickyNotes", stickies); renderDesk();
   const el = [...deskArea.querySelectorAll(".desk-sticky")].find(x => x._item === s);
   if (el) el.querySelector("textarea").focus();
+}
+// Desk mic: talks into the sticky note you were last writing in, or starts a new one
+let lastStickyId = null;
+const deskMic = document.getElementById("deskMic");
+deskMic.querySelector(".nb-mic-icon").innerHTML = MIC_ICONS.classic;
+deskMic.addEventListener("pointerdown", e => e.preventDefault());   // keep the cursor in the note
+deskMic.onclick = () => {
+  if (dictating && dictBtn === deskMic) { stopDictation(); return; }
+  let el = [...deskArea.querySelectorAll(".desk-sticky")].find(x => x._item.id === lastStickyId);
+  if (!el) { addSticky(); el = [...deskArea.querySelectorAll(".desk-sticky")].pop(); }
+  const ta = el.querySelector("textarea");
+  if (document.activeElement !== ta) { ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; }
+  startDictation(ta, deskMic);
+  el.classList.add("listening");
+};
+
+// Tidy up / Scatter: Tidy lines everything up (and remembers where things were); Scatter puts them back
+let deskTidy = false;
+try { deskTidy = localStorage.getItem("deskTidy") === "1"; } catch(e) {}
+function paintTidyBtn() {
+  const b = document.getElementById("deskTidy");
+  b.setAttribute("aria-pressed", String(deskTidy));
+  b.innerHTML = deskTidy ? `Scatter` : `Tidy<span class="long"> up</span>`;
+  b.title = deskTidy ? "Put things back where they were" : "Line everything up so nothing overlaps";
+}
+function animateDesk() { deskArea.classList.add("tidying"); placeDeskItems(); setTimeout(() => deskArea.classList.remove("tidying"), 450); }
+function toggleTidy() {
+  if (!deskTidy) { [...notebooks, ...stickies].forEach(i => { i.loose = [i.x, i.y, i.r]; }); tidyDesk(); deskTidy = true; }
+  else {
+    [...notebooks, ...stickies].forEach(i => {
+      if (i.loose) [i.x, i.y, i.r] = i.loose; else { [i.x, i.y] = [Math.random() * .9, Math.random() * .9]; i.r = tilt(); }
+      delete i.loose;
+    });
+    nbStore("notebooks", notebooks); nbStore("stickyNotes", stickies);
+    animateDesk(); deskTidy = false;
+  }
+  try { localStorage.setItem("deskTidy", deskTidy ? "1" : "0"); } catch(e) {}
+  paintTidyBtn();
 }
 // Tidy up: notebooks in neat rows from the top-left, sticky notes in rows underneath, nothing overlapping
 function tidyDesk() {
@@ -3013,11 +3053,10 @@ function tidyDesk() {
   if (nbs.length && sts.length) { x = 4; y += rowH + gap + 6; rowH = 0; }
   sts.forEach(place);
   nbStore("notebooks", notebooks); nbStore("stickyNotes", stickies);
-  deskArea.classList.add("tidying");
-  placeDeskItems();
-  setTimeout(() => deskArea.classList.remove("tidying"), 450);
+  animateDesk();
 }
-document.getElementById("deskTidy").onclick = tidyDesk;
+document.getElementById("deskTidy").onclick = toggleTidy;
+paintTidyBtn();
 
 function openNotebook(id) {
   const n = notebooks.find(x => x.id === id); if (!n) return;
@@ -3106,7 +3145,7 @@ document.getElementById("nbDelete").onclick = e => {
   menu.addEventListener("click", e => { e.stopPropagation(); const o = e.target.closest("[data-bg]"); if (o) { setDeskStyle(o.dataset.bg); show(false); } });
   document.addEventListener("click", () => { if (!menu.hidden) show(false); }); }
 { let last = null; try { last = localStorage.getItem("openNotebook"); } catch(e) {}
-  if (last && notebooks.some(n => n.id === last)) openNotebook(last); else { nbEl.hidden = true; renderDesk(); } }
+  if (last && notebooks.some(n => n.id === last)) openNotebook(last); else { nbEl.hidden = true; renderDesk(); requestAnimationFrame(fitNotebook); } }
 
 // Keep the calendar in step with the Homework page (checking things off, syncing, new syllabi)
 const renderHomework = render;
