@@ -863,7 +863,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk[data-desk="mat"] { --in:20px; } .desk[data-desk="slate"] { --in:18px; } .desk[data-desk="leather"] { --in:24px; } .desk[data-desk^="wood"] { --in:16px; }
 .desk .nb-mic.desk-mic { right:calc(max(16px, env(safe-area-inset-right)) + var(--in)); bottom:var(--in); width:56px; height:56px; padding:0; border-radius:6px; z-index:20; }
 .desk .desk-mic svg { width:32px; height:32px; stroke-width:1.8; }
-.desk .desk-mic[aria-pressed="true"] { width:auto; padding:0 14px; background:#E5251B; color:#fff; }
+.desk .desk-mic[aria-pressed="true"] { background:#E5251B; color:#fff; }
 .desk-sticky.listening { outline:3px solid #E5251B; outline-offset:3px; }
 .desk-note { right:calc(16px + var(--in)); bottom:calc(var(--in) + 68px); }
 .desk:not([data-desk="scatter"]) .desk-mic, .desk:not([data-desk="scatter"]) .desk-trash { border-color:#0009; box-shadow:0 1px 1px #0004, 3px 6px 12px #0009; }
@@ -1082,7 +1082,12 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb-mic:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
 .nb .nb-mic[aria-pressed="true"] { background:#E5251B; color:#fff; }
 .nb-mic[aria-pressed="true"] .nb-mic-label { display:inline; }
-.nb-mic[aria-pressed="true"]::before { content:""; position:absolute; inset:-3px; border-radius:30px; border:3px solid #E5251B; animation:micPulse 1.4s ease-out infinite; pointer-events:none; }
+/* while recording: same box, the mic turns into a stop square with a small STOP under it */
+.nb-mic.nb-mic[aria-pressed="true"] { flex-direction:column; gap:3px; padding:0; }
+.nb-mic[aria-pressed="true"] svg { display:none; }
+.nb-mic[aria-pressed="true"] .nb-mic-icon::before { content:""; display:block; width:18px; height:18px; border-radius:3px; background:currentColor; }
+.nb-mic[aria-pressed="true"] .nb-mic-label { font-size:11px; letter-spacing:.08em; line-height:1; }
+.nb-mic[aria-pressed="true"]::before { content:""; position:absolute; inset:-3px; border-radius:9px; border:3px solid #E5251B; animation:micPulse 1.4s ease-out infinite; pointer-events:none; }
 @keyframes micPulse { from { transform:scale(1); opacity:.7; } to { transform:scale(1.35); opacity:0; } }
 @media (prefers-reduced-motion:reduce) { .nb-mic[aria-pressed="true"]::before { animation:none; opacity:.5; } }
 .nb[data-mic-pos="bar"] .nb-mic-note { top:10px; bottom:auto; }
