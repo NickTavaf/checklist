@@ -2693,8 +2693,10 @@ let nbAllPages = nbLoad("notebookPagesBy", {});
 let stickies = nbLoad("stickyNotes", []);
 if (!Array.isArray(notebooks)) {
   let style = "spiral"; try { style = localStorage.getItem("notebookStyle") || "spiral"; } catch(e) {}
-  notebooks = [{ id: "nb-main", name: "My notebook", type: ["spiral","legal","comp","eng"].includes(style) ? style : "spiral", x: .06, y: .08, r: -2 }];
-  nbAllPages = { "nb-main": nbLoad("notebookPages", {}) };
+  // an empty desk to start; pages from the old single notebook (if any) become "My notebook"
+  const old = nbLoad("notebookPages", {});
+  notebooks = Object.keys(old).length ? [{ id: "nb-main", name: "My notebook", type: ["spiral","legal","comp","eng"].includes(style) ? style : "spiral", x: .06, y: .08, r: -2 }] : [];
+  nbAllPages = notebooks.length ? { "nb-main": old } : {};
   nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
 }
 let openNbId = null;
