@@ -35,7 +35,7 @@ function json(body, status = 200) {
 }
 
 function emptyBundle() {
-  return { state: {}, customAssignments: [], classColorOverrides: {}, palette: null, prefsT: 0, removedClasses: {} };
+  return { state: {}, customAssignments: [], classColorOverrides: {}, palette: null, prefsT: 0, removedClasses: {}, docs: {} };
 }
 
 // When a custom assignment was added (its id is "custom-<timestamp>-n")
@@ -52,7 +52,15 @@ function merge(base, incoming) {
     palette: base.palette || null,
     prefsT: base.prefsT || 0,
     removedClasses: { ...(base.removedClasses || {}) },
+    // notebooks, notebook pages, sticky notes, trash and calendar events: one record each,
+    // the newest version of every record wins (deleted ones stay as small tombstones)
+    docs: { ...(base.docs || {}) },
   };
+  for (const [k, r] of Object.entries(incoming.docs || {})) {
+    if (!r || typeof r.t !== "number" || k.length > 300) continue;
+    const cur = out.docs[k];
+    if (!cur || r.t > cur.t) out.docs[k] = r.del ? { t: r.t, del: 1 } : { t: r.t, d: r.d };
+  }
   for (const [cls, t] of Object.entries(incoming.removedClasses || {})) {
     if (typeof t === "number" && t > (out.removedClasses[cls] || 0)) out.removedClasses[cls] = t;
   }
@@ -259,7 +267,7 @@ export default {
 
     if (request.method === "POST") {
       const raw = await request.text();
-      if (raw.length > 500000) return json({ error: "Too much data." }, 413);
+      if (raw.length > 5000000) return json({ error: "Too much data." }, 413);
       let incoming;
       try { incoming = JSON.parse(raw); } catch (e) { return json({ error: "Bad JSON." }, 400); }
       const merged = merge(existing, incoming);
