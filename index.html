@@ -796,40 +796,80 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-area { position:relative; min-height:320px; overflow:hidden; touch-action:none; }
 .desk-empty { position:absolute; inset:0; display:grid; place-items:center; text-align:center; font:600 12px/1.5 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
 .desk-item { position:absolute; left:0; top:0; cursor:grab; user-select:none; -webkit-user-select:none; touch-action:none; transition:box-shadow .15s, filter .15s; }
+.desk-area.tidying .desk-item { transition:transform .4s cubic-bezier(.2,.8,.2,1); }
 .desk-item.dragging { cursor:grabbing; filter:drop-shadow(8px 12px 10px #0006); transition:none; }
 /* a closed notebook seen from above */
 .desk-nb { --w:132px; width:var(--w); height:calc(var(--w) * 1.3); border:2px solid var(--poster-border); box-shadow:5px 5px 0 var(--poster-border); display:flex; flex-direction:column; justify-content:flex-end; padding:10px; color:#171914; background:#fff; }
-.desk-nb .dn-name { position:relative; z-index:1; font:700 21px/1 "Caveat", cursive; overflow-wrap:break-word; hyphens:auto; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.desk-nb .dn-name { position:relative; z-index:1; font:700 21px/1 "Caveat", cursive; overflow-wrap:normal; word-break:normal; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .desk-nb .dn-count { position:relative; z-index:1; margin-top:4px; font:600 9px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; opacity:.65; }
-.desk-nb[data-type="spiral"] { padding-left:22px; background:linear-gradient(90deg, transparent 30px, #f08a8a 30px 31.5px, transparent 31.5px), repeating-linear-gradient(#fff 0 13px, #c8d9f2 13px 14px); }
-.desk-nb[data-type="spiral"]::before { content:""; position:absolute; left:-7px; top:6px; bottom:6px; width:16px; background:radial-gradient(circle at 50% 50%, transparent 3px, #555 3.5px 5px, transparent 5.5px) 0 0/16px 12px; }
-.desk-nb[data-type="spiral"] .dn-name { margin-left:12px; }
+/* spiral notebook: a colored poly cover with the wire coil down the left, "1 SUBJECT" in the corner,
+   a white name strip, and the small print along the bottom (like a Mead / Five Star 1-subject) */
+.desk-nb[data-type="spiral"] { --cv:#1E4FB8; padding:10px 9px 8px 22px; justify-content:space-between; color:#fff;
+  background:linear-gradient(120deg, #ffffff26 0 18%, transparent 30% 62%, #ffffff14 70%, transparent 82%), linear-gradient(var(--cv), color-mix(in srgb, var(--cv) 82%, #000)); }
+.desk-nb[data-type="spiral"]::before { content:""; position:absolute; z-index:2; left:-8px; top:4px; bottom:4px; width:20px;
+  background:radial-gradient(ellipse 9px 4.5px at 50% 50%, transparent 5px, #c9ccd1 5.5px 7.2px, #6b6f75 7.6px, transparent 8px) 0 0/20px 10px; }
+.desk-nb[data-type="spiral"]::after { content:""; position:absolute; left:7px; top:4px; bottom:4px; width:4px; background:radial-gradient(circle, #0007 1.6px, transparent 2px) 0 0/4px 10px; }
+.dn-top { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:4px; }
+.dn-mark { font:800 11px/.9 var(--poster-display); letter-spacing:.04em; text-transform:uppercase; }
+.dn-mark b { display:block; font-size:22px; }
+.dn-color { width:22px; height:22px; padding:0; border:0; background:transparent; display:grid; place-items:center; cursor:pointer; }
+.dn-color .ds-dot { width:13px; height:13px; border:2px solid #fff; box-shadow:0 0 0 1px #0006; }
+.desk-nb[data-type="spiral"] .dn-strip { position:relative; z-index:1; background:#fff; color:#171914; padding:5px 7px 4px; box-shadow:0 1px 2px #0004; }
+.desk-nb[data-type="spiral"] .dn-strip .dn-name { font-size:19px; }
+.desk-nb[data-type="spiral"] .dn-fine { position:relative; z-index:1; font:600 7px/1.2 var(--poster-mono); letter-spacing:.06em; text-transform:uppercase; opacity:.85; }
 .desk-nb[data-type="legal"] { border-top:16px solid #7b2f2a; background:linear-gradient(90deg, transparent 18px, #e0605a 18px 19px, transparent 19px 21px, #e0605a 21px 22px, transparent 22px), repeating-linear-gradient(#FFF4A3 0 13px, #8fb3dc 13px 14px); padding-left:28px; }
 .desk-nb[data-type="comp"] { background:#111 """+marble+r""" 0 0/300px 300px; padding:0; justify-content:center; align-items:center; }
 .desk-nb[data-type="comp"]::before { content:""; position:absolute; left:0; top:0; bottom:0; width:18px; background:#0d0d0d; border-right:2px solid #000; }
-.desk-nb[data-type="comp"] .dn-label { position:relative; z-index:1; width:72%; margin-left:12px; padding:8px 8px 6px; background:#fff; border:2px solid #111; border-radius:6px; }
-.desk-nb[data-type="comp"] .dn-label::before { content:"COMPOSITION"; display:block; font:800 8px/1 var(--poster-display); letter-spacing:.08em; margin-bottom:5px; }
-.desk-nb[data-type="comp"] .dn-name { font-size:18px; border-top:1px solid #888; padding-top:3px; }
+/* composition book: black-and-white marble, black cloth spine, and the white label with a double frame,
+   "COMPOSITION BOOK" across the top and NAME / SUBJECT lines (the notebook's name is written on SUBJECT) */
+.desk-nb[data-type="comp"] .dn-label { position:relative; z-index:1; width:76%; margin-left:12px; padding:7px 8px 6px; background:#fff; color:#111;
+  border:1.5px solid #111; outline:1px solid #111; outline-offset:-5px; border-radius:10px / 7px; }
+.dn-title { display:block; text-align:center; font:800 10px/1 var(--poster-display); letter-spacing:.1em; padding:2px 0 5px; }
+.dn-title small { display:block; font:600 6px/1.2 var(--poster-mono); letter-spacing:.08em; margin-top:2px; }
+.dn-line { white-space:nowrap; display:flex; align-items:flex-end; gap:3px; font:700 6px/1 var(--poster-mono); letter-spacing:.06em; margin-top:4px; }
+.dn-line i { white-space:normal; min-width:0; flex:1; border-bottom:1px solid #111; min-height:9px; font-style:normal; }
+.desk-nb[data-type="comp"] .dn-name { font-size:17px; line-height:1; -webkit-line-clamp:2; }
+.desk-nb[data-type="comp"] .dn-count { margin-top:5px; text-align:center; }
 .desk-nb[data-type="eng"] { border-top:12px solid #3f6b34; background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/12px 12px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/12px 12px, #EAF4E2; }
 .desk-nb[data-type="eng"] .dn-name { font:600 13px/1.2 var(--poster-mono); text-transform:uppercase; }
 .desk-nb:focus-visible, .desk-sticky:focus-within { outline:3px solid var(--poster-ui-accent); outline-offset:3px; }
 /* sticky notes */
-.desk-sticky { --w:132px; width:var(--w); height:var(--w); display:flex; flex-direction:column; background:var(--sc); color:#171914; box-shadow:2px 3px 0 #0003, 6px 10px 14px -6px #0006; }
-.desk-sticky .ds-grip { height:22px; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:2px; padding:0 3px; background:linear-gradient(#0000000d, #00000005); cursor:grab; }
+.desk-sticky { --w:132px; --s:1; width:calc(var(--w) * var(--s)); height:calc(var(--w) * var(--s)); display:flex; flex-direction:column; background:var(--sc); color:#171914; box-shadow:2px 3px 0 #0003, 6px 10px 14px -6px #0006; }
+.desk-sticky .ds-grip { height:26px; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:2px; padding:0 3px; background:linear-gradient(#0000000d, #00000005); cursor:grab; }
 .desk-sticky .ds-grip button { width:20px; height:20px; padding:0; border:0; background:transparent; color:#171914b0; font:700 14px/1 var(--poster-sans); cursor:pointer; display:grid; place-items:center; }
 .desk-sticky .ds-dot { width:11px; height:11px; border-radius:50%; background:var(--sn); border:1.5px solid #17191480; }
-.desk-sticky textarea { flex:1; min-height:0; width:100%; resize:none; border:0; outline:0; padding:4px 9px 8px; background:transparent; color:inherit; font:500 19px/1.15 "Caveat", cursive; touch-action:auto; }
+.desk-sticky { cursor:grab; }
+.desk-sticky textarea { flex:0 0 auto; min-height:0; max-height:calc(100% - 26px); overflow:hidden; width:100%; resize:none; cursor:text; border:0; outline:0; padding:4px 9px 8px; background:transparent; color:inherit; font:500 19px/1.15 "Caveat", cursive; touch-action:auto; }
 .desk-sticky textarea::placeholder { color:#17191470; }
+/* resize from the bottom-right corner */
+.desk-sticky .ds-size { position:absolute; right:0; bottom:0; width:22px; height:22px; cursor:nwse-resize; touch-action:none;
+  background:linear-gradient(135deg, transparent 50%, #17191440 50% 56%, transparent 56% 66%, #17191440 66% 72%, transparent 72% 82%, #17191440 82% 88%, transparent 88%); }
+/* mic: shows on the note you're writing in */
+.desk-sticky .ds-mic { display:none; margin-right:auto; }
+.desk-sticky:focus-within .ds-mic, .desk-sticky.listening .ds-mic { display:grid; }
+.desk-sticky .ds-mic svg { width:15px; height:15px; fill:currentColor; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+.desk-sticky .ds-mic svg .o { fill:none; }
+.desk-sticky .ds-mic[aria-pressed="true"] { width:auto; padding:0 6px; border-radius:10px; background:#E5251B; color:#fff; font:700 10px/1 var(--poster-display); gap:3px; grid-auto-flow:column; }
+.desk-sticky .ds-mic[aria-pressed="true"]::after { content:"STOP"; }
+.desk-note { position:fixed; left:50%; right:auto; bottom:60px; transform:translateX(-50%); }
 .desk-sticky.confirm .ds-del { width:auto; padding:0 5px; font-size:10px; background:#c62828; color:#fff; }
 @media (max-width:520px) {
-  .desk-bar { gap:8px; }
-  .desk-bar h1 { font-size:26px; }
+  .desk-bar { gap:6px; }
+  .desk-bar h1 { font-size:24px; }
+  .desk-bar .sched-btn { padding:4px 7px; }
+  .desk-bar .sched-btn .long { display:none; } .desk-bar .sched-btn .short { display:inline; }
+  .desk-bg-btn { width:34px; }
   .desk-nb, .desk-sticky { --w:98px; }
   .desk-nb { padding:7px; box-shadow:4px 4px 0 var(--poster-border); }
   .desk-nb .dn-name { font-size:17px; }
-  .desk-nb[data-type="spiral"] { padding-left:18px; }
+  .desk-nb[data-type="spiral"] { padding:7px 6px 6px 18px; }
+  .desk-nb[data-type="spiral"] .dn-strip .dn-name { font-size:15px; }
+  .dn-mark { font-size:9px; } .dn-mark b { font-size:17px; }
+  .desk-nb[data-type="spiral"] .dn-fine { font-size:5.5px; }
+  .dn-title { font-size:8px; padding-bottom:3px; } .dn-title small { display:none; }
+  .dn-line { margin-top:2px; font-size:5px; }
   .desk-nb[data-type="comp"] .dn-name { font-size:13px; }
-  .desk-nb[data-type="comp"] .dn-label { width:80%; padding:6px 5px 4px; }
+  .desk-nb[data-type="comp"] .dn-label { width:82%; padding:5px 5px 4px; }
   .nb-bar h1 { font-size:24px; }
   .desk-nb[data-type="comp"] .dn-label::before { font-size:6.5px; }
   .desk-nb[data-type="eng"] .dn-name { font-size:10.5px; }
@@ -848,21 +888,68 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk[data-desk="grid"] .desk-sticky { box-shadow:3px 3px 0 var(--poster-border); border:2px solid var(--poster-border); }
 .desk[data-desk="grid"] .desk-sticky .ds-grip { cursor:default; }
 .desk[data-desk="grid"] .desk-nb:hover { translate:0 -4px; }
-.desk[data-desk="mat"] .desk-area { border-radius:14px; border:2px solid #0b0d0b;
+/* a self-healing cutting mat: dark green, fine 1-unit grid with every 5th line stronger,
+   ruler ticks along the top and left edges, a faint 45° guide, rounded rubbery edge */
+.desk[data-desk="mat"] .desk-area { border-radius:16px; border:2px solid #0d1210;
   background:
-    linear-gradient(#ffffff10 1px, transparent 1px) 0 0/24px 24px,
-    linear-gradient(90deg, #ffffff10 1px, transparent 1px) 0 0/24px 24px,
-    linear-gradient(#ffffff22 1px, transparent 1px) 0 0/120px 120px,
-    linear-gradient(90deg, #ffffff22 1px, transparent 1px) 0 0/120px 120px,
-    #1d2421;
-  box-shadow:inset 0 0 0 10px #161b19, inset 0 0 40px #0008; }
-.desk[data-desk="mat"] .desk-nb { border:0; box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 5px 5px 0 #ccc, 10px 16px 22px #000a; }
+    linear-gradient(135deg, transparent calc(50% - .5px), #ffffff12 calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(#ffffff2a 1px, transparent 1px) 22px 22px/100px 100px,
+    linear-gradient(90deg, #ffffff2a 1px, transparent 1px) 22px 22px/100px 100px,
+    linear-gradient(#ffffff10 1px, transparent 1px) 22px 22px/20px 20px,
+    linear-gradient(90deg, #ffffff10 1px, transparent 1px) 22px 22px/20px 20px,
+    radial-gradient(120% 90% at 30% 20%, #26332e, #1a2420 70%, #151d1a);
+  box-shadow:inset 0 0 0 1px #ffffff14, inset 0 2px 0 #ffffff10, inset 0 0 50px #0009, 0 6px 18px #0006; }
+.desk[data-desk="mat"] .desk-area::before, .desk[data-desk="mat"] .desk-area::after { content:""; position:absolute; pointer-events:none; z-index:0; }
+.desk[data-desk="mat"] .desk-area::before { left:22px; right:8px; top:6px; height:12px;
+  background:repeating-linear-gradient(90deg, #ffffff55 0 1px, transparent 1px 20px) 0 0/100% 12px no-repeat, repeating-linear-gradient(90deg, #ffffff30 0 1px, transparent 1px 4px) 0 7px/100% 5px no-repeat; }
+.desk[data-desk="mat"] .desk-area::after { top:22px; bottom:8px; left:6px; width:12px;
+  background:repeating-linear-gradient(#ffffff55 0 1px, transparent 1px 20px) 0 0/12px 100% no-repeat, repeating-linear-gradient(#ffffff30 0 1px, transparent 1px 4px) 7px 0/5px 100% no-repeat; }
+.desk[data-desk="mat"] .desk-item { z-index:1; }
+.desk[data-desk="mat"] .desk-nb { border-color:transparent; border-left:0; border-right:0; border-bottom:0; box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 5px 5px 0 #ccc, 10px 16px 22px #000a; }
 .desk[data-desk="mat"] .desk-nb[data-type="legal"] { box-shadow:1px 1px 0 #f3e78f, 2px 2px 0 #d9cc70, 3px 3px 0 #f3e78f, 4px 4px 0 #cfc068, 10px 16px 22px #000a; }
 .desk[data-desk="mat"] .desk-nb[data-type="eng"] { box-shadow:1px 1px 0 #dbe9d2, 2px 2px 0 #b9cdb0, 3px 3px 0 #dbe9d2, 4px 4px 0 #b0c4a6, 10px 16px 22px #000a; }
+.desk[data-desk="mat"] .desk-nb[data-type="spiral"], .desk[data-desk="mat"] .desk-nb[data-type="comp"] { border:0; }
+.desk[data-desk="mat"] .desk-nb[data-type="legal"] { border-top-color:#7b2f2a; }
+.desk[data-desk="mat"] .desk-nb[data-type="eng"] { border-top-color:#3f6b34; }
+.desk[data-desk="mat"] .desk-nb[data-type="spiral"] { box-shadow:1px 1px 0 #eee, 2px 2px 0 #ccc, 3px 3px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 color-mix(in srgb, var(--cv) 70%, #000), 10px 16px 22px #000a; }
 .desk[data-desk="mat"] .desk-nb[data-type="comp"] { box-shadow:2px 2px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 #111, 10px 16px 22px #000a; }
 .desk[data-desk="mat"] .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
-.desk[data-desk="mat"] .desk-sticky::after { content:""; position:absolute; right:0; bottom:0; width:18px; height:18px; background:linear-gradient(135deg, var(--sc) 50%, #00000030 50%, #0000 70%); }
+.desk[data-desk="mat"] .desk-sticky::after { pointer-events:none; content:""; position:absolute; right:0; bottom:0; width:18px; height:18px; background:linear-gradient(135deg, var(--sc) 50%, #00000030 50%, #0000 70%); }
 .desk[data-desk="mat"] .desk-empty { color:#ffffff90; }
+/* slate: a dark chalkboard with faint chalk dust and a thin metal frame */
+.desk[data-desk="slate"] .desk-area { border-radius:6px; border:6px solid #3a3f44; outline:1px solid #0008;
+  background:
+    radial-gradient(40% 25% at 22% 30%, #ffffff0d, transparent 70%),
+    radial-gradient(35% 20% at 70% 65%, #ffffff0a, transparent 70%),
+    radial-gradient(30% 15% at 50% 92%, #ffffff12, transparent 70%),
+    repeating-linear-gradient(-12deg, #ffffff05 0 2px, transparent 2px 9px),
+    #262c30;
+  box-shadow:inset 0 0 30px #000a, 0 6px 18px #0006; }
+/* leather: a black desk pad with a stitched border */
+.desk[data-desk="leather"] .desk-area { border-radius:12px; border:1px solid #000;
+  background:
+    radial-gradient(circle at 30% 30%, #ffffff06 0 1px, transparent 1.5px) 0 0/5px 5px,
+    radial-gradient(circle at 70% 60%, #0000002a 0 1px, transparent 1.5px) 0 0/7px 7px,
+    radial-gradient(120% 100% at 30% 15%, #2a2a2e, #18181b 65%, #111113);
+  box-shadow:inset 0 0 0 9px #141416, inset 0 0 0 10px #ffffff10, inset 0 0 40px #000a, 0 6px 18px #0006; }
+.desk[data-desk="leather"] .desk-area::before { content:""; position:absolute; inset:14px; border:1.5px dashed #ffffff30; border-radius:6px; pointer-events:none; }
+.desk[data-desk="slate"] .desk-empty, .desk[data-desk="leather"] .desk-empty { color:#ffffff90; }
+/* soft, real shadows on every textured background */
+.desk:not([data-desk="scatter"]) .desk-item { z-index:1; }
+.desk[data-desk="slate"] .desk-nb, .desk[data-desk="leather"] .desk-nb { border-color:transparent; border-left:0; border-right:0; border-bottom:0; }
+.desk[data-desk="slate"] .desk-nb[data-type="spiral"], .desk[data-desk="slate"] .desk-nb[data-type="comp"], .desk[data-desk="leather"] .desk-nb[data-type="spiral"], .desk[data-desk="leather"] .desk-nb[data-type="comp"] { border:0; }
+.desk[data-desk="slate"] .desk-nb[data-type="legal"], .desk[data-desk="leather"] .desk-nb[data-type="legal"] { border-top-color:#7b2f2a; }
+.desk[data-desk="slate"] .desk-nb[data-type="eng"], .desk[data-desk="leather"] .desk-nb[data-type="eng"] { border-top-color:#3f6b34; }
+.desk[data-desk="slate"] .desk-nb, .desk[data-desk="leather"] .desk-nb { box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 10px 16px 22px #000a; }
+.desk[data-desk="slate"] .desk-sticky, .desk[data-desk="leather"] .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
+/* background picker */
+.desk-bg-btn { width:40px; padding:0; display:grid; place-items:center; }
+.desk-bg-sw { width:20px; height:20px; border:2px solid var(--poster-border); border-radius:4px; background:var(--poster-bg); }
+.desk[data-desk="mat"] .desk-bg-sw, .nb-swatch.bg-mat { background:linear-gradient(#ffffff30 1px, transparent 1px) 0 0/6px 6px, linear-gradient(90deg, #ffffff30 1px, transparent 1px) 0 0/6px 6px, #1f2b26; }
+.desk[data-desk="slate"] .desk-bg-sw, .nb-swatch.bg-slate { background:radial-gradient(circle at 30% 40%, #ffffff22, transparent 60%), #262c30; }
+.desk[data-desk="leather"] .desk-bg-sw, .nb-swatch.bg-leather { background:#18181b; box-shadow:inset 0 0 0 2px #18181b, inset 0 0 0 3px #ffffff40; }
+.nb-swatch.bg-none { background:var(--poster-bg); }
+.desk-bar .short { display:none; }
 
 /* new-notebook form: pick a type */
 .nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
@@ -1104,10 +1191,22 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   <div class="desk" id="desk" data-desk="scatter">
     <div class="desk-bar">
       <h1>Notebooks</h1>
-      <button type="button" class="sched-btn" id="deskAddSticky">+<span class="long"> Sticky</span></button>
-      <button type="button" class="sched-btn sched-add" id="deskAddNb">+ Notebook</button>
+      <div class="nb-menu-wrap">
+        <button type="button" class="sched-btn desk-bg-btn" id="deskBgBtn" aria-label="Desk background" aria-expanded="false" aria-haspopup="true"><span class="desk-bg-sw"></span></button>
+        <div class="nb-menu desk-bg-menu" id="deskBgMenu" role="menu" hidden>
+          <div class="nb-menu-title">Desk background</div>
+          <button type="button" class="nb-opt" role="menuitemradio" data-bg="scatter"><span class="nb-swatch bg-none"></span><span>None<small>Just the page</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-bg="mat"><span class="nb-swatch bg-mat"></span><span>Cutting mat<small>Green, with a grid and rulers</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-bg="slate"><span class="nb-swatch bg-slate"></span><span>Slate<small>Dark chalkboard, a little chalk dust</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-bg="leather"><span class="nb-swatch bg-leather"></span><span>Leather<small>Black desk pad with stitching</small></span></button>
+        </div>
+      </div>
+      <button type="button" class="sched-btn" id="deskTidy" title="Line everything up so nothing overlaps">Tidy<span class="long"> up</span></button>
+      <button type="button" class="sched-btn" id="deskAddSticky">+ <span class="long">Sticky</span><span class="short">Note</span></button>
+      <button type="button" class="sched-btn sched-add" id="deskAddNb">+ <span class="long">Notebook</span><span class="short">Book</span></button>
     </div>
     <div class="desk-area" id="deskArea" aria-label="Your notebooks and sticky notes"></div>
+    <div class="nb-mic-note desk-note" id="deskNote" role="status" hidden></div>
   </div>
   <div class="nb" data-nb="spiral" hidden>
     <div class="nb-bar">
@@ -2671,9 +2770,13 @@ setMicStyle("corner", "studio");   // chosen: bottom-right corner, square box
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 const nbMic = document.getElementById("nbMic"), nbMicNote = document.getElementById("nbMicNote");
 let rec = null, dictating = false, dictBefore = "", dictAfter = "", dictFinal = "", micNoteTimer = null;
+// what dictation types into (the notebook page or a sticky note) and which mic button shows it
+let dictTarget = nbText, dictBtn = nbMic;
 function micNote(msg) {
-  nbMicNote.textContent = msg; nbMicNote.hidden = !msg;
-  clearTimeout(micNoteTimer); if (msg) micNoteTimer = setTimeout(() => { nbMicNote.hidden = true; }, 5000);
+  const el = dictTarget === nbText ? nbMicNote : document.getElementById("deskNote");
+  [nbMicNote, document.getElementById("deskNote")].forEach(x => { if (x !== el) x.hidden = true; });
+  el.textContent = msg; el.hidden = !msg;
+  clearTimeout(micNoteTimer); if (msg) micNoteTimer = setTimeout(() => { el.hidden = true; }, 5000);
 }
 function joinSpeech(before, said) {
   if (!said) return before;
@@ -2685,15 +2788,17 @@ function joinSpeech(before, said) {
 }
 function showDictation(interim) {
   const typed = joinSpeech(dictBefore, (dictFinal + " " + interim).trim());
-  nbText.value = typed + dictAfter;
-  nbText.selectionStart = nbText.selectionEnd = typed.length;
-  nbText.scrollTop = nbText.scrollHeight;
+  dictTarget.value = typed + dictAfter;
+  dictTarget.selectionStart = dictTarget.selectionEnd = typed.length;
+  dictTarget.scrollTop = dictTarget.scrollHeight;
 }
-function startDictation() {
+function startDictation(target, btn) {
+  if (dictating) stopDictation();
+  dictTarget = target || nbText; dictBtn = btn || nbMic;
   if (!SpeechRec) { micNote("Talking to type isn't supported in this browser. On iPhone, use Safari."); return; }
-  const pos = nbText.selectionStart ?? nbText.value.length;
-  const at = document.activeElement === nbText ? pos : nbText.value.length;
-  dictBefore = nbText.value.slice(0, at); dictAfter = nbText.value.slice(at); dictFinal = "";
+  const pos = dictTarget.selectionStart ?? dictTarget.value.length;
+  const at = document.activeElement === dictTarget ? pos : dictTarget.value.length;
+  dictBefore = dictTarget.value.slice(0, at); dictAfter = dictTarget.value.slice(at); dictFinal = "";
   rec = new SpeechRec();
   rec.continuous = true; rec.interimResults = true; rec.lang = navigator.language || "en-US";
   rec.onresult = e => {
@@ -2703,7 +2808,7 @@ function startDictation() {
       if (e.results[i].isFinal) dictFinal = (dictFinal + " " + t).trim(); else interim += t;
     }
     showDictation(interim);
-    if (!interim) { document.getElementById("nbSaved").textContent = "Saving…"; clearTimeout(nbTimer); nbTimer = setTimeout(saveNbPage, 400); }
+    if (!interim) dictTarget.dispatchEvent(new Event("input"));   // saves like typing does
   };
   rec.onerror = e => {
     if (e.error === "not-allowed" || e.error === "service-not-allowed") micNote("The microphone is blocked. Allow it for this site in your browser settings.");
@@ -2719,16 +2824,19 @@ function startDictation() {
   };
   try { rec.start(); } catch (err) { micNote("Couldn't start the microphone."); return; }
   dictating = true; micNote("");
-  nbMic.setAttribute("aria-pressed", "true"); nbMic.setAttribute("aria-label", "Stop dictation");
+  dictBtn.setAttribute("aria-pressed", "true"); dictBtn.setAttribute("aria-label", "Stop dictation");
+  dictBtn.closest(".desk-sticky")?.classList.add("listening");
 }
 function stopDictation() {
   if (!dictating && !rec) return;
   dictating = false;
   if (rec) { try { rec.stop(); } catch (err) {} rec = null; }
-  nbMic.setAttribute("aria-pressed", "false"); nbMic.setAttribute("aria-label", "Dictate");
-  saveNbPage();
+  dictBtn.setAttribute("aria-pressed", "false"); dictBtn.setAttribute("aria-label", "Dictate");
+  dictBtn.closest(".desk-sticky")?.classList.remove("listening");
+  dictTarget.dispatchEvent(new Event("input"));
+  if (dictTarget === nbText) saveNbPage();
 }
-nbMic.onclick = () => dictating ? stopDictation() : startDictation();
+nbMic.onclick = () => dictating && dictTarget === nbText ? stopDictation() : startDictation(nbText, nbMic);
 // keep the cursor where it was so the words land there
 nbMic.addEventListener("pointerdown", e => e.preventDefault());
 document.getElementById("nbPrev").onclick = () => flipNb(-1);
@@ -2739,6 +2847,7 @@ window.addEventListener("hashchange", () => { if (location.hash === "#notebook")
 /* ---- the desk ---- */
 const desk = document.getElementById("desk"), deskArea = document.getElementById("deskArea");
 const STICKY_COLORS = ["#FFE66D", "#FFB3C7", "#9ED8FF", "#B6F0A0", "#FFC58A"];
+const COVER_COLORS = ["#1E4FB8", "#C62828", "#2E7D32", "#6A3FB5", "#E8661A", "#D6336C", "#0F7C7C", "#222222"];
 function fitDesk() {
   const top = deskArea.getBoundingClientRect().top + window.scrollY;
   deskArea.style.height = Math.max(320, window.innerHeight - top - 12) + "px";
@@ -2755,8 +2864,9 @@ function placeDeskItems() {
   });
 }
 function setDeskStyle(s) {
-  desk.dataset.desk = ["scatter", "grid", "mat"].includes(s) ? s : "scatter";
+  desk.dataset.desk = ["scatter", "mat", "slate", "leather"].includes(s) ? s : "mat";   // scatter = no background
   try { localStorage.setItem("deskStyle", desk.dataset.desk); } catch(e) {}
+  document.querySelectorAll("#deskBgMenu .nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.bg === desk.dataset.desk)));
   renderDesk();
 }
 function pageCount(id) { return Object.keys(nbAllPages[id] || {}).length; }
@@ -2773,19 +2883,44 @@ function renderDesk() {
     if (kind === "nb") {
       el = document.createElement("div");
       el.className = "desk-item desk-nb"; el.dataset.type = item.type; el.tabIndex = 0; el.setAttribute("role", "button");
-      const n = pageCount(item.id);
+      const n = pageCount(item.id), count = `<span class="dn-count">${n} page${n === 1 ? "" : "s"}</span>`;
       el.setAttribute("aria-label", `Open ${item.name}`);
-      const inner = `<span class="dn-name">${sEsc(item.name)}</span><span class="dn-count">${n} page${n === 1 ? "" : "s"}</span>`;
-      el.innerHTML = item.type === "comp" ? `<span class="dn-label">${inner}</span>` : inner;
+      if (item.type === "spiral") {
+        const cv = item.color || COVER_COLORS[0], next = COVER_COLORS[(COVER_COLORS.indexOf(cv) + 1) % COVER_COLORS.length];
+        el.style.setProperty("--cv", cv);
+        el.innerHTML = `<span class="dn-top"><span class="dn-mark"><b>1</b>Subject</span><button type="button" class="dn-color" aria-label="Change cover color"><span class="ds-dot" style="--sn:${next}"></span></button></span>
+          <span class="dn-strip"><span class="dn-name">${sEsc(item.name)}</span>${count}</span><span class="dn-fine">College ruled · 100 sheets</span>`;
+        el.querySelector(".dn-color").onclick = e => { e.stopPropagation(); item.color = next; nbStore("notebooks", notebooks); renderDesk(); };
+      } else if (item.type === "comp") {
+        el.innerHTML = `<span class="dn-label"><span class="dn-title">Composition Book<small>100 sheets · wide ruled</small></span>
+          <span class="dn-line">NAME<i></i></span><span class="dn-line">SUBJECT<i><span class="dn-name">${sEsc(item.name)}</span></i></span>${count}</span>`;
+      } else el.innerHTML = `<span class="dn-name">${sEsc(item.name)}</span>${count}`;
       el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openNotebook(item.id); } });
     } else {
       el = document.createElement("div");
       el.className = "desk-item desk-sticky";
       el.style.setProperty("--sc", item.color);
+      el.style.setProperty("--s", item.s || 1);
       const next = STICKY_COLORS[(STICKY_COLORS.indexOf(item.color) + 1) % STICKY_COLORS.length];
-      el.innerHTML = `<div class="ds-grip"><button type="button" class="ds-color" aria-label="Change color"><span class="ds-dot" style="--sn:${next}"></span></button><button type="button" class="ds-del" aria-label="Delete sticky note">&times;</button></div>
-        <textarea placeholder="Write a note…" aria-label="Sticky note">${sEsc(item.text)}</textarea>`;
+      el.innerHTML = `<div class="ds-grip"><button type="button" class="ds-mic" aria-label="Dictate" aria-pressed="false">${MIC_ICONS.classic}</button><button type="button" class="ds-color" aria-label="Change color"><span class="ds-dot" style="--sn:${next}"></span></button><button type="button" class="ds-del" aria-label="Delete sticky note">&times;</button></div>
+        <textarea placeholder="Write a note…" aria-label="Sticky note">${sEsc(item.text)}</textarea><div class="ds-size" aria-hidden="true"></div>`;
       const ta = el.querySelector("textarea");
+      // the text box grows with the writing; the empty space under it is for grabbing the note
+      const grow = () => { ta.style.height = "0px"; ta.style.height = Math.min(ta.scrollHeight + 2, el.clientHeight - 26) + "px"; ta.style.overflowY = ta.scrollHeight + 2 > el.clientHeight - 26 ? "auto" : "hidden"; };
+      ta.addEventListener("input", grow); el._grow = grow;
+      const mic = el.querySelector(".ds-mic");
+      mic.addEventListener("pointerdown", e => e.preventDefault());   // keep the cursor in the note
+      mic.onclick = () => dictating && dictTarget === ta ? stopDictation() : startDictation(ta, mic);
+      // drag the corner to make the note bigger or smaller
+      const size = el.querySelector(".ds-size");
+      size.addEventListener("pointerdown", e => {
+        e.preventDefault(); e.stopPropagation();
+        size.setPointerCapture(e.pointerId);
+        const base = el.offsetWidth / (item.s || 1), sx = e.clientX, sy = e.clientY, s0 = item.s || 1;
+        const mv = ev => { item.s = Math.round(Math.max(.65, Math.min(2.4, s0 + Math.max(ev.clientX - sx, ev.clientY - sy) / base)) * 100) / 100; el.style.setProperty("--s", item.s); grow(); };
+        const done = () => { size.removeEventListener("pointermove", mv); size.removeEventListener("pointerup", done); size.removeEventListener("pointercancel", done); nbStore("stickyNotes", stickies); placeDeskItems(); };
+        size.addEventListener("pointermove", mv); size.addEventListener("pointerup", done); size.addEventListener("pointercancel", done);
+      });
       let t = null;
       ta.addEventListener("input", () => { item.text = ta.value; clearTimeout(t); t = setTimeout(() => nbStore("stickyNotes", stickies), 300); });
       el.querySelector(".ds-color").onclick = () => { item.color = next; nbStore("stickyNotes", stickies); renderDesk(); };
@@ -2799,15 +2934,23 @@ function renderDesk() {
     if (grid) {
       deskArea.querySelector(`.desk-shelf[data-k="${kind}"]`).appendChild(el);
       if (kind === "nb") el.onclick = () => openNotebook(item.id);
-    } else { deskArea.appendChild(el); makeDraggable(el); }
+    } else { el.style.zIndex = deskArea.children.length + 1; deskArea.appendChild(el); makeDraggable(el); }
   });
   placeDeskItems();
+  deskArea.querySelectorAll(".desk-sticky").forEach(el => el._grow && el._grow());
+  // shrink a long notebook name until every word fits on the cover (no words split in half)
+  deskArea.querySelectorAll(".dn-name").forEach(el => {
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 9 && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) { size -= 1; el.style.fontSize = size + "px"; }
+  });
 }
 // Drag anything around the desk; a tap (no real movement) on a notebook opens it.
 function makeDraggable(el) {
   el.addEventListener("pointerdown", e => {
     if (e.button > 0) return;
-    if (e.target.closest("textarea, button")) return;   // typing / buttons on a sticky
+    if (e.target.closest("textarea, button, .ds-size")) return;   // typing / buttons / resizing
+    e.preventDefault();   // no text selection or native image drag while moving things
     const item = el._item, W = deskArea.clientWidth, H = deskArea.clientHeight;
     const fw = Math.max(1, W - el.offsetWidth - 10), fh = Math.max(1, H - el.offsetHeight - 10);
     const sx = e.clientX, sy = e.clientY, ox = item.x, oy = item.y;
@@ -2816,7 +2959,10 @@ function makeDraggable(el) {
     const move = ev => {
       const dx = ev.clientX - sx, dy = ev.clientY - sy;
       if (!moved && Math.hypot(dx, dy) < 6) return;
-      if (!moved) { moved = true; el.classList.add("dragging"); item.z = Date.now(); deskArea.appendChild(el); }
+      if (!moved) {
+        moved = true; el.classList.add("dragging"); item.z = Date.now();
+        el.style.zIndex = Math.max(0, ...[...deskArea.children].map(c => +c.style.zIndex || 0)) + 1;   // bring to front
+      }
       item.x = Math.max(0, Math.min(1, ox + dx / fw)); item.y = Math.max(0, Math.min(1, oy + dy / fh));
       el.style.transform = `translate(${item.x * fw}px, ${item.y * fh}px) rotate(${item.r || 0}deg)`;
     };
@@ -2825,6 +2971,7 @@ function makeDraggable(el) {
       el.classList.remove("dragging");
       if (moved) nbStore(el._kind === "nb" ? "notebooks" : "stickyNotes", el._kind === "nb" ? notebooks : stickies);
       else if (el._kind === "nb") openNotebook(item.id);
+      else { const ta = el.querySelector("textarea"); ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; }   // tap a note to write in it
     };
     el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
   });
@@ -2847,6 +2994,31 @@ function addSticky() {
   const el = [...deskArea.querySelectorAll(".desk-sticky")].find(x => x._item === s);
   if (el) el.querySelector("textarea").focus();
 }
+// Tidy up: notebooks in neat rows from the top-left, sticky notes in rows underneath, nothing overlapping
+function tidyDesk() {
+  const W = deskArea.clientWidth, H = deskArea.clientHeight, gap = W < 520 ? 14 : 26;
+  const els = [...deskArea.querySelectorAll(".desk-item")];
+  const nbs = els.filter(e => e._kind === "nb"), sts = els.filter(e => e._kind === "sticky");
+  let x = 4, y = 6, rowH = 0;
+  const place = el => {
+    const w = el.offsetWidth, hh = el.offsetHeight;
+    if (x > 4 && x + w > W - 10) { x = 4; y += rowH + gap; rowH = 0; }
+    const item = el._item;
+    item.x = Math.max(0, Math.min(1, x / Math.max(1, W - w - 10)));
+    item.y = Math.max(0, Math.min(1, y / Math.max(1, H - hh - 10)));
+    item.r = Math.round((Math.random() * 2 - 1) * 10) / 10;
+    x += w + gap; rowH = Math.max(rowH, hh);
+  };
+  nbs.forEach(place);
+  if (nbs.length && sts.length) { x = 4; y += rowH + gap + 6; rowH = 0; }
+  sts.forEach(place);
+  nbStore("notebooks", notebooks); nbStore("stickyNotes", stickies);
+  deskArea.classList.add("tidying");
+  placeDeskItems();
+  setTimeout(() => deskArea.classList.remove("tidying"), 450);
+}
+document.getElementById("deskTidy").onclick = tidyDesk;
+
 function openNotebook(id) {
   const n = notebooks.find(x => x.id === id); if (!n) return;
   openNbId = id; nbPages = nbAllPages[id] || (nbAllPages[id] = {});
@@ -2899,7 +3071,7 @@ document.getElementById("newNbForm").addEventListener("submit", e => {
     closeNewNb(); return;
   }
   const [x, y] = freeSpot();
-  const n = { id: "nb-" + Date.now(), name, type: newNbType, x, y, r: tilt(), z: Date.now() };
+  const n = { id: "nb-" + Date.now(), name, type: newNbType, x, y, r: tilt(), z: Date.now(), color: COVER_COLORS[notebooks.length % COVER_COLORS.length] };
   notebooks.push(n); nbAllPages[n.id] = {};
   nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
   closeNewNb();
@@ -2918,7 +3090,21 @@ document.getElementById("nbDelete").onclick = e => {
 };
 
 // Start where you left off: the notebook you had open, or the desk
-try { desk.dataset.desk = localStorage.getItem("deskStyle") || "scatter"; } catch(e) {}
+{ let s = "mat"; try { s = localStorage.getItem("deskStyle") || "mat"; } catch(e) {}
+  desk.dataset.desk = ["scatter", "mat", "slate", "leather"].includes(s) ? s : "mat";
+  document.querySelectorAll("#deskBgMenu .nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.bg === desk.dataset.desk))); }
+{ const btn = document.getElementById("deskBgBtn"), menu = document.getElementById("deskBgMenu");
+  const show = open => {
+    menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+    if (open) {   // keep the menu on screen, even on a narrow phone
+      const r = btn.getBoundingClientRect();
+      menu.style.position = "fixed"; menu.style.top = (r.bottom + 8) + "px"; menu.style.right = "auto";
+      menu.style.left = Math.max(12, Math.min(r.left, window.innerWidth - menu.offsetWidth - 12)) + "px";
+    }
+  };
+  btn.onclick = e => { e.stopPropagation(); show(menu.hidden); };
+  menu.addEventListener("click", e => { e.stopPropagation(); const o = e.target.closest("[data-bg]"); if (o) { setDeskStyle(o.dataset.bg); show(false); } });
+  document.addEventListener("click", () => { if (!menu.hidden) show(false); }); }
 { let last = null; try { last = localStorage.getItem("openNotebook"); } catch(e) {}
   if (last && notebooks.some(n => n.id === last)) openNotebook(last); else { nbEl.hidden = true; renderDesk(); } }
 
