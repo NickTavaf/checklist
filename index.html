@@ -2907,6 +2907,24 @@ function scrollBoxTo(box, el, smooth) {
   box.scrollTo({ left: x, top: y, behavior: smooth ? "smooth" : "auto" });
 }
 
+// Month view: swipe left for the next month, right for the one before (a quick sideways flick)
+{
+  const body = document.getElementById("schedBody");
+  let sx = 0, sy = 0, st = 0, swiped = false;
+  body.addEventListener("touchstart", e => { if (sched.view !== "month" || e.touches.length !== 1) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, { passive: true });
+  body.addEventListener("touchend", e => {
+    if (sched.view !== "month" || !st) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; st = 0;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    swiped = true; setTimeout(() => swiped = false, 400);
+    const dir = dx < 0 ? 1 : -1;
+    schedStep(dir);
+    const grid = body.querySelector(".smonth");
+    if (grid && grid.animate) grid.animate([{ transform: `translateX(${dir * 40}px)`, opacity: .3 }, { transform: "none", opacity: 1 }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
+  }, { passive: true });
+  // the tap at the end of a swipe shouldn't also open a day
+  body.addEventListener("click", e => { if (swiped) { e.stopPropagation(); e.preventDefault(); } }, true);
+}
 function schedStep(dir) {
   if (sched.view === "week") sched.date = sAdd(sched.date, 7 * dir);
   else if (sched.view === "month") { const d = sParse(sched.date); d.setDate(1); d.setMonth(d.getMonth() + dir); sched.date = sKey(d); }
