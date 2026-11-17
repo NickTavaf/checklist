@@ -711,6 +711,24 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .sweek.rows .smarks { flex-direction:row; flex-wrap:wrap; align-content:center; align-items:center; gap:3px; }
   .sweek.rows .smark { width:auto; max-width:100%; flex:0 1 auto; }
   .sweek.rows .smore { align-self:center; }
+  /* columns look: days stand up side by side, four across in two rows (next Monday fills the 8th) */
+  .sweek.cols { grid-template-columns:repeat(4, minmax(0,1fr)); grid-template-rows:repeat(2, minmax(0,1fr)); gap:5px; }
+  .sweek.cols .sday { padding:6px 5px; gap:5px; }
+  .sweek.cols .sday-head { flex-direction:column; align-items:flex-start; gap:0; }
+  .sweek.cols .sday-num { order:0; font-size:22px; }
+  .sweek.cols .sday-dow { order:-1; font-size:9px; }
+  .sweek.cols .sday-empty { font-size:8.5px; }
+  .sweek.cols .smark { font-size:10.5px; padding:2px 3px 2px 5px; }
+  .sweek.cols .smark .mt { -webkit-line-clamp:4; }
+  .sweek.cols .shol-line { font-size:9px; }
+  /* swipe look: three columns on screen, slide sideways for the rest */
+  .sweek.swipe { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:6px; padding-bottom:4px; scrollbar-width:none; }
+  .sweek.swipe::-webkit-scrollbar { display:none; }
+  .sweek.swipe .sday { flex:0 0 calc((100% - 12px) / 3.25); scroll-snap-align:start; padding:7px 6px; }
+  .sweek.swipe .sday-head { flex-direction:column; align-items:flex-start; gap:0; }
+  .sweek.swipe .sday-num { order:0; font-size:24px; }
+  .sweek.swipe .sday-dow { order:-1; }
+  .sweek.swipe .smark .mt { -webkit-line-clamp:5; }
 }
 
 /* month: the whole month fits; rows share the height */
@@ -747,7 +765,26 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .smonth.has-pick { flex:0 0 auto; height:min(52%, 320px); }
   .smonth .sday.is-picked { outline:3px solid var(--poster-ui-accent); outline-offset:1px; }
   .smonth .sday .shol-inline { display:none !important; }
-  .sday-blank { visibility:hidden; }
+  .smonth-edge, .smonth-ghost { min-width:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; gap:2px; padding:4px 6px; border:1.5px dashed color-mix(in srgb, var(--poster-border) 35%, transparent); background:transparent; color:var(--poster-text-soft); text-align:left; cursor:pointer; overflow:hidden; }
+  .smonth-edge.tail { justify-content:center; align-items:flex-end; text-align:right; }
+  .smonth-edge .me-big { font:800 clamp(18px, 7vw, 30px)/.9 var(--poster-display); text-transform:uppercase; color:var(--poster-text); white-space:nowrap; }
+  .smonth-edge .me-small { font:700 10px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+  .smonth-edge.narrow { align-items:center; text-align:center; padding:4px 2px; }
+  .smonth-edge.narrow .me-big { font-size:18px; }
+  .smonth-edge.narrow .me-small { font-size:9px; letter-spacing:0; }
+  /* line: no box, just a thin rule across the gap with the neighbor month on it */
+  .smonth-edge.e-line { border:0; justify-content:center; padding:0; position:relative; }
+  .smonth-edge.e-line::before { content:""; position:absolute; left:4px; right:4px; top:50%; border-top:2px solid var(--poster-border); opacity:.35; }
+  .smonth-edge.e-line .me-small { position:relative; background:var(--poster-bg); padding:2px 6px; }
+  .smonth-edge.e-line.lead .me-small { padding-left:0; } .smonth-edge.e-line.tail .me-small { padding-right:0; }
+  .smonth-edge.e-line.lead { align-items:flex-start; } .smonth-edge.e-line.tail { align-items:flex-end; }
+  .smonth-edge.e-line.narrow { align-items:center; } .smonth-edge.e-line.narrow .me-small { margin:0; padding:2px 3px; }
+  /* stripes: the gap is hatched, like the space isn't part of this month */
+  .smonth-edge.e-stripes { border:0; background:repeating-linear-gradient(-45deg, color-mix(in srgb, var(--poster-border) 14%, transparent) 0 2px, transparent 2px 9px); justify-content:center; }
+  .smonth-edge.e-stripes.tail .me-small { font-size:16px; color:var(--poster-text); opacity:.5; }
+  /* ghost: the neighbor month's dates, faded and dashed */
+  .smonth-ghost { display:block; padding:5px 6px; text-align:left; border:1.5px dashed color-mix(in srgb, var(--poster-border) 30%, transparent); background:transparent; color:var(--poster-text-soft); opacity:.6; cursor:pointer; }
+  .smonth-ghost span { font:800 17px/1 var(--poster-display); }
   .smonth .sday.is-today.is-picked { outline-color:var(--poster-text); }
 }
 /* the day you tapped in the phone's month view, with every name written out */
@@ -2614,8 +2651,35 @@ function schedDayRange() {
   return [sAdd(start, -14), sAdd(end, 14)];
 }
 
+// Phone month: what fills the spots before the 1st and after the last day, so the grid never looks
+// lopsided. Looks: "label" (month names), "line" (a thin rule), "ghost" (faded neighbor dates), "stripes"
+const MONTH_EDGES = ["label", "line", "ghost", "stripes"];
+function monthEdge() { try { const v = localStorage.getItem("monthEdge"); return MONTH_EDGES.includes(v) ? v : "label"; } catch (e) { return "label"; } }
+function monthCellsPhone(cells, m, items) {
+  const look = monthEdge();
+  const inM = k => sParse(k).getMonth() === m.getMonth();
+  const lead = cells.findIndex(inM), lastIn = cells.length - 1 - [...cells].reverse().findIndex(inM), tail = cells.length - 1 - lastIn;
+  const days = cells.filter(inM).map(k => dayBoxHTML(k, items[k], { month: m })).join("");
+  if (look === "ghost") {
+    const g = (k, step) => `<button type="button" class="smonth-ghost" data-step="${step}" aria-label="${fmtDate(k)}"><span>${sParse(k).getDate()}</span></button>`;
+    return cells.slice(0, lead).map(k => g(k, -1)).join("") + days + cells.slice(lastIn + 1).map(k => g(k, 1)).join("");
+  }
+  const next = new Date(m.getFullYear(), m.getMonth() + 1, 1), prev = new Date(m.getFullYear(), m.getMonth() - 1, 1);
+  const name = (d, n) => d.toLocaleDateString("en-US", { month: n < 3 ? "short" : "long" });
+  const cell = (side, n, step, inner) => `<button type="button" class="smonth-edge e-${look} ${side}${n < 3 ? " narrow" : ""}" data-step="${step}" style="grid-column:span ${n}" aria-label="${step < 0 ? name(prev, 9) : name(next, 9)}">${inner}</button>`;
+  let lHTML = "", tHTML = "";
+  if (look === "label") {
+    lHTML = n => `<span class="me-big">${name(m, n)}</span><span class="me-small">‹ ${name(prev, n)}</span>`;
+    tHTML = n => `<span class="me-small">${name(next, n)} ›</span>`;
+  } else if (look === "line") {
+    lHTML = n => `<span class="me-small">‹ ${name(prev, n)}</span>`;
+    tHTML = n => `<span class="me-small">${name(next, n)} ›</span>`;
+  } else { lHTML = () => ""; tHTML = () => `<span class="me-small">›</span>`; }
+  return (lead ? cell("lead", lead, -1, lHTML(lead)) : "") + days + (tail ? cell("tail", tail, 1, tHTML(tail)) : "");
+}
 // phone week look: "boxes" (two columns) or "rows" (one line per day)
-function weekLook() { try { return localStorage.getItem("weekLook") === "rows" ? "rows" : "boxes"; } catch (e) { return "boxes"; } }
+const WEEK_LOOKS = ["boxes", "rows", "cols", "swipe"];
+function weekLook() { try { const v = localStorage.getItem("weekLook"); return WEEK_LOOKS.includes(v) ? v : "boxes"; } catch (e) { return "boxes"; } }
 function openDay(key) { sched.view = "day"; sched.date = key; saveSchedPrefs(); renderSchedule(); }
 
 // Size the calendar area so the view fills the rest of the screen exactly
@@ -2654,12 +2718,13 @@ function renderSchedule() {
     title.textContent = a.getMonth() === b.getMonth()
       ? `${a.toLocaleDateString("en-US",{month:"short"})} ${a.getDate()} – ${b.getDate()}`
       : `${a.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
-    const phoneWeek = window.innerWidth < 700, rows = phoneWeek && weekLook() === "rows";
+    const phoneWeek = window.innerWidth < 700, look = phoneWeek ? weekLook() : "", rows = look === "rows";
     // phone boxes come in pairs, so next Monday fills the 8th spot (faded, like other months' days)
-    const extra = phoneWeek && !rows ? dayBoxHTML(sAdd(mon, 7), items[sAdd(mon, 7)], {}).replace('class="sday', 'class="sday is-out is-next') : "";
-    root.innerHTML = `<div class="sweek${rows ? " rows" : ""}">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}${extra}</div>`;
+    const extra = phoneWeek && (look === "boxes" || look === "cols") ? dayBoxHTML(sAdd(mon, 7), items[sAdd(mon, 7)], {}).replace('class="sday', 'class="sday is-out is-next') : "";
+    root.innerHTML = `<div class="sweek${look && look !== "boxes" ? " " + look : ""}">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}${extra}</div>`;
     root.querySelectorAll(".sweek .sday").forEach(el => { el.insertAdjacentHTML("beforeend", `<span class="smore"></span>`); el.onclick = e => { if (!e.target.closest(".smark, .sopen, button")) openDay(el.dataset.date); }; });
     if (window.innerWidth < 700) fitMarks(root.querySelectorAll(".sweek .smarks"));
+    if (look === "swipe") { const t = root.querySelector(".sweek .is-today"); if (t) t.parentNode.scrollLeft = t.offsetLeft - t.parentNode.offsetLeft; }
   } else if (sched.view === "month") {
     const m = sParse(sched.date); m.setDate(1);
     title.textContent = m.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -2674,7 +2739,7 @@ function renderSchedule() {
     const blankOut = window.innerWidth < 700;   // phone: leave other months' days blank to save room
     if (phone && (!sched.pick || sched.pick.slice(0, 7) !== sKey(m).slice(0, 7))) sched.pick = getTodayStr().slice(0, 7) === sKey(m).slice(0, 7) ? getTodayStr() : sKey(m);
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
-      <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => blankOut && sParse(k).getMonth() !== m.getMonth() ? `<div class="sday-blank" aria-hidden="true"></div>` : dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
+      <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${(blankOut ? monthCellsPhone(cells, m, items) : cells.map(k => dayBoxHTML(k, items[k], { month: m })).join(""))}</div>`;
     markHTML.inMonth = false;
     if (phone) {
       const pick = document.createElement("div"); pick.className = "smonth-pick";
@@ -2685,6 +2750,7 @@ function renderSchedule() {
       box.querySelector(".sopen-day").onclick = () => openDay(sched.pick);
       root.querySelector(`.smonth .sday[data-date="${sched.pick}"]`)?.classList.add("is-picked");
     }
+    root.querySelectorAll(".smonth-edge, .smonth-ghost").forEach(b => b.onclick = () => schedStep(+b.dataset.step));
     // In Month, tapping anywhere in a day (markers included) opens that day (on a phone: shows it underneath)
     root.querySelectorAll(".smonth .sday").forEach(el => {
       el.onclick = () => { if (phone) { sched.pick = el.dataset.date; renderSchedule(); } else openDay(el.dataset.date); };
