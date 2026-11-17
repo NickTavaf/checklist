@@ -11,7 +11,9 @@ things a website can't do:
   that isn't finished yet, and one for each calendar event. They update by themselves when
   you check things off or sync, and there's an on/off switch in the ☰ menu.
 - **Haptics.** A small tap when you mark something complete or turned in.
-- **Status bar** text that stays readable on whatever header colour you pick.
+- **Status bar** text that stays readable on whatever header colour you pick, with a strip
+  behind it so scrolled pages don't run under the clock.
+- **Portrait only**, like most phone apps (sideways, the title slid under the camera cutout).
 
 The website is not changed by any of this. The app gets its own copy of the page each time
 you build it.
@@ -27,6 +29,8 @@ you build it.
 | `scripts/build-www.mjs` | Makes the app's offline copy of the page in `www/`. |
 | `ios/` | The Xcode project. |
 | `privacy.html` | Privacy policy (App Store needs a link to one). |
+| `app-store/screenshots/` | Six 6.9" iPhone screenshots for the App Store listing. |
+| `ios/App/App/PrivacyInfo.xcprivacy` | Apple's privacy manifest (matches the App Privacy answers). |
 
 ## Updating the app after you change the website
 
@@ -34,6 +38,9 @@ you build it.
 npm install          # first time only
 npm run ios          # builds www/, copies it into the Xcode project, opens Xcode
 ```
+
+(If `npm install` fails with a permissions error about `~/.npm`, run it as
+`npm_config_cache=~/.npm-cache-checklist npm install`.)
 
 Then press ▶ in Xcode. For an App Store update, bump the version (see below) and upload again.
 
@@ -45,7 +52,7 @@ These steps need you (they involve your Apple account and money):
    [developer.apple.com/programs](https://developer.apple.com/programs/enroll/).
    Approval usually takes a day or two.
 2. **Sign in to Xcode** with that Apple ID: Xcode → Settings → Accounts → +.
-3. **Pick your team:** open `ios/App/App.xcodeproj`, click **App** in the left sidebar →
+3. **Pick your team:** open `ios/App/App.xcworkspace` (the workspace, not the `.xcodeproj`), click **App** in the left sidebar →
    **Signing & Capabilities** → choose your team under *Team*. Leave *Automatically manage
    signing* on. If Xcode says the bundle ID is taken, change `com.nicktavaf.checklist` to
    something else unique (also in `capacitor.config.json`).
@@ -61,6 +68,8 @@ These steps need you (they involve your Apple account and money):
      File → Save Screen)
    - **App Privacy** answers: *User Content (other user content)* is collected, used for
      *App Functionality*, **not** linked to identity, **not** used for tracking.
+   - the ready-to-paste listing text, reviewer notes and screenshot order are in the
+     "Checklist: App Store listing kit" doc
    - Age rating questionnaire (all "None" → 4+)
 6. **Upload:** in Xcode choose *Any iOS Device* at the top, then Product → Archive →
    Distribute App → App Store Connect → Upload.

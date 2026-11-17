@@ -168,7 +168,25 @@
     });
   }
 
+  /* ---------- say where a syllabus goes before it's sent (App Store rule 5.1.2) ---------- */
+  function addAiNotice() {
+    const parse = document.getElementById("parseUploadBtn");
+    if (!parse || document.getElementById("aiNotice")) return;
+    const note = document.createElement("p");
+    note.id = "aiNotice";
+    note.style.cssText = "margin:10px 0 0;font-size:12.5px;line-height:1.4;opacity:.75";
+    note.textContent = "When you tap Parse Syllabus, the files or text you added are sent to our server and read by an AI model (Cloudflare Workers AI) to find the due dates. They aren't kept afterwards.";
+    parse.closest(".modal-actions").after(note);
+  }
+
+  /* ---------- keep scrolled content from showing through the status bar ---------- */
+  const strip = document.createElement("style");
+  strip.textContent = "body::before{content:'';position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--poster-bg,#fff);z-index:2000;pointer-events:none}";
+  document.head.appendChild(strip);
+
+  console.log("native.js ready · speech recognition " + (window.SpeechRecognition || window.webkitSpeechRecognition ? "available" : "missing"));
   addReminderSwitch();
+  addAiNotice();
   updateStatusBar();
   if (SplashScreen) SplashScreen.hide().catch(() => {});
   setTimeout(askForReminders, 1200);
