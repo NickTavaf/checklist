@@ -537,87 +537,50 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 @media (min-width:900px) { .sched { padding-left:max(32px,env(safe-area-inset-left)); padding-right:max(32px,env(safe-area-inset-right)); } }
 
 /* ---- toolbar ----
-   One slim row on wide screens so the calendar keeps its height. Three looks, set by data-bar:
-   a = compact boxes, b = light tabs, c = centered title (views left, actions right) */
+   One slim row: ‹ title › on the left, a small Day/Week/Month switch in the middle,
+   Today / Assignments / + Add on the right. Phones get two short rows. */
 .sched-bar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 12px; }
 .sb-tools { display:contents; }
 .sb-break { display:none; flex-basis:100%; height:0; }
-.sb-space { flex:1 1 0; min-width:0; }
+.sb-space, .sb-space2 { flex:1 1 0; min-width:0; }
 .sched-title { flex:0 1 auto; min-width:0; margin:0; font:800 clamp(28px,3.4vw,44px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sched-btn { min-width:36px; min-height:36px; padding:5px 11px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 15px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
 .sched-btn:disabled { opacity:.3; cursor:default; }
 .sched-btn:not(:disabled):active { transform:translate(1px,1px); }
 .sb-arrow { width:36px; padding:0; font-size:18px; }
-.sched-btn.sched-add { background:var(--poster-ui-accent); color:var(--poster-on-accent); border:2px solid var(--poster-border); box-shadow:3px 3px 0 var(--poster-border); white-space:nowrap; }
+.sched-bar .sb-arrow { width:28px; min-width:28px; border-color:transparent; background:transparent; font-size:26px; }
+.sched-btn.sched-add { background:var(--poster-ui-accent); color:var(--poster-on-accent); box-shadow:3px 3px 0 var(--poster-border); white-space:nowrap; }
 .sched-btn.sched-add:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
 .sched-seg { display:flex; border:2px solid var(--poster-border); background:var(--poster-card-bg); }
-.sched-seg button { min-height:32px; padding:5px 14px; border:0; background:transparent; color:var(--poster-text); font:600 15px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
+.sched-seg button { min-height:28px; padding:3px 11px; border:0; background:transparent; color:var(--poster-text); font:600 13px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.04em; }
 .sched-seg button + button { border-left:2px solid var(--poster-border); }
 .sched-seg button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
-.sched-toggle { display:inline-flex; align-items:center; gap:8px; min-height:36px; padding:4px 2px; border:0; background:transparent; color:var(--poster-text); font:600 10.5px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
-.sched-toggle .knob { width:32px; height:18px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
-.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:10px; height:10px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
-.sched-toggle[aria-checked="true"] .knob { background:var(--poster-ui-accent); }
-.sched-toggle[aria-checked="true"] .knob::after { transform:translateX(14px); background:var(--poster-on-accent); }
+/* the assignments switch is a regular square button with a little checkbox */
+.sched-toggle { display:inline-flex; align-items:center; gap:7px; min-height:32px; padding:4px 10px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 13px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; }
+.sched-toggle .knob { width:12px; height:12px; border:2px solid var(--poster-border); flex-shrink:0; display:grid; place-items:center; font:900 9px/1 var(--poster-sans); }
+.sched-toggle[aria-checked="true"] .knob { background:var(--poster-ui-accent); border-color:var(--poster-ui-accent); color:var(--poster-on-accent); }
+.sched-toggle[aria-checked="true"] .knob::after { content:"✓"; }
 .sched-toggle .short { display:none; }
 
-/* order shared by a and b: title ‹ › … views today switch add */
-.sched-title { order:1; } .sb-prev { order:2; } .sb-next { order:3; } .sb-space { order:4; }
-.sched-views { order:5; } .sb-today { order:6; } .sched-toggle { order:7; } .sched-add { order:8; }
-.sb-prev { margin-left:2px; } .sb-next { margin-left:-6px; }
+.sb-prev { order:1; } .sched-title { order:2; } .sb-next { order:3; } .sb-space { order:4; }
+.sched-views { order:5; } .sb-space2 { order:6; } .sb-today { order:7; } .sched-toggle { order:8; } .sched-add { order:9; }
+.sched-bar .sb-prev { margin-right:-4px; } .sched-bar .sb-next { margin-left:-4px; }
 
-/* B: light tabs, nothing boxed except Add */
-.sched-bar[data-bar="b"] .sched-seg { border:0; background:transparent; gap:4px; }
-.sched-bar[data-bar="b"] .sched-seg button { border:0; padding:6px 10px; border-bottom:3px solid transparent; }
-.sched-bar[data-bar="b"] .sched-seg button[aria-pressed="true"] { background:transparent; color:var(--poster-text); border-bottom-color:var(--poster-ui-accent); }
-.sched-bar[data-bar="b"] .sched-btn:not(.sched-add) { border-color:transparent; background:transparent; }
-.sched-bar[data-bar="b"] .sb-today { text-decoration:underline; text-underline-offset:4px; }
-.sched-bar[data-bar="b"] .sb-arrow { font-size:24px; }
-/* chip switch for b and c */
-.sched-bar[data-bar="b"] .sched-toggle, .sched-bar[data-bar="c"] .sched-toggle { padding:4px 12px; min-height:32px; border:2px solid var(--poster-border); border-radius:999px; }
-.sched-bar[data-bar="b"] .sched-toggle .knob, .sched-bar[data-bar="c"] .sched-toggle .knob { display:none; }
-.sched-bar[data-bar="b"] .sched-toggle::before, .sched-bar[data-bar="c"] .sched-toggle::before { content:"○"; font-size:12px; }
-.sched-bar[data-bar="b"] .sched-toggle[aria-checked="true"], .sched-bar[data-bar="c"] .sched-toggle[aria-checked="true"] { background:var(--poster-text); color:var(--poster-bg); }
-.sched-bar[data-bar="b"] .sched-toggle[aria-checked="true"]::before, .sched-bar[data-bar="c"] .sched-toggle[aria-checked="true"]::before { content:"✓"; }
-
-/* C: views on the left, ‹ title › in the middle, actions on the right */
-.sched-bar[data-bar="c"] .sched-views { order:1; }
-.sched-bar[data-bar="c"] .sb-space { order:2; }
-.sched-bar[data-bar="c"] .sb-prev { order:3; border-color:transparent; background:transparent; font-size:24px; }
-.sched-bar[data-bar="c"] .sched-title { order:4; text-align:center; }
-.sched-bar[data-bar="c"] .sb-next { order:5; margin-left:0; border-color:transparent; background:transparent; font-size:24px; }
-.sched-bar[data-bar="c"] .sb-space2 { order:6; }
-.sched-bar[data-bar="c"] .sb-today { order:7; }
-.sched-bar[data-bar="c"] .sched-toggle { order:8; }
-.sched-bar[data-bar="c"] .sched-add { order:9; }
-.sb-space2 { display:none; flex:1 1 0; min-width:0; }
-.sched-bar[data-bar="c"] .sb-space2 { display:block; }
-
-/* narrower screens: two short rows */
 @media (max-width:899px) {
   .sb-break { display:block; order:5; }
-  .sched-bar .sb-space { order:4; }
-  .sched-bar .sched-add { order:4; margin-left:auto; }
-  .sched-bar .sched-views { order:6; }
-  .sched-bar .sb-today { order:7; }
-  .sched-bar .sched-toggle { order:8; margin-left:auto; }
-  .sched-bar[data-bar="c"] .sched-title { order:1; text-align:left; }
-  .sched-bar[data-bar="c"] .sb-prev { order:2; } .sched-bar[data-bar="c"] .sb-next { order:3; }
-  .sched-bar[data-bar="c"] .sb-space2 { display:none; }
-  .sched-bar[data-bar="c"] .sched-add, .sched-bar[data-bar="c"] .sb-space { order:4; }
-  .sched-bar[data-bar="c"] .sched-views { order:6; } .sched-bar[data-bar="c"] .sb-today { order:7; } .sched-bar[data-bar="c"] .sched-toggle { order:8; }
+  .sched-add { order:4; margin-left:auto; }
+  .sb-space, .sb-space2 { display:none; }
+  .sched-views { order:6; } .sb-today { order:7; margin-left:auto; } .sched-toggle { order:8; }
 }
 @media (max-width:520px) {
   .sched-bar { gap:8px; margin-bottom:10px; }
   .sched-title { font-size:26px; }
-  .sched-btn { min-height:34px; padding:4px 8px; font-size:14px; }
-  .sb-arrow { width:32px; min-width:32px; }
-  .sched-seg button { min-height:30px; padding:4px 10px; font-size:14px; }
-  .sched-toggle { min-height:30px; gap:6px; }
+  .sched-btn { min-height:32px; padding:4px 8px; font-size:14px; }
+  .sched-seg button { min-height:28px; padding:3px 9px; font-size:13px; }
+  .sched-toggle { min-height:32px; padding:3px 8px; gap:6px; }
   .sched-toggle .long { display:none; }
   .sched-toggle .short { display:inline; }
   .sched-add .long { display:none; }
-  .sched-bar[data-bar="b"] .sched-toggle, .sched-bar[data-bar="c"] .sched-toggle { padding:3px 9px; min-height:30px; }
 }
 
 /* the schedule fills the screen, so the page itself never scrolls */
@@ -773,68 +736,139 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 
 /* ================= Notebook page =================
    One page per day. The date sits in the corner; flip back and forward through days.
-   Three looks, set by data-nb on .nb: lined (spiral notebook), dots (dot-grid journal), legal (legal pad). */
+   Four real notebook types, picked from the ☰ menu (data-nb on .nb):
+   spiral (spiral-bound, turns sideways), legal (legal pad, flips up over the top),
+   comp (composition book, turns like a book), eng (engineering pad, page tears off). */
 body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb { max-width:900px; margin:0 auto; padding:4px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
-.nb-bar { display:flex; align-items:center; gap:10px; margin:0 0 14px; flex-wrap:wrap; }
-.nb-bar h1 { margin:0 auto 0 0; font:800 clamp(30px,5vw,52px)/.9 var(--poster-display); text-transform:uppercase; }
+.nb-bar { display:flex; align-items:center; gap:10px; margin:0 0 14px; }
+.nb-bar h1 { margin:0 auto 0 0; min-width:0; font:800 clamp(28px,4vw,44px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .nb-saved { font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; color:var(--poster-text-soft); min-width:56px; text-align:right; }
-.nb-body { display:flex; flex-direction:column; min-height:0; padding:0 6px 6px 0; }
-.nb-page { --line:32px; --ink:#1d2433; --paper:#ffffff; --rule:#c8d9f2; --margin:#f08a8a; --head-pad:20px;
-  flex:1; min-height:0; position:relative; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); }
-.nb-head { flex-shrink:0; display:flex; align-items:baseline; justify-content:flex-end; gap:10px; padding:var(--head-pad) 22px 6px; }
+.nb-menu-wrap { position:relative; }
+.nb-menu-btn { width:40px; height:36px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); }
+.nb-menu-btn span { display:block; width:18px; height:2px; background:currentColor; }
+.nb-menu { position:absolute; top:calc(100% + 8px); right:0; z-index:50; width:260px; max-width:calc(100vw - 32px); padding:8px; display:flex; flex-direction:column; gap:4px; background:var(--poster-card-bg); color:var(--poster-text); border:3px solid var(--poster-border); box-shadow:5px 5px 0 var(--poster-border); }
+.nb-menu-title { padding:4px 6px 6px; font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--poster-text-soft); }
+.nb-opt { display:flex; align-items:center; gap:12px; width:100%; padding:8px 6px; border:2px solid transparent; background:transparent; color:inherit; text-align:left; font:600 15px/1.2 var(--poster-sans); }
+.nb-opt:hover { background:var(--poster-accent-soft); }
+.nb-opt[aria-checked="true"] { border-color:var(--poster-border); }
+.nb-opt small { display:block; margin-top:2px; font:500 11px/1.3 var(--poster-sans); color:var(--poster-text-soft); }
+.nb-swatch { flex-shrink:0; width:34px; height:42px; border:1.5px solid #00000055; }
+.nb-swatch.spiral { background:linear-gradient(90deg, transparent 6px, #f08a8a 6px 7.5px, transparent 7.5px), repeating-linear-gradient(#fff 0 6px, #c8d9f2 6px 7px); border-left:4px dotted #555; }
+.nb-swatch.legal { background:linear-gradient(90deg, transparent 8px, #e0605a 8px 9px, transparent 9px), repeating-linear-gradient(#FFF4A3 0 6px, #8fb3dc 6px 7px); border-top:6px solid #7b2f2a; }
+.nb-swatch.comp { background:repeating-conic-gradient(#111 0 12deg, #eee 12deg 17deg, #111 17deg 35deg, #ddd 35deg 38deg) 0 0/14px 14px; }
+.nb-swatch.eng { background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/6px 6px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/6px 6px, #EAF4E2; border-top:7px solid #EAF4E2; box-shadow:inset 0 1px 0 #6a9a5a; }
+
+.nb-body { position:relative; min-height:0; padding:0 8px 8px 0; perspective:1800px; }
+.nb-page { --line:32px; --ink:#1d2433; --paper:#ffffff; --rule:#c8d9f2; --margin:#f08a8a;
+  position:absolute; inset:0 8px 8px 0; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); }
+.nb-head { flex-shrink:0; display:flex; align-items:baseline; justify-content:flex-end; gap:10px; padding:18px 22px 6px; }
 .nb-dow { font:700 15px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.08em; opacity:.6; }
 .nb-date { font:700 22px/1 var(--poster-display); text-transform:uppercase; }
+.nb-label { display:none; }
 .nb-text { flex:1; min-height:0; width:100%; resize:none; border:0; outline:none; background-color:transparent; color:inherit;
   padding:0 22px 22px; font:400 17px/var(--line) var(--poster-sans); background-attachment:local; }
 .nb-text:focus-visible { outline:none; }
 .nb-text::placeholder { color:inherit; opacity:.35; }
-.nb-page.flip-next { animation:nbNext .28s ease-out; }
-.nb-page.flip-prev { animation:nbPrev .28s ease-out; }
-@keyframes nbNext { from { opacity:.2; transform:translateX(24px) rotate(.6deg); } to { opacity:1; transform:none; } }
-@keyframes nbPrev { from { opacity:.2; transform:translateX(-24px) rotate(-.6deg); } to { opacity:1; transform:none; } }
+/* the page that's turning (a copy laid on top while it animates) */
+.nb-turn { z-index:5; pointer-events:none; backface-visibility:hidden; will-change:transform; }
+.nb-turn::selection { background:transparent; }
 
-/* 1. Lined spiral notebook: ruled lines, red margin, punched holes, handwriting */
-.nb[data-nb="lined"] .nb-page { box-shadow:4px 4px 0 var(--poster-border); border:2px solid var(--poster-border); border-radius:4px 10px 10px 4px; padding-left:46px;
-  background-image:radial-gradient(circle at 20px 50%, var(--poster-bg) 8px, rgba(0,0,0,.25) 9px, transparent 10px);
-  background-size:40px 64px; background-repeat:repeat-y; background-position:0 20px; }
-.nb[data-nb="lined"] .nb-page::before { content:""; position:absolute; top:0; bottom:0; left:86px; width:2px; background:var(--margin); opacity:.8; }
-.nb[data-nb="lined"] .nb-head { justify-content:flex-end; padding-top:18px; border-bottom:2px solid var(--rule); margin:0 0 0 0; }
-.nb[data-nb="lined"] .nb-dow { font:700 22px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; opacity:.7; }
-.nb[data-nb="lined"] .nb-date { font:700 30px/1 "Caveat", cursive; text-transform:none; }
-.nb[data-nb="lined"] .nb-text { padding-left:56px; font:500 24px/var(--line) "Caveat", cursive;
+/* ---- 1. Spiral notebook: ruled lines, red margin, wire coil, handwriting ---- */
+.nb[data-nb="spiral"] .nb-page { border:1.5px solid #b9c3d3; border-left:0; border-radius:2px 8px 8px 2px; padding-left:34px; box-shadow:4px 4px 0 var(--poster-border);
+  background-image:radial-gradient(circle at 18px 50%, var(--poster-bg) 5px, #9aa4b2 5.5px, transparent 6.5px); background-size:34px 22px; background-repeat:repeat-y; }
+.nb[data-nb="spiral"] .nb-page::before { content:""; position:absolute; top:6px; bottom:6px; left:-6px; width:26px; z-index:2;
+  background:repeating-linear-gradient(transparent 0 6px, #6b7280 6px 9px, #d1d5db 9px 10px, transparent 10px 22px); border-radius:6px; }
+.nb[data-nb="spiral"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:88px; width:2px; background:var(--margin); opacity:.85; }
+.nb[data-nb="spiral"] .nb-head { border-bottom:2px solid var(--rule); }
+.nb[data-nb="spiral"] .nb-dow { font:700 22px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; opacity:.7; }
+.nb[data-nb="spiral"] .nb-date { font:700 30px/1 "Caveat", cursive; text-transform:none; }
+.nb[data-nb="spiral"] .nb-text { padding-left:66px; font:500 24px/var(--line) "Caveat", cursive;
   background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
+.nb[data-nb="spiral"] .nb-turn { transform-origin:0 50%; }
+.nb[data-nb="spiral"] .nb-turn.go-next { animation:spiralOut .62s cubic-bezier(.45,.05,.35,1) forwards; }
+.nb[data-nb="spiral"] .nb-turn.go-prev { animation:spiralOut .62s cubic-bezier(.45,.05,.35,1) reverse forwards; }
+@keyframes spiralOut {
+  0%   { transform:rotateY(0); box-shadow:4px 4px 0 var(--poster-border); filter:brightness(1); }
+  45%  { filter:brightness(.92); box-shadow:-30px 10px 40px #0004; }
+  100% { transform:rotateY(-178deg); box-shadow:none; filter:brightness(.8); }
+}
 
-/* 2. Dot-grid journal: poster frame, dots, big date block */
-.nb[data-nb="dots"] .nb-page { --line:28px; --paper:var(--poster-card-bg); --ink:var(--poster-text); border:3px solid var(--poster-border); box-shadow:5px 5px 0 var(--poster-border); }
-.nb[data-nb="dots"] .nb-head { justify-content:space-between; align-items:stretch; padding:0; border-bottom:3px solid var(--poster-border); }
-.nb[data-nb="dots"] .nb-dow { align-self:center; padding:0 16px; font-size:12px; opacity:.7; }
-.nb[data-nb="dots"] .nb-date { padding:12px 18px; background:var(--poster-ui-accent); color:var(--poster-on-accent); font-size:28px; border-left:3px solid var(--poster-border); }
-.nb[data-nb="dots"] .nb-text { padding:14px 22px 22px; font:400 16px/var(--line) var(--poster-sans);
-  background-image:radial-gradient(circle, color-mix(in srgb, var(--poster-text) 28%, transparent) 1.2px, transparent 1.6px); background-size:var(--line) var(--line); background-position:-14px 0; }
-
-/* 3. Legal pad: yellow paper, blue rules, double red margin, glued top strip */
-.nb[data-nb="legal"] .nb-page { --paper:#FFF4A3; --ink:#1f2a3a; --rule:#8fb3dc; --margin:#e0605a; box-shadow:0 2px 0 #e9dc86, 0 4px 0 #f5ea99, 4px 8px 0 var(--poster-border); border-top:22px solid #7b2f2a; }
+/* ---- 2. Legal pad: yellow, blue rules, double red margin; pages flip up over the glued top ---- */
+.nb[data-nb="legal"] .nb-page { --paper:#FFF4A3; --ink:#1f2a3a; --rule:#8fb3dc; --margin:#e0605a; box-shadow:4px 6px 0 var(--poster-border); }
+.nb[data-nb="legal"] .nb-body::before { content:""; position:absolute; z-index:6; top:-10px; left:-4px; right:4px; height:24px; background:#7b2f2a; box-shadow:0 2px 0 #5c211d; }
 .nb[data-nb="legal"] .nb-page::before, .nb[data-nb="legal"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; width:1.5px; background:var(--margin); left:64px; }
 .nb[data-nb="legal"] .nb-page::after { left:69px; }
-.nb[data-nb="legal"] .nb-head { padding-top:14px; padding-bottom:10px; }
+.nb[data-nb="legal"] .nb-head { padding-top:24px; padding-bottom:10px; }
 .nb[data-nb="legal"] .nb-dow { font-size:12px; }
 .nb[data-nb="legal"] .nb-date { font:600 20px/1 var(--poster-mono); letter-spacing:-.02em; }
 .nb[data-nb="legal"] .nb-text { padding-left:84px; font:400 16px/var(--line) var(--poster-sans);
   background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
+.nb[data-nb="legal"] .nb-turn { transform-origin:50% 0; }
+.nb[data-nb="legal"] .nb-turn.go-next { animation:legalUp .6s cubic-bezier(.5,0,.3,1) forwards; }
+.nb[data-nb="legal"] .nb-turn.go-prev { animation:legalUp .6s cubic-bezier(.5,0,.3,1) reverse forwards; }
+@keyframes legalUp {
+  0%   { transform:rotateX(0); filter:brightness(1); }
+  50%  { filter:brightness(.9); box-shadow:0 -20px 40px #0003; }
+  100% { transform:rotateX(178deg); filter:brightness(.75); box-shadow:none; }
+}
+
+/* ---- 3. Composition book: marbled cover around the page, college rule, DATE line; turns like a book ---- */
+.nb[data-nb="comp"] .nb-body { padding:0 8px 8px 0; }
+.nb[data-nb="comp"] .nb-page { --line:28px; --rule:#a9c4e8; --margin:#e57373; border:12px solid #111; border-left-width:16px;
+  border-image:repeating-conic-gradient(#111 0 12deg, #f2f2f2 12deg 16deg, #111 16deg 33deg, #cfcfcf 33deg 36deg) 12; box-shadow:4px 4px 0 var(--poster-border); }
+.nb[data-nb="comp"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:56px; width:1.5px; background:var(--margin); }
+.nb[data-nb="comp"] .nb-head { justify-content:space-between; align-items:flex-end; padding:16px 18px 8px 70px; }
+.nb[data-nb="comp"] .nb-label { display:flex; align-items:baseline; gap:8px; flex:1; max-width:280px; font:600 11px/1 var(--poster-mono); letter-spacing:.08em; color:#555; }
+.nb[data-nb="comp"] .nb-label b { flex:1; border-bottom:1.5px solid #555; padding:0 4px 2px; font:700 22px/1 "Caveat", cursive; color:var(--ink); letter-spacing:0; }
+.nb[data-nb="comp"] .nb-date { display:none; }
+.nb[data-nb="comp"] .nb-dow { font:700 20px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; }
+.nb[data-nb="comp"] .nb-text { padding-left:70px; font:500 22px/var(--line) "Caveat", cursive;
+  background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
+.nb[data-nb="comp"] .nb-turn { transform-origin:0 50%; }
+.nb[data-nb="comp"] .nb-turn.go-next { animation:compTurn .8s cubic-bezier(.55,.1,.3,1) forwards; }
+.nb[data-nb="comp"] .nb-turn.go-prev { animation:compTurn .8s cubic-bezier(.55,.1,.3,1) reverse forwards; }
+@keyframes compTurn {
+  0%   { transform:rotateY(0) skewY(0); filter:brightness(1); }
+  30%  { transform:rotateY(-40deg) skewY(-2deg); filter:brightness(.97); box-shadow:-20px 0 40px #0003; }
+  70%  { transform:rotateY(-140deg) skewY(2deg); filter:brightness(.85); }
+  100% { transform:rotateY(-180deg) skewY(0); filter:brightness(.8); box-shadow:none; }
+}
+
+/* ---- 4. Engineering pad: pale green grid, DATE / PAGE header boxes; the sheet tears off ---- */
+.nb[data-nb="eng"] .nb-page { --line:24px; --paper:#EAF4E2; --ink:#1f3324; border-top:4px solid #2f5d34; box-shadow:4px 4px 0 var(--poster-border); }
+.nb[data-nb="eng"] .nb-head { justify-content:flex-start; align-items:stretch; gap:0; padding:0; border-bottom:2px solid #6a9a5a; }
+.nb[data-nb="eng"] .nb-head > * { padding:10px 14px; border-right:1.5px solid #6a9a5a; }
+.nb[data-nb="eng"] .nb-label { display:block; flex:1; border-right:0; font:600 10px/1.2 var(--poster-mono); letter-spacing:.08em; color:#4b6b4f; }
+.nb[data-nb="eng"] .nb-label b { display:block; margin-top:4px; font:600 18px/1 var(--poster-mono); color:var(--ink); letter-spacing:-.02em; }
+.nb[data-nb="eng"] .nb-dow { order:-1; display:flex; flex-direction:column; justify-content:center; font:600 10px/1.2 var(--poster-mono); opacity:1; color:#4b6b4f; }
+.nb[data-nb="eng"] .nb-date { order:-1; font:600 18px/1 var(--poster-mono); letter-spacing:-.02em; display:flex; align-items:center; }
+.nb[data-nb="eng"] .nb-text { padding:12px 24px 24px; font:500 15px/var(--line) var(--poster-mono); text-transform:uppercase;
+  background-image:linear-gradient(#c6dcba 1px, transparent 1px), linear-gradient(90deg, #c6dcba 1px, transparent 1px), linear-gradient(#a8c79a 1px, transparent 1px), linear-gradient(90deg, #a8c79a 1px, transparent 1px);
+  background-size:var(--line) var(--line), var(--line) var(--line), calc(var(--line) * 5) calc(var(--line) * 5), calc(var(--line) * 5) calc(var(--line) * 5); }
+.nb[data-nb="eng"] .nb-turn { transform-origin:50% 0; }
+.nb[data-nb="eng"] .nb-turn.go-next { animation:engTear .7s cubic-bezier(.5,0,.75,0) forwards; }
+.nb[data-nb="eng"] .nb-turn.go-prev { animation:engTear .55s cubic-bezier(.25,1,.5,1) reverse forwards; }
+@keyframes engTear {
+  0%   { transform:translateY(0) rotate(0); opacity:1; }
+  18%  { transform:translateY(6px) rotate(-1.5deg); }
+  100% { transform:translateY(105%) translateX(8%) rotate(9deg); opacity:0; }
+}
 
 @media (max-width:520px) {
   .nb-bar { gap:8px; }
-  .nb-bar h1 { font-size:28px; }
   .nb-saved { display:none; }
-  .nb[data-nb="lined"] .nb-page { padding-left:30px; background-position:-8px 20px; }
-  .nb[data-nb="lined"] .nb-page::before { left:58px; }
-  .nb[data-nb="lined"] .nb-text { padding-left:40px; padding-right:12px; }
+  .nb[data-nb="spiral"] .nb-page::after { left:62px; }
+  .nb[data-nb="spiral"] .nb-text { padding-left:40px; padding-right:12px; }
   .nb[data-nb="legal"] .nb-page::before { left:36px; } .nb[data-nb="legal"] .nb-page::after { left:41px; }
   .nb[data-nb="legal"] .nb-text { padding-left:52px; padding-right:12px; }
+  .nb[data-nb="comp"] .nb-page::after { left:40px; }
+  .nb[data-nb="comp"] .nb-head { padding-left:48px; }
+  .nb[data-nb="comp"] .nb-text { padding-left:48px; padding-right:10px; }
+  .nb[data-nb="eng"] .nb-head > * { padding:8px 10px; }
   .nb-head { padding-left:12px; padding-right:12px; }
 }
-@media (prefers-reduced-motion:reduce) { .nb-page.flip-next, .nb-page.flip-prev { animation:none; } }
+@media (prefers-reduced-motion:reduce) { .nb-turn { display:none; } }
 </style>
 </head>
 <body>
@@ -888,7 +922,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 
 <div class="page" id="page-schedule" hidden>
   <div class="sched">
-    <div class="sched-bar" data-bar="a">
+    <div class="sched-bar">
       <h1 class="sched-title" id="schedTitle">Schedule</h1>
       <div class="sb-tools">
         <div class="sched-seg sched-views" id="schedViews" role="group" aria-label="View">
@@ -908,17 +942,27 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   </div>
 </div>
 <div class="page" id="page-notebook" hidden>
-  <div class="nb" data-nb="lined">
+  <div class="nb" data-nb="spiral">
     <div class="nb-bar">
       <h1>Notebook</h1>
       <span class="nb-saved" id="nbSaved" aria-live="polite"></span>
       <button type="button" class="sched-btn sb-arrow" id="nbPrev" aria-label="Previous page">&lsaquo;</button>
       <button type="button" class="sched-btn" id="nbToday">Today</button>
       <button type="button" class="sched-btn sb-arrow" id="nbNext" aria-label="Next page">&rsaquo;</button>
+      <div class="nb-menu-wrap">
+        <button type="button" class="nb-menu-btn" id="nbMenuBtn" aria-label="Choose notebook" aria-expanded="false" aria-haspopup="true"><span></span><span></span><span></span></button>
+        <div class="nb-menu" id="nbMenu" role="menu" hidden>
+          <div class="nb-menu-title">Notebook</div>
+          <button type="button" class="nb-opt" role="menuitemradio" data-nb="spiral"><span class="nb-swatch spiral"></span><span>Spiral notebook<small>Lined, turns sideways</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-nb="legal"><span class="nb-swatch legal"></span><span>Legal pad<small>Yellow, flips up over the top</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-nb="comp"><span class="nb-swatch comp"></span><span>Composition book<small>Marbled cover, turns like a book</small></span></button>
+          <button type="button" class="nb-opt" role="menuitemradio" data-nb="eng"><span class="nb-swatch eng"></span><span>Engineering pad<small>Green grid, tear off each sheet</small></span></button>
+        </div>
+      </div>
     </div>
     <div class="nb-body" id="nbBody">
       <div class="nb-page" id="nbPage">
-        <div class="nb-head"><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
+        <div class="nb-head"><span class="nb-label" id="nbLabel"></span><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
         <textarea class="nb-text" id="nbText" placeholder="Start writing…" aria-label="Notes for this day"></textarea>
       </div>
     </div>
@@ -2022,18 +2066,65 @@ function fitNotebook() {
   const top = body.getBoundingClientRect().top + window.scrollY;
   body.style.height = Math.max(320, window.innerHeight - top - 12) + "px";
 }
+function fillNbPage(page, day) {
+  const d = sParse(day), today = day === getTodayStr();
+  const style = document.querySelector(".nb").dataset.nb;
+  const dow = d.toLocaleDateString("en-US", { weekday: "long" });
+  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const dayOfYear = Math.round((d - new Date(d.getFullYear(), 0, 1)) / 864e5) + 1;
+  page.querySelector(".nb-dow").textContent = (today ? "Today · " : "") + dow;
+  page.querySelector(".nb-date").textContent = date;
+  page.querySelector(".nb-label").innerHTML = style === "comp" ? `Date <b>${date}</b>` : style === "eng" ? `Sheet <b>${String(dayOfYear).padStart(3, "0")}</b>` : "";
+  page.querySelector(".nb-text").value = (nbPages[day] && nbPages[day].text) || "";
+}
+// A copy of a page to lay on top while it turns (copies don't carry ids or typed text by themselves)
+function nbCopy(page) {
+  const c = page.cloneNode(true);
+  c.removeAttribute("id"); c.querySelectorAll("[id]").forEach(x => x.removeAttribute("id"));
+  const t = c.querySelector(".nb-text"); t.value = page.querySelector(".nb-text").value; t.readOnly = true; t.tabIndex = -1;
+  c.classList.add("nb-turn"); c.setAttribute("aria-hidden", "true");
+  return c;
+}
 function showNbPage(dir) {
-  const d = sParse(nbDay);
-  document.getElementById("nbDow").textContent = (nbDay === getTodayStr() ? "Today · " : "") + d.toLocaleDateString("en-US", { weekday: "long" });
-  document.getElementById("nbDate").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  nbText.value = (nbPages[nbDay] && nbPages[nbDay].text) || "";
+  const page = document.getElementById("nbPage");
+  document.querySelectorAll("#nbBody .nb-turn").forEach(x => x.remove());
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (dir > 0 && !reduce) {
+    // the old page turns away, revealing the new one underneath
+    const old = nbCopy(page);
+    page.after(old);
+    fillNbPage(page, nbDay);
+    old.classList.add("go-next");
+    old.addEventListener("animationend", () => old.remove(), { once: true });
+  } else if (dir < 0 && !reduce) {
+    // the previous page turns back down on top of the current one
+    const under = nbCopy(page); under.classList.remove("nb-turn"); under.style.zIndex = 4; under.setAttribute("aria-hidden", "true");
+    page.after(under);
+    fillNbPage(page, nbDay);
+    const incoming = nbCopy(page);
+    under.after(incoming);
+    incoming.classList.add("go-prev");
+    incoming.addEventListener("animationend", () => { incoming.remove(); under.remove(); }, { once: true });
+  } else {
+    fillNbPage(page, nbDay);
+  }
   document.getElementById("nbToday").disabled = nbDay === getTodayStr();
   document.getElementById("nbSaved").textContent = nbText.value ? "Saved" : "";
-  const page = document.getElementById("nbPage");
-  page.classList.remove("flip-next", "flip-prev");
-  if (dir) { void page.offsetWidth; page.classList.add(dir > 0 ? "flip-next" : "flip-prev"); }
   fitNotebook();
 }
+// Choose a notebook from the ☰ menu
+const nbEl = document.querySelector(".nb"), nbMenu = document.getElementById("nbMenu"), nbMenuBtn = document.getElementById("nbMenuBtn");
+function setNotebook(style) {
+  nbEl.dataset.nb = style;
+  document.querySelectorAll(".nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.nb === style)));
+  try { localStorage.setItem("notebookStyle", style); } catch(e) {}
+  fillNbPage(document.getElementById("nbPage"), nbDay);
+}
+function toggleNbMenu(open) { nbMenu.hidden = !open; nbMenuBtn.setAttribute("aria-expanded", String(open)); }
+nbMenuBtn.onclick = e => { e.stopPropagation(); toggleNbMenu(nbMenu.hidden); };
+nbMenu.addEventListener("click", e => { e.stopPropagation(); const o = e.target.closest(".nb-opt"); if (o) { setNotebook(o.dataset.nb); toggleNbMenu(false); } });
+document.addEventListener("click", () => { if (!nbMenu.hidden) toggleNbMenu(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !nbMenu.hidden) { toggleNbMenu(false); nbMenuBtn.focus(); } });
 function saveNbPage() {
   clearTimeout(nbTimer);
   const text = nbText.value;
@@ -2048,6 +2139,7 @@ document.getElementById("nbNext").onclick = () => flipNb(1);
 document.getElementById("nbToday").onclick = () => { const dir = getTodayStr() > nbDay ? 1 : -1; saveNbPage(); nbDay = getTodayStr(); showNbPage(dir); };
 window.addEventListener("resize", fitNotebook);
 window.addEventListener("hashchange", () => { if (location.hash === "#notebook") showNbPage(0); else saveNbPage(); });
+{ let s = "spiral"; try { s = localStorage.getItem("notebookStyle") || "spiral"; } catch(e) {} setNotebook(["spiral","legal","comp","eng"].includes(s) ? s : "spiral"); }
 showNbPage(0);
 
 // Keep the calendar in step with the Homework page (checking things off, syncing, new syllabi)
