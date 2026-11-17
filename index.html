@@ -678,18 +678,24 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .sweek .sday { cursor:pointer; }
 @media (max-width:699px) {
   #page-schedule { --s-gap:5px; --s-shadow:3px; }
-  .sweek .sday { padding:6px 4px; gap:6px; border-width:2px; }
-  .sweek .sday-head { flex-direction:column; align-items:center; gap:2px; }
-  .sweek .sday-dow { font-size:9px; letter-spacing:0; }
-  .sweek .sday-num { font-size:20px; }
-  .sweek .sday-empty { display:none; }
+  /* phone week: two columns of boxes (4 rows), so every name has room */
+  .sweek { grid-template-columns:repeat(2, minmax(0,1fr)); grid-template-rows:repeat(4, minmax(0,1fr)); }
+  .sweek .sday { padding:7px 8px; gap:5px; border-width:2px; }
+  .sweek .sday-head { flex-direction:row; align-items:baseline; justify-content:flex-start; gap:6px; }
+  .sweek .sday-dow { font-size:10px; }
+  .sweek .sday-num { font-size:20px; order:-1; }
+  .sweek .sday-empty { font-size:9px; opacity:.7; }
   .sweek .tlabel { display:none; }
-  .sweek .smarks { gap:4px; }
-  .sweek .smark { padding:2px 1px 2px 4px; border:0; border-left:3px solid var(--mc); background:transparent; color:inherit; font-size:9px; line-height:1.2; }
+  .sweek .shol-line { font-size:10.5px; line-height:1.2; }
+  .sweek .smarks { flex:1 1 0; gap:3px; }
+  .sweek .smark { padding:2px 4px 2px 6px; border:0; border-left:3px solid var(--mc); background:color-mix(in srgb, var(--mc) 10%, transparent); color:inherit; font-size:11.5px; line-height:1.2; }
   .sweek .smark .mtime { display:none; }
-  .sweek .smark .mt { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:normal; word-break:normal; }
+  .sweek .smark .mt { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:normal; word-break:normal; }
+  .sweek .smark.one-line .mt { -webkit-line-clamp:1; }
   .sweek .smark::before { display:none; }
-  .sweek .smark.is-done { background:color-mix(in srgb, var(--mc) 22%, transparent); }
+  .sweek .smark.is-done { background:color-mix(in srgb, var(--mc) 26%, transparent); }
+  .sweek .smark.is-done .mt { text-decoration:line-through; }
+  .sweek .smore { font-size:9.5px; }
 }
 
 /* month: the whole month fits; rows share the height */
@@ -716,7 +722,19 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .smonth .smark.is-done { background:transparent; box-shadow:inset 0 0 0 2px var(--mc); }
   .smonth .smark .mt { display:none; }
   .smonth-dows span { font-size:9px; padding-left:2px; }
+  .smonth.has-pick { flex:0 0 auto; height:min(52%, 320px); }
+  .smonth .sday.is-picked { outline:3px solid var(--poster-ui-accent); outline-offset:1px; }
+  .smonth .sday .shol-inline, .smonth .sday .shol-line { display:none !important; }   /* the star marks it; the name shows underneath */
+  .smonth .sday.is-today.is-picked { outline-color:var(--poster-text); }
 }
+/* the day you tapped in the phone's month view, with every name written out */
+.smonth-pick { flex:1 1 0; min-height:0; margin-top:12px; display:flex; flex-direction:column; }
+.smonth-pick .sday { flex:1 1 0; min-height:0; overflow-y:auto; gap:6px; padding:9px 10px; border-width:2px; }
+.smonth-pick .sday-head { justify-content:flex-start; }
+.smonth-pick .sday-num { font-size:20px; }
+.smonth-pick .smarks { overflow:visible; }
+.smonth-pick .sday-add { display:none; }
+.smonth-pick .sopen-day { align-self:flex-start; margin-top:2px; padding:5px 9px; border:2px solid currentColor; background:transparent; color:inherit; font:700 11px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; cursor:pointer; }
 
 /* holidays: a quiet label under the date, not a marker */
 .shol { flex-shrink:0; font:600 10.5px/1.25 var(--poster-mono); text-transform:uppercase; letter-spacing:.03em; color:var(--poster-ui-accent); overflow-wrap:break-word; }
@@ -840,6 +858,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .dn-title small { display:block; font:600 6px/1.2 var(--poster-mono); letter-spacing:.08em; margin-top:2px; }
 .dn-line { white-space:nowrap; display:flex; align-items:flex-end; gap:3px; font:700 6px/1 var(--poster-mono); letter-spacing:.06em; margin-top:4px; }
 .dn-line i { white-space:normal; min-width:0; flex:1; border-bottom:1px solid #111; min-height:9px; font-style:normal; }
+.dn-line i { overflow:hidden; } .dn-line i .dn-name { width:100%; }
 .desk-nb[data-type="comp"] .dn-name { font-size:17px; line-height:1; -webkit-line-clamp:2; }
 .desk-nb[data-type="comp"] .dn-count { margin-top:5px; text-align:center; }
 .desk-nb[data-type="eng"] { border-top:12px solid #3f6b34; background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/12px 12px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/12px 12px, #EAF4E2; }
@@ -890,6 +909,30 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .desk-nb[data-type="comp"] .dn-label::before { font-size:6.5px; }
   .desk-nb[data-type="eng"] .dn-name { font-size:10.5px; }
   .desk-sticky textarea { font-size:calc(16px * var(--s)); }
+  /* zoomed out on a phone, so the whole collection fits on the desk */
+  .desk-nb.desk-nb { --w:78px; padding:5px; }
+  .desk-sticky { --w:84px; }
+  .desk-sticky textarea { font-size:calc(14px * var(--s)); }
+  .desk-nb .dn-name { font-size:14px; }
+  .desk-nb .dn-count { font-size:7px; margin-top:2px; }
+  .desk-nb.desk-nb[data-type="spiral"] { padding:6px 5px 5px 14px; }
+  .desk-nb[data-type="spiral"]::before { left:-8px; width:18px; background-size:18px 8.25px; }
+  .desk-nb[data-type="spiral"] .dn-strip { padding:3px 4px 2px; }
+  .desk-nb[data-type="spiral"] .dn-strip .dn-name { font-size:12px; }
+  .desk-nb[data-type="spiral"] .dn-fine { display:none; }
+  .dn-mark { font-size:7px; } .dn-mark b { font-size:13px; }
+  .dn-color { width:18px; height:18px; } .dn-color .ds-dot { width:10px; height:10px; }
+  .desk-nb.desk-nb[data-type="legal"] { border-top-width:11px; padding-left:18px; }
+  .desk-nb[data-type="legal"]::before { top:-11px; height:11px; }
+  .desk-nb.desk-nb[data-type="eng"] { border-top-width:8px; }
+  .desk-nb[data-type="eng"]::before { top:-8px; height:8px; }
+  .desk-nb[data-type="eng"] .dn-name { font-size:8.5px; }
+  .desk-nb[data-type="comp"] .dn-label { padding:3px 3px 3px; border-radius:6px / 4px; outline-offset:-3px; }
+  .dn-title { font-size:6px; letter-spacing:.06em; padding-bottom:2px; }
+  .dn-line { font-size:3.8px; margin-top:1px; }
+  .desk-nb[data-type="comp"] .dn-name { font-size:10px; }
+  .desk .nb-mic.desk-mic, .desk-trash { width:48px; height:48px; }
+  .desk-trash svg { width:30px; height:30px; } .desk .desk-mic svg { width:27px; height:27px; }
   .nb-close .long { display:none; }
 }
 /* ---- desk layouts (data-desk on .desk) ----
@@ -1103,6 +1146,50 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   padding:0 22px 22px; font:400 17px/var(--line) var(--poster-sans); background-attachment:local; }
 .nb-text:focus-visible { outline:none; }
 .nb-text::placeholder { color:inherit; opacity:.35; }
+/* the page is rich text now: headings, lists and checklists keep to the ruled lines */
+.nb-text { white-space:pre-wrap; overflow-wrap:anywhere; cursor:text; -webkit-user-select:text; user-select:text; }
+.nb-text:empty::before { content:attr(data-placeholder); opacity:.35; pointer-events:none; }
+.nb-text > div, .nb-text p { margin:0; }
+.nb-text h1, .nb-text h2, .nb-text h3 { margin:0; font-weight:700; }
+.nb-text h1 { font-size:1.6em; line-height:calc(var(--line) * 2); }
+.nb-text h2 { font-size:1.3em; line-height:calc(var(--line) * 1); }
+.nb-text h3 { font-size:1.08em; line-height:var(--line); text-transform:uppercase; letter-spacing:.04em; }
+.nb-text ul, .nb-text ol { margin:0; padding-left:1.4em; }
+.nb-text blockquote { margin:0 0 0 1.4em; }
+.nb-text ul.nb-check { list-style:none; padding-left:1.5em; }
+.nb-text ul.nb-check > li { position:relative; }
+.nb-text ul.nb-check > li::before { content:""; position:absolute; left:-1.35em; top:calc(var(--line) / 2 - .4em); width:.75em; height:.75em; border:2px solid currentColor; border-radius:3px; cursor:pointer; }
+.nb-text ul.nb-check > li.done::before { background:currentColor; box-shadow:inset 0 0 0 2px var(--paper); }
+.nb-text ul.nb-check > li.done { text-decoration:line-through; opacity:.55; }
+.nb-text a { color:#1a56c4; }
+/* the format button: top-left corner of every page */
+.nb-fmt-btn { position:relative; z-index:8; flex-shrink:0; align-self:center; margin-right:auto; width:36px; height:36px; padding:0; display:grid; place-items:center; border:2px solid currentColor; border-radius:9px; background:transparent; color:var(--ink); opacity:.5; cursor:pointer; transition:opacity .15s, background .15s; }
+.nb-fmt-btn span { font:700 18px/1 Georgia, serif; letter-spacing:-.04em; }
+.nb-fmt-btn i { font-size:14px; }
+.nb-fmt-btn:hover, .nb-fmt-btn[aria-pressed="true"] { opacity:1; }
+.nb-fmt-btn[aria-pressed="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.nb-turn .nb-fmt-btn { visibility:hidden; }
+/* the toolbar: like a docs editor, stays at the top while you scroll the page */
+.nb-tools { position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:2px; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none;
+  margin:0 8px 10px 0; padding:5px 6px; background:var(--poster-card-bg); color:var(--poster-text); border:2px solid var(--poster-border); box-shadow:3px 3px 0 var(--poster-border); }
+.nb-tools::-webkit-scrollbar { display:none; }
+.nb-tools[hidden] { display:none; }
+.nb-tools button { flex-shrink:0; min-width:34px; height:34px; padding:0 6px; display:grid; place-items:center; border:0; border-radius:5px; background:transparent; color:inherit; font:700 17px/1 var(--poster-sans); cursor:pointer; }
+.nb-tools button:hover { background:var(--poster-track); }
+.nb-tools button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+.nb-tools svg, .nb-pop svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.nb-tools svg .dot { fill:currentColor; stroke:none; }
+.nb-tools .nb-color svg .bar { fill:var(--pick, currentColor); stroke:none; }
+.nb-tools button[data-pop="hiliteColor"] { --pick:#FFE066; }
+.nb-tools button[data-pop="foreColor"] { --pick:#C62828; }
+.nb-tools select { flex-shrink:0; height:34px; max-width:128px; padding:0 4px; border:1.5px solid var(--poster-border); border-radius:5px; background:var(--poster-card-bg); color:inherit; font:600 13px/1 var(--poster-sans); }
+.nb-tools .sep { flex-shrink:0; width:1.5px; height:22px; margin:0 4px; background:var(--poster-border); opacity:.3; }
+.nb-size { flex-shrink:0; min-width:28px; text-align:center; font:700 13px/1 var(--poster-mono); }
+.nb-pop { position:fixed; z-index:1001; display:grid; grid-template-columns:repeat(6, 30px); gap:6px; padding:10px; background:var(--poster-card-bg); border:2px solid var(--poster-border); box-shadow:4px 4px 0 var(--poster-border); }
+.nb-pop[hidden] { display:none; }
+.nb-pop button { width:30px; height:30px; padding:0; border:1.5px solid #0004; border-radius:50%; background:var(--c); cursor:pointer; display:grid; place-items:center; color:var(--poster-text); }
+.nb-pop button.none { background:transparent; border-style:dashed; }
+.dict-live { background:#E5251B1f; border-radius:3px; }
 /* the back of a page while it peels over (see nbPeel) */
 .nb-flap { position:absolute; z-index:6; pointer-events:none; filter:drop-shadow(-6px 6px 10px #0005); }
 .nb-flap > div { position:absolute; inset:0; transform-origin:0 0; }
@@ -1175,6 +1262,8 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .nb-saved { display:none; }
   .nb[data-nb="spiral"] .nb-page::after { left:62px; }
   .nb[data-nb="spiral"] .nb-text { padding-left:40px; padding-right:12px; }
+  .nb-fmt-btn { width:32px; height:32px; } .nb-fmt-btn span { font-size:16px; }
+  .nb-tools { margin-right:6px; }
   .nb[data-nb="legal"] .nb-page::before { left:36px; } .nb[data-nb="legal"] .nb-page::after { left:41px; }
   .nb[data-nb="legal"] .nb-text { padding-left:52px; padding-right:12px; }
   .nb[data-nb="comp"] .nb-page::after { left:38px; }
@@ -1311,10 +1400,44 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         </div>
       </div>
     </div>
+    <div class="nb-tools" id="nbTools" role="toolbar" aria-label="Text formatting" hidden>
+      <button type="button" data-cmd="undo" title="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button type="button" data-cmd="redo" title="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+      <span class="sep"></span>
+      <select id="nbFmtBlock" title="Text style" aria-label="Text style"><option value="div">Normal text</option><option value="h1">Title</option><option value="h2">Heading</option><option value="h3">Subheading</option></select>
+      <select id="nbFmtFont" title="Font" aria-label="Font"><option value="">Page font</option><option value="Caveat">Handwriting</option><option value="Space Grotesk">Sans</option><option value="Georgia">Serif</option><option value="Courier New">Typewriter</option><option value="Barlow Condensed">Poster</option></select>
+      <span class="sep"></span>
+      <button type="button" data-size="-1" title="Smaller text" aria-label="Smaller text">&minus;</button>
+      <span class="nb-size" id="nbFmtSize" aria-live="polite">24</span>
+      <button type="button" data-size="1" title="Bigger text" aria-label="Bigger text">+</button>
+      <span class="sep"></span>
+      <button type="button" data-cmd="bold" title="Bold" aria-pressed="false"><b>B</b></button>
+      <button type="button" data-cmd="italic" title="Italic" aria-pressed="false"><i style="font-family:Georgia,serif">I</i></button>
+      <button type="button" data-cmd="underline" title="Underline" aria-pressed="false"><u>U</u></button>
+      <button type="button" data-cmd="strikeThrough" title="Strikethrough" aria-pressed="false"><s>S</s></button>
+      <button type="button" data-pop="foreColor" title="Text color" class="nb-color"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16 12 3l6 13M8.3 11h7.4"/><rect class="bar" x="3" y="19" width="18" height="3.5" rx="1"/></svg></button>
+      <button type="button" data-pop="hiliteColor" title="Highlight" class="nb-color"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 4 5.5 5.5-8 8H6.5v-5.5z"/><path d="M4.5 17.5 3 19.5"/><rect class="bar" x="3" y="19" width="18" height="3.5" rx="1"/></svg></button>
+      <span class="sep"></span>
+      <button type="button" data-cmd="justifyLeft" title="Align left" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 10h10M4 15h16M4 20h10"/></svg></button>
+      <button type="button" data-cmd="justifyCenter" title="Center" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 10h10M4 15h16M7 20h10"/></svg></button>
+      <button type="button" data-cmd="justifyRight" title="Align right" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M10 10h10M4 15h16M10 20h10"/></svg></button>
+      <button type="button" data-cmd="justifyFull" title="Justify" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 10h16M4 15h16M4 20h16"/></svg></button>
+      <span class="sep"></span>
+      <button type="button" data-cmd="insertUnorderedList" title="Bulleted list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle class="dot" cx="4.5" cy="6" r="1.4"/><circle class="dot" cx="4.5" cy="12" r="1.4"/><circle class="dot" cx="4.5" cy="18" r="1.4"/></svg></button>
+      <button type="button" data-cmd="insertOrderedList" title="Numbered list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" style="stroke-width:1.7"><path d="M10 6h10M10 12h10M10 18h10M4 4.5l1.5-.8V9M3.6 9h3.4M3.6 14.2c.4-.9 2.9-1 2.9.6 0 1.1-2.9 2.2-2.9 3.7h3"/></svg></button>
+      <button type="button" data-cmd="checklist" title="Checklist" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="6" height="6" rx="1"/><path d="m4.5 7 1.2 1.2L8 5.6M12 7h8M3 17h6M12 17h8"/><rect x="3" y="14" width="6" height="6" rx="1"/></svg></button>
+      <button type="button" data-cmd="outdent" title="Decrease indent"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M11 10h9M11 15h9M4 20h16M7.5 9.5 4.5 12.5l3 3"/></svg></button>
+      <button type="button" data-cmd="indent" title="Increase indent"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M11 10h9M11 15h9M4 20h16M4.5 9.5l3 3-3 3"/></svg></button>
+      <span class="sep"></span>
+      <button type="button" data-move="-1" title="Move line up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5M6 11l6-6 6 6"/></svg></button>
+      <button type="button" data-move="1" title="Move line down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg></button>
+      <button type="button" data-cmd="clear" title="Clear formatting"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h12M11 5 8 19M14 14l6 6M20 14l-6 6"/></svg></button>
+    </div>
+    <div class="nb-pop" id="nbPop" role="dialog" aria-label="Pick a color" hidden></div>
     <div class="nb-body" id="nbBody">
       <div class="nb-page" id="nbPage">
-        <div class="nb-head"><span class="nb-label" id="nbLabel"></span><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
-        <textarea class="nb-text" id="nbText" placeholder="Start writing…" aria-label="Notes for this day"></textarea>
+        <div class="nb-head"><button type="button" class="nb-fmt-btn" id="nbFmtBtn" aria-label="Text formatting" aria-pressed="false" aria-controls="nbTools"><span aria-hidden="true">A<i>a</i></span></button><span class="nb-label" id="nbLabel"></span><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
+        <div class="nb-text" id="nbText" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Notes for this day" data-placeholder="Start writing…" spellcheck="true"></div>
       </div>
     </div>
     <button type="button" class="nb-mic" id="nbMic" aria-label="Dictate" aria-pressed="false">
@@ -2506,7 +2629,8 @@ function renderSchedule() {
       ? `${a.toLocaleDateString("en-US",{month:"short"})} ${a.getDate()} – ${b.getDate()}`
       : `${a.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
     root.innerHTML = `<div class="sweek">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}</div>`;
-    root.querySelectorAll(".sweek .sday").forEach(el => el.onclick = e => { if (!e.target.closest(".smark, .sopen, button")) openDay(el.dataset.date); });
+    root.querySelectorAll(".sweek .sday").forEach(el => { el.insertAdjacentHTML("beforeend", `<span class="smore"></span>`); el.onclick = e => { if (!e.target.closest(".smark, .sopen, button")) openDay(el.dataset.date); }; });
+    if (window.innerWidth < 700) fitMarks(root.querySelectorAll(".sweek .smarks"));
   } else if (sched.view === "month") {
     const m = sParse(sched.date); m.setDate(1);
     title.textContent = m.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -2515,17 +2639,37 @@ function renderSchedule() {
     const cells = [];
     for (let k = first; ; k = sAdd(k, 1)) { cells.push(k); if (cells.length % 7 === 0 && sParse(k) >= last) break; }
     markHTML.inMonth = true;
+    // On a phone the boxes are too small for names, so the month gets a little shorter and the day
+    // you tap is written out underneath (today to start)
+    const phone = window.innerWidth < 700;
+    if (phone && (!sched.pick || sched.pick.slice(0, 7) !== sKey(m).slice(0, 7))) sched.pick = getTodayStr().slice(0, 7) === sKey(m).slice(0, 7) ? getTodayStr() : sKey(m);
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
-      <div class="smonth" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
+      <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
     markHTML.inMonth = false;
-    // In Month, tapping anywhere in a day (markers included) opens that day
+    if (phone) {
+      const pick = document.createElement("div"); pick.className = "smonth-pick";
+      pick.innerHTML = dayBoxHTML(sched.pick, items[sched.pick], { long: true }).replace("</div>\n", "</div>\n");
+      root.appendChild(pick);
+      const box = pick.querySelector(".sday");
+      box.insertAdjacentHTML("beforeend", `<button type="button" class="sopen-day">Open this day ›</button>`);
+      box.querySelector(".sopen-day").onclick = () => openDay(sched.pick);
+      root.querySelector(`.smonth .sday[data-date="${sched.pick}"]`)?.classList.add("is-picked");
+    }
+    // In Month, tapping anywhere in a day (markers included) opens that day (on a phone: shows it underneath)
     root.querySelectorAll(".smonth .sday").forEach(el => {
-      el.onclick = () => openDay(el.dataset.date);
+      el.onclick = () => { if (phone) { sched.pick = el.dataset.date; renderSchedule(); } else openDay(el.dataset.date); };
       el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDay(el.dataset.date); } };
     });
     root.querySelectorAll(".smonth .smark").forEach(m => { m.removeAttribute("role"); m.removeAttribute("tabindex"); });
     // Show as many markers as fit in each box, then "+N more"
-    root.querySelectorAll(".smonth .smarks").forEach(box => {
+    fitMarks(root.querySelectorAll(".smonth .smarks"));
+  } else {
+    renderDayView(root, items, title);
+  }
+}
+// Show as many markers as fit in each day box, then "+N more"
+function fitMarks(boxes) {
+    boxes.forEach(box => {
       const chips = [...box.children], more = box.parentElement.querySelector(".smore");
       let hidden = 0;
       // Only squeeze a day that's full: first move its holiday beside the date,
@@ -2542,7 +2686,9 @@ function renderSchedule() {
       // A two-line name that doesn't fit drops to one line
       chips.forEach(c => { if (!c.hidden && c.offsetTop + c.offsetHeight > box.offsetTop + box.clientHeight + 1) c.classList.add("one-line"); });
     });
-  } else {
+}
+function renderDayView(root, items, title) {
+  {
     const [start, end] = schedDayRange();
     const keys = []; for (let k = start; k <= end; k = sAdd(k, 1)) keys.push(k);
     root.innerHTML = `<div class="sdays" id="schedDays">${keys.map(k => dayBoxHTML(k, items[k], { long: true })).join("")}</div>
@@ -2725,13 +2871,21 @@ function fillNbPage(page, day) {
   page.querySelector(".nb-dow").textContent = (today ? "Today · " : "") + dow;
   page.querySelector(".nb-date").textContent = date;
   page.querySelector(".nb-label").innerHTML = style === "comp" ? `Date <b>${date}</b>` : style === "eng" ? `Sheet <b>${String(dayOfYear).padStart(3, "0")}</b>` : "";
-  page.querySelector(".nb-text").value = (nbPages[day] && nbPages[day].text) || "";
+  nbSetContent(page.querySelector(".nb-text"), nbPages[day]);
+}
+// a page's writing: rich text (html), or plain text saved before formatting existed
+function nbSetContent(el, entry) {
+  if (!entry) { el.innerHTML = ""; return; }
+  if (entry.html) el.innerHTML = entry.html;
+  else el.innerHTML = String(entry.text || "").split("\n").map(l => `<div>${sEsc(l) || "<br>"}</div>`).join("");
+  el.querySelectorAll(".dict-live").forEach(s => s.replaceWith(...s.childNodes));
+  if (!el.textContent.trim() && !el.querySelector("li, h1, h2, h3")) el.innerHTML = "";
 }
 // A copy of a page to lay on top while it turns (copies don't carry ids or typed text by themselves)
 function nbCopy(page) {
   const c = page.cloneNode(true);
   c.removeAttribute("id"); c.querySelectorAll("[id]").forEach(x => x.removeAttribute("id"));
-  const t = c.querySelector(".nb-text"); t.value = page.querySelector(".nb-text").value; t.readOnly = true; t.tabIndex = -1;
+  const t = c.querySelector(".nb-text"); t.contentEditable = "false"; t.tabIndex = -1;
   c.classList.add("nb-turn"); c.setAttribute("aria-hidden", "true");
   return c;
 }
@@ -2837,7 +2991,7 @@ function showNbPage(dir) {
     fillNbPage(page, nbDay);
   }
   document.getElementById("nbToday").disabled = nbDay === getTodayStr();
-  document.getElementById("nbSaved").textContent = nbText.value ? "Saved" : "";
+  document.getElementById("nbSaved").textContent = nbText.textContent.trim() ? "Saved" : "";
   fitNotebook();
 }
 // Choose a notebook from the ☰ menu
@@ -2856,9 +3010,9 @@ document.addEventListener("click", () => { if (!nbMenu.hidden) toggleNbMenu(fals
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !nbMenu.hidden) { toggleNbMenu(false); nbMenuBtn.focus(); } });
 function saveNbPage() {
   clearTimeout(nbTimer);
-  const text = nbText.value;
+  const text = nbText.innerText.replace(/\n+$/, "");
   if (!openNbId) return;
-  if (text.trim()) nbPages[nbDay] = { text, t: Date.now() }; else delete nbPages[nbDay];
+  if (text.trim()) nbPages[nbDay] = { text, html: nbText.innerHTML, t: Date.now() }; else delete nbPages[nbDay];
   nbAllPages[openNbId] = nbPages;
   nbStore("notebookPagesBy", nbAllPages);
   document.getElementById("nbSaved").textContent = text ? "Saved" : "";
@@ -2908,8 +3062,10 @@ function joinSpeech(before, said) {
   if (startOfSentence) said = said.charAt(0).toUpperCase() + said.slice(1);
   return before + (needsSpace ? " " : "") + said;
 }
+let dictMark = null, dictBase = 0;
 function showDictation(interim) {
   const typed = joinSpeech(dictBefore, (dictFinal + " " + interim).trim());
+  if (dictMark) { dictMark.textContent = typed.slice(dictBase); return; }
   dictTarget.value = typed + dictAfter;
   dictTarget.selectionStart = dictTarget.selectionEnd = typed.length;
   dictTarget.scrollTop = dictTarget.scrollHeight;
@@ -2918,9 +3074,21 @@ function startDictation(target, btn) {
   if (dictating) stopDictation();
   dictTarget = target || nbText; dictBtn = btn || nbMic;
   if (!SpeechRec) { micNote("Talking to type isn't supported in this browser. On iPhone, use Safari."); return; }
-  const pos = dictTarget.selectionStart ?? dictTarget.value.length;
-  const at = document.activeElement === dictTarget ? pos : dictTarget.value.length;
-  dictBefore = dictTarget.value.slice(0, at); dictAfter = dictTarget.value.slice(at); dictFinal = "";
+  if (dictTarget.isContentEditable) {
+    // words go in where the cursor is (or at the end), inside a marker that settles when you stop
+    const sel = getSelection(); let r;
+    if (sel.rangeCount && dictTarget.contains(sel.anchorNode)) r = sel.getRangeAt(0);
+    else { r = document.createRange(); r.selectNodeContents(dictTarget); r.collapse(false); const last = dictTarget.lastElementChild; if (last && /^(DIV|P|H[1-3]|UL|OL)$/.test(last.tagName)) { r.selectNodeContents(last.tagName === "UL" || last.tagName === "OL" ? last.lastElementChild || last : last); r.collapse(false); } }
+    r.deleteContents();
+    dictMark = document.createElement("span"); dictMark.className = "dict-live"; r.insertNode(dictMark);
+    const block = dictMark.parentElement.closest("div:not(.nb-text), p, li, h1, h2, h3") || dictTarget;
+    const pre = document.createRange(); pre.selectNodeContents(block); pre.setEndBefore(dictMark);
+    dictBefore = pre.toString().trim() ? pre.toString() : ""; dictBase = dictBefore.length; dictAfter = ""; dictFinal = "";
+  } else {
+    const pos = dictTarget.selectionStart ?? dictTarget.value.length;
+    const at = document.activeElement === dictTarget ? pos : dictTarget.value.length;
+    dictBefore = dictTarget.value.slice(0, at); dictAfter = dictTarget.value.slice(at); dictFinal = "";
+  }
   rec = new SpeechRec();
   rec.continuous = true; rec.interimResults = true; rec.lang = navigator.language || "en-US";
   rec.onresult = e => {
@@ -2955,12 +3123,188 @@ function stopDictation() {
   if (rec) { try { rec.stop(); } catch (err) {} rec = null; }
   dictBtn.setAttribute("aria-pressed", "false"); dictBtn.setAttribute("aria-label", "Dictate");
   dictTarget.closest(".desk-sticky")?.classList.remove("listening");
+  if (dictMark) {   // settle the words into the page and put the cursor after them
+    const t = document.createTextNode(dictMark.textContent); dictMark.replaceWith(t); dictMark = null;
+    if (t.data) { const r = document.createRange(); r.setStartAfter(t); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } else t.remove();
+  }
   dictTarget.dispatchEvent(new Event("input"));
   if (dictTarget === nbText) saveNbPage();
 }
 nbMic.onclick = () => dictating && dictTarget === nbText ? stopDictation() : startDictation(nbText, nbMic);
 // keep the cursor where it was so the words land there
 nbMic.addEventListener("pointerdown", e => e.preventDefault());
+
+/* ---- formatting toolbar (the "Aa" button in the page's top-left corner) ----
+   Works like a docs editor on the selected text: style, font, size, bold/italic/underline/strike,
+   colors, alignment, lists and checklists, indent, moving lines up and down, and clearing formatting. */
+const nbTools = document.getElementById("nbTools"), nbFmtBtn = document.getElementById("nbFmtBtn"), nbPop = document.getElementById("nbPop");
+let nbRange = null, nbPendingSize = null;
+try { document.execCommand("defaultParagraphSeparator", false, "div"); } catch (e) {}
+function setTools(open) {
+  nbTools.hidden = !open; nbFmtBtn.setAttribute("aria-pressed", String(open));
+  try { localStorage.setItem("nbToolsOpen", open ? "1" : ""); } catch (e) {}
+  if (!open) nbPop.hidden = true;
+  fitNotebook();
+}
+nbFmtBtn.addEventListener("pointerdown", e => e.preventDefault());
+nbFmtBtn.onclick = () => setTools(nbTools.hidden);
+try { if (localStorage.getItem("nbToolsOpen")) setTools(true); } catch (e) {}
+document.addEventListener("selectionchange", () => {
+  const s = getSelection();
+  if (s.rangeCount && nbText.contains(s.anchorNode)) { nbRange = s.getRangeAt(0).cloneRange(); paintTools(); }
+});
+function nbRestore() {
+  nbText.focus({ preventScroll: true });
+  if (nbRange && nbText.contains(nbRange.startContainer)) { const s = getSelection(); s.removeAllRanges(); s.addRange(nbRange); }
+}
+function nbBlock(wrap) {   // the line (paragraph, heading or list item) the cursor is in
+  const s = getSelection(); if (!s.rangeCount) return null;
+  let n = s.anchorNode; if (n === nbText) n = nbText.childNodes[s.anchorOffset] || nbText.lastChild;
+  if (!n || !nbText.contains(n)) return null;
+  if (n.nodeType === 3 && n.parentNode === nbText) {
+    if (!wrap) return null;
+    const s2 = getSelection(), off = s2.anchorOffset, d = document.createElement("div"); n.replaceWith(d); d.appendChild(n);
+    try { s2.collapse(n, Math.min(off, n.length)); } catch (e) {}
+    return d;
+  }
+  let el = n.nodeType === 1 ? n : n.parentElement;
+  const li = el.closest("li"); if (li && nbText.contains(li)) return li;
+  while (el && el.parentElement !== nbText) el = el.parentElement;
+  return el;
+}
+const pageFontPx = () => parseFloat(getComputedStyle(nbText).fontSize) || 17;
+function paintTools() {
+  if (nbTools.hidden) return;
+  nbTools.querySelectorAll("[data-cmd]").forEach(b => {
+    if (!b.hasAttribute("aria-pressed")) return;
+    let on = false;
+    if (b.dataset.cmd === "checklist") on = !!nbBlock()?.closest("ul.nb-check");
+    else if (b.dataset.cmd === "insertUnorderedList") on = !!nbBlock()?.closest("ul:not(.nb-check)");
+    else if (b.dataset.cmd === "strikeThrough") { const s = getSelection(); const at = s.rangeCount && (s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentElement); on = !!(at && at.closest("s, strike, [style*='line-through']") && nbText.contains(at.closest("s, strike, [style*='line-through']"))); }
+    else try { on = document.queryCommandState(b.dataset.cmd); } catch (e) {}
+    b.setAttribute("aria-pressed", String(on));
+  });
+  const blk = nbBlock(), tag = blk ? blk.tagName.toLowerCase() : "div";
+  document.getElementById("nbFmtBlock").value = ["h1", "h2", "h3"].includes(tag) ? tag : "div";
+  const s = getSelection(), at = s.rangeCount ? (s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentElement) : nbText;
+  document.getElementById("nbFmtSize").textContent = nbPendingSize || Math.round(parseFloat(getComputedStyle(at).fontSize));
+  const fam = getComputedStyle(at).fontFamily.split(",")[0].replace(/["']/g, "").trim();
+  const fontSel = document.getElementById("nbFmtFont");
+  fontSel.value = [...fontSel.options].some(o => o.value === fam) && at.closest("[style*='font-family'], font[face]") ? fam : "";
+}
+function nbChanged() { nbText.dispatchEvent(new Event("input", { bubbles: true })); paintTools(); }
+// turn the browser's <font size=7> into a real pixel size
+function nbFixSizes(px) {
+  nbText.querySelectorAll('font[size="7"]').forEach(f => { const s = document.createElement("span"); s.style.fontSize = px + "px"; s.append(...f.childNodes); f.replaceWith(s); });
+  nbText.querySelectorAll('span[style*="xxx-large"]').forEach(s => { s.style.fontSize = px + "px"; });
+}
+function nbSize(step) {
+  nbRestore();
+  const s = getSelection(), at = s.rangeCount ? (s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentElement) : nbText;
+  const cur = nbPendingSize || Math.round(parseFloat(getComputedStyle(at).fontSize));
+  const steps = [9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 42, 48, 60, 72];
+  const px = step > 0 ? (steps.find(v => v > cur) || 72) : ([...steps].reverse().find(v => v < cur) || 9);
+  document.execCommand("styleWithCSS", false, false);
+  document.execCommand("fontSize", false, "7");
+  nbFixSizes(px);
+  nbPendingSize = s.isCollapsed ? px : null;   // with nothing selected, it applies to what you type next
+  document.getElementById("nbFmtSize").textContent = px;
+  nbChanged();
+}
+nbText.addEventListener("input", () => { if (nbPendingSize) { nbFixSizes(nbPendingSize); } });
+nbText.addEventListener("keydown", () => { if (nbPendingSize && getSelection().isCollapsed === false) nbPendingSize = null; });
+function nbMove(dir) {
+  nbRestore();
+  const b = nbBlock(true); if (!b) return;
+  const sib = dir < 0 ? b.previousElementSibling : b.nextElementSibling; if (!sib) return;
+  const s = getSelection(), a = [s.anchorNode, s.anchorOffset, s.focusNode, s.focusOffset];
+  if (dir < 0) sib.before(b); else sib.after(b);
+  try { s.setBaseAndExtent(...a); } catch (e) {}
+  b.scrollIntoView({ block: "nearest" });
+  nbChanged();
+}
+function nbCmd(cmd) {
+  nbRestore();
+  if (cmd === "checklist") {
+    const inCheck = nbBlock()?.closest("ul.nb-check");
+    if (inCheck) document.execCommand("insertUnorderedList");   // back to plain lines
+    else {
+      if (!nbBlock()?.closest("ul")) document.execCommand("insertUnorderedList");
+      nbBlock()?.closest("ul")?.classList.add("nb-check");
+    }
+  } else if (cmd === "insertUnorderedList" && nbBlock()?.closest("ul.nb-check")) {
+    nbBlock().closest("ul").classList.remove("nb-check");
+  } else if (cmd === "clear") {
+    document.execCommand("removeFormat"); document.execCommand("formatBlock", false, "<div>");
+    nbText.querySelectorAll("span:not([style]):not([class])").forEach(s => s.replaceWith(...s.childNodes));
+  } else {
+    document.execCommand("styleWithCSS", false, true);
+    document.execCommand(cmd);
+  }
+  nbChanged();
+}
+nbTools.addEventListener("pointerdown", e => { if (e.target.closest("button")) e.preventDefault(); });   // keep the selection (and the keyboard)
+nbTools.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.cmd) nbCmd(b.dataset.cmd);
+  else if (b.dataset.size) nbSize(+b.dataset.size);
+  else if (b.dataset.move) nbMove(+b.dataset.move);
+  else if (b.dataset.pop) openColors(b);
+});
+document.getElementById("nbFmtBlock").addEventListener("change", e => { nbRestore(); document.execCommand("formatBlock", false, `<${e.target.value}>`); nbChanged(); });
+document.getElementById("nbFmtFont").addEventListener("change", e => {
+  nbRestore(); document.execCommand("styleWithCSS", false, true);
+  if (e.target.value) document.execCommand("fontName", false, e.target.value);
+  else nbText.querySelectorAll("[style*='font-family']").forEach(el => { if (getSelection().containsNode(el, true)) el.style.fontFamily = ""; });
+  nbChanged();
+});
+const NB_COLORS = { foreColor: ["#1d2433", "#C62828", "#E8661A", "#B8860B", "#2E7D32", "#0F7C7C", "#1E4FB8", "#6A3FB5", "#D6336C", "#6b6f75", "#FFFFFF", null],
+                    hiliteColor: ["#FFE066", "#FFC58A", "#FFB3C7", "#B6F0A0", "#9ED8FF", "#D9C8FF", "#FFD6D6", "#E8E8E8", "#FFF4A3", "#C8F7E5", "#FFE0B2", null] };
+function openColors(btn) {
+  const kind = btn.dataset.pop;
+  if (!nbPop.hidden && nbPop.dataset.kind === kind) { nbPop.hidden = true; return; }
+  nbPop.dataset.kind = kind;
+  nbPop.innerHTML = NB_COLORS[kind].map(c => c ? `<button type="button" style="--c:${c}" data-c="${c}" aria-label="${c}"></button>` : `<button type="button" class="none" data-c="" aria-label="${kind === "foreColor" ? "Page ink" : "No highlight"}">&times;</button>`).join("");
+  nbPop.hidden = false;
+  const r = btn.getBoundingClientRect();
+  nbPop.style.top = (r.bottom + 6) + "px";
+  nbPop.style.left = Math.max(8, Math.min(r.left, innerWidth - nbPop.offsetWidth - 8)) + "px";
+}
+nbPop.addEventListener("pointerdown", e => e.preventDefault());
+nbPop.addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b) return;
+  const kind = nbPop.dataset.kind, c = b.dataset.c;
+  nbRestore(); document.execCommand("styleWithCSS", false, true);
+  if (c) document.execCommand(kind, false, c);
+  else if (kind === "hiliteColor") document.execCommand("hiliteColor", false, "transparent");
+  else document.execCommand("foreColor", false, getComputedStyle(nbText).color);
+  if (c) nbTools.querySelector(`[data-pop="${kind}"]`).style.setProperty("--pick", c);
+  nbPop.hidden = true; nbChanged();
+});
+document.addEventListener("pointerdown", e => { if (!nbPop.hidden && !e.target.closest("#nbPop, [data-pop]")) nbPop.hidden = true; });
+// tick a checklist box
+nbText.addEventListener("click", e => {
+  const li = e.target.closest("ul.nb-check > li"); if (!li) return;
+  if (e.clientX < li.getBoundingClientRect().left) { li.classList.toggle("done"); nbChanged(); }
+});
+// pasted text comes in plain, so it takes the page's look
+nbText.addEventListener("paste", e => {
+  const t = e.clipboardData && e.clipboardData.getData("text/plain"); if (t == null) return;
+  e.preventDefault(); document.execCommand("insertText", false, t);
+});
+// keyboard shortcuts like a docs editor
+nbText.addEventListener("keydown", e => {
+  const mod = e.metaKey || e.ctrlKey; if (!mod) return;
+  const k = e.key.toLowerCase();
+  if (e.shiftKey && (k === "7" || k === "8")) { e.preventDefault(); nbCmd(k === "7" ? "insertOrderedList" : "insertUnorderedList"); }
+  else if (e.shiftKey && k === "9") { e.preventDefault(); nbCmd("checklist"); }
+  else if (e.altKey && (k === "arrowup" || k === "arrowdown")) { e.preventDefault(); nbMove(k === "arrowup" ? -1 : 1); }
+  else if (k === "\\") { e.preventDefault(); nbCmd("clear"); }
+  else if (k === "." && e.shiftKey) { e.preventDefault(); nbSize(1); }
+  else if (k === "," && e.shiftKey) { e.preventDefault(); nbSize(-1); }
+});
+// keep an empty page truly empty, so "Start writing…" shows
+nbText.addEventListener("input", () => { if (!nbText.textContent.trim() && !nbText.querySelector("li, h1, h2, h3, ul, ol") && nbText.innerHTML) nbText.innerHTML = ""; });
 document.getElementById("nbPrev").onclick = () => flipNb(-1);
 document.getElementById("nbNext").onclick = () => flipNb(1);
 document.getElementById("nbToday").onclick = () => { const dir = getTodayStr() > nbDay ? 1 : -1; saveNbPage(); nbDay = getTodayStr(); showNbPage(dir); };
@@ -3077,7 +3421,7 @@ function renderDesk() {
   deskArea.querySelectorAll(".dn-name").forEach(el => {
     el.style.fontSize = "";
     let size = parseFloat(getComputedStyle(el).fontSize);
-    while (size > 9 && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) { size -= 1; el.style.fontSize = size + "px"; }
+    while (size > 6 && (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight + 1)) { size -= 1; el.style.fontSize = size + "px"; }
   });
 }
 // Drag anything around the desk; a tap (no real movement) on a notebook opens it.
