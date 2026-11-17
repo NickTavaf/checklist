@@ -499,9 +499,9 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   transition:transform .12s, box-shadow .12s;
   font:800 21px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.02em;
 }
-.nav-link[data-page="homework"] { background:#FFD8E4; transform:rotate(-2.5deg); }
-.nav-link[data-page="schedule"] { background:#C8F0D4; transform:rotate(1.8deg); }
-.nav-link[data-page="notebook"] { background:#FFE9A8; transform:rotate(-1.4deg); }
+.nav-link[data-page="homework"] { background:#FF7849; transform:rotate(-2.5deg); }
+.nav-link[data-page="schedule"] { background:#B6E35A; transform:rotate(1.8deg); }
+.nav-link[data-page="notebook"] { background:#C9B6FF; transform:rotate(-1.4deg); }
 .nav-link:hover { transform:rotate(0) translate(-1px,-2px); box-shadow:6px 7px 0 var(--poster-border); }
 .nav-link:active { transform:rotate(0) translate(3px,3px); box-shadow:1px 1px 0 var(--poster-border); }
 .nav-link[aria-current="page"] { transform:rotate(0) scale(1.04); background:var(--poster-ui-accent); color:var(--poster-on-accent); }
@@ -514,6 +514,10 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   .nav-link[data-page="notebook"] { transform:rotate(-.6deg); }
   .nav-link[aria-current="page"] { transform:rotate(0) scale(1.02); }
 }
+@media (max-width:480px) {
+  .site-nav { gap:10px; }
+  .nav-link { min-height:44px; padding:8px 4px; font-size:17px; white-space:nowrap; border-width:2.5px; box-shadow:4px 4px 0 var(--poster-border); }
+}
 @media (prefers-reduced-motion:reduce) { .nav-link { transition:none; } }
 .site-nav ~ .page .topbar { padding-top:24px; }
 .page-soon { max-width:1176px; margin:0 auto; padding:64px max(20px,env(safe-area-inset-left)) 64px max(20px,env(safe-area-inset-right)); }
@@ -521,164 +525,129 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .page-soon p { margin:0; color:var(--poster-text-soft); font:500 12px/1.5 var(--poster-mono); text-transform:uppercase; }
 
 /* ================= Schedule page =================
-   Week / Month / Day views. Every day is its own box with a gap around it.
-   Themes are set with data-sched-theme on #page-schedule:
-   poster (default), soft, graph, bold. Each theme only redefines the
-   --s-* tokens below plus a few shape rules. */
+   Week / Month / Day views. Every day is its own box with a gap around it, and
+   each view is sized to fit the screen (no page scrolling, no sideways overhang).
+   Past days and days outside the shown month get a faint graph-paper texture. */
 #page-schedule {
-  --s-bg:var(--poster-bg);
-  --s-day-bg:var(--poster-card-bg);
-  --s-day-ink:var(--poster-text);
-  --s-day-soft:var(--poster-text-soft);
-  --s-day-border:3px solid var(--poster-border);
-  --s-day-radius:0px;
-  --s-day-shadow:4px 4px 0 var(--poster-border);
-  --s-out-bg:var(--poster-bg);
-  --s-out-ink:var(--poster-text-soft);
-  --s-today-bg:var(--poster-ui-accent);
-  --s-today-ink:var(--poster-on-accent);
   --s-gap:10px;
-  --s-head-font:600 22px/1 var(--poster-display);
-  --s-num-font:700 26px/1 var(--poster-display);
-  --s-label-font:600 11px/1.3 var(--poster-mono);
-  --s-mark-bg:var(--poster-card-bg);
-  --s-mark-border:1.5px solid var(--poster-border);
-  --s-mark-radius:0px;
-  --s-ctl-radius:0px;
-  --s-ctl-border:3px solid var(--poster-border);
-  background:var(--s-bg); color:var(--poster-text);
+  --s-shadow:4px;
+  --s-grid:color-mix(in srgb, var(--poster-text) 9%, transparent);
+  background:var(--poster-bg); color:var(--poster-text);
 }
-.sched { max-width:1176px; margin:0 auto; padding:8px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left)); }
+.sched { max-width:1176px; margin:0 auto; padding:4px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
 @media (min-width:900px) { .sched { padding-left:max(32px,env(safe-area-inset-left)); padding-right:max(32px,env(safe-area-inset-right)); } }
 
-/* toolbar */
-.sched-bar { display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; margin:8px 0 18px; }
-.sched-title { flex:1 1 220px; min-width:0; margin:0; font:800 clamp(34px,7vw,64px)/.92 var(--poster-display); text-transform:uppercase; text-wrap:balance; }
-.sched-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
-.sched-seg { display:flex; border:var(--s-ctl-border); border-radius:var(--s-ctl-radius); overflow:hidden; }
-.sched-seg button { min-height:40px; padding:6px 14px; border:0; background:var(--poster-card-bg); color:var(--poster-text); font:600 16px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
-.sched-seg button + button { border-left:var(--s-ctl-border); }
+/* toolbar: title + arrows on one line, view switch + assignments switch below */
+.sched-bar { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"title nav" "views tog"; align-items:center; gap:12px 12px; margin:0 0 14px; }
+.sched-title { grid-area:title; min-width:0; margin:0; font:800 clamp(32px,6vw,60px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sched-nav { grid-area:nav; display:flex; gap:6px; }
+.sched-views { grid-area:views; justify-self:start; }
+.sched-toggle { grid-area:tog; justify-self:end; }
+.sched-btn, .sched-seg, .sched-toggle { border:3px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); box-shadow:3px 3px 0 var(--poster-border); }
+.sched-btn { min-width:42px; min-height:42px; padding:6px 12px; font:600 17px/1 var(--poster-display); text-transform:uppercase; }
+.sched-btn:active, .sched-toggle:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
+.sched-seg { display:flex; }
+.sched-seg button { min-height:36px; padding:6px 16px; border:0; background:transparent; color:inherit; font:600 17px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
+.sched-seg button + button { border-left:3px solid var(--poster-border); }
 .sched-seg button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
-.sched-nav { display:flex; gap:6px; }
-.sched-nav button { min-width:40px; min-height:40px; padding:6px 12px; border:var(--s-ctl-border); border-radius:var(--s-ctl-radius); background:var(--poster-card-bg); color:var(--poster-text); font:600 16px/1 var(--poster-display); text-transform:uppercase; }
-.sched-toggle { display:inline-flex; align-items:center; gap:10px; min-height:40px; padding:6px 12px 6px 8px; border:var(--s-ctl-border); border-radius:var(--s-ctl-radius); background:var(--poster-card-bg); color:var(--poster-text); font:600 12px/1.2 var(--poster-mono); text-transform:uppercase; }
-.sched-toggle .knob { width:34px; height:20px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
-.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
+.sched-toggle { display:inline-flex; align-items:center; gap:9px; min-height:42px; padding:6px 12px 6px 9px; font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; }
+.sched-toggle .knob { width:32px; height:18px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
+.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:10px; height:10px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
 .sched-toggle[aria-checked="true"] .knob { background:var(--poster-ui-accent); }
 .sched-toggle[aria-checked="true"] .knob::after { transform:translateX(14px); background:var(--poster-on-accent); }
-
-/* a day box (shared by all views) */
-.sday { min-width:0; display:flex; flex-direction:column; gap:8px; padding:10px; background:var(--s-day-bg); color:var(--s-day-ink); border:var(--s-day-border); border-radius:var(--s-day-radius); box-shadow:var(--s-day-shadow); }
-.sday-head { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
-.sday-dow { font:var(--s-label-font); text-transform:uppercase; letter-spacing:.06em; color:var(--s-day-soft); }
-.sday-num { font:var(--s-num-font); font-variant-numeric:tabular-nums; }
-.sday.is-today { background:var(--s-today-bg); color:var(--s-today-ink); }
-.sday.is-today .sday-dow { color:var(--s-today-ink); }
-.sday.is-out { background:var(--s-out-bg); color:var(--s-out-ink); box-shadow:none; opacity:.7; }
-.sday-empty { font:var(--s-label-font); color:var(--s-day-soft); text-transform:uppercase; }
-.sday.is-today .sday-empty { color:var(--s-today-ink); opacity:.8; }
-.smarks { display:flex; flex-direction:column; gap:6px; min-width:0; }
-
-/* marker: the same chip will be used for things you add yourself */
-.smark { display:flex; align-items:flex-start; gap:7px; width:100%; min-width:0; padding:6px 8px; text-align:left; background:var(--s-mark-bg); color:var(--poster-text); border:var(--s-mark-border); border-left:5px solid var(--mc); border-radius:var(--s-mark-radius); font:500 12.5px/1.25 var(--poster-sans); }
-.smark .mt { flex:1; min-width:0; overflow-wrap:anywhere; }
-.smark .mtime { display:block; margin-top:2px; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
-.smark.is-done .mt { text-decoration:line-through; opacity:.65; }
-.smark.is-done::after { content:"✓"; font-weight:700; color:var(--mc); }
-.sdots { display:flex; flex-wrap:wrap; gap:4px; }
-.sdot { width:10px; height:10px; border-radius:50%; background:var(--mc); border:1.5px solid var(--poster-border); }
-.smore { font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; color:inherit; opacity:.8; }
-
-/* week: 7 boxes in a row; on phones the row scrolls sideways */
-.sweek { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:var(--s-gap); padding:2px 6px 8px 2px; }
-.sweek .sday { min-height:320px; }
-@media (max-width:899px) {
-  .sweek-scroll { overflow-x:auto; scroll-snap-type:x mandatory; margin:0 -16px; padding:0 16px; scroll-padding:0 16px; }
-  .sweek { grid-template-columns:repeat(7, 46vw); }
-  .sweek .sday { scroll-snap-align:start; min-height:300px; }
+@media (max-width:520px) {
+  .sched-bar { gap:10px 8px; }
+  .sched-title { font-size:30px; }
+  .sched-btn { min-width:38px; min-height:38px; padding:5px 9px; font-size:15px; }
+  .sched-seg button { padding:5px 12px; font-size:15px; }
+  .sched-toggle { padding:5px 9px 5px 7px; }
+  .sched-toggle .long { display:none; }
 }
 
-/* month: 7-column grid of boxes */
-.smonth-dows { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:var(--s-gap); margin-bottom:6px; }
-.smonth-dows span { font:var(--s-label-font); text-transform:uppercase; letter-spacing:.06em; color:var(--poster-text-soft); padding-left:4px; }
-.smonth { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:var(--s-gap); padding:0 6px 6px 0; }
-.smonth .sday { min-height:120px; padding:8px; cursor:pointer; text-align:left; font:inherit; }
-.smonth .sday-num { font-size:22px; }
-.smonth .smark { padding:3px 6px; font-size:11.5px; border-left-width:4px; }
-.smonth .smark .mtime { display:none; }
-.smonth .sdots { display:none; }
+/* the schedule fills the screen, so the page itself never scrolls */
+body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
+/* the area under the toolbar; its height is set from the window size in JS */
+#schedBody { display:flex; flex-direction:column; min-height:0; padding:0 var(--s-shadow) var(--s-shadow) 0; }
+
+/* a day box (shared by all views) */
+.sday { min-width:0; min-height:0; overflow:hidden; display:flex; flex-direction:column; gap:8px; padding:10px; background:var(--poster-card-bg); color:var(--poster-text); border:3px solid var(--poster-border); box-shadow:var(--s-shadow) var(--s-shadow) 0 var(--poster-border); text-align:left; font:inherit; }
+.sday-head { display:flex; align-items:baseline; justify-content:space-between; gap:6px; flex-shrink:0; }
+.sday-dow { font:600 11px/1.3 var(--poster-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--poster-text-soft); }
+.sday-num { font:700 26px/1 var(--poster-display); font-variant-numeric:tabular-nums; }
+.sday.is-past, .sday.is-out {
+  background-color:var(--poster-bg); box-shadow:none;
+  background-image:linear-gradient(var(--s-grid) 1px, transparent 1px), linear-gradient(90deg, var(--s-grid) 1px, transparent 1px);
+  background-size:12px 12px; background-position:-1px -1px;
+}
+.sday.is-past { border-color:color-mix(in srgb, var(--poster-border) 55%, transparent); }
+.sday.is-out { border-color:color-mix(in srgb, var(--poster-border) 30%, transparent); }
+.sday.is-out .sday-num, .sday.is-out .smarks, .sday.is-out .sdots { opacity:.45; }
+.sday.is-past .sday-num, .sday.is-past .sday-dow { opacity:.6; }
+.sday.is-today { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+.sday.is-today .sday-dow { color:var(--poster-on-accent); }
+.sday-empty { font:600 11px/1.3 var(--poster-mono); color:var(--poster-text-soft); text-transform:uppercase; }
+.sday.is-today .sday-empty { color:var(--poster-on-accent); opacity:.8; }
+.smarks { display:flex; flex-direction:column; gap:6px; min-width:0; min-height:0; overflow:hidden; }
+
+/* marker: the same chip will be used for things you add yourself */
+.smark { display:flex; align-items:flex-start; gap:7px; width:100%; min-width:0; flex-shrink:0; padding:6px 8px; text-align:left; background:var(--poster-card-bg); color:var(--poster-text); border:1.5px solid var(--poster-border); border-left:5px solid var(--mc); font:500 12.5px/1.25 var(--poster-sans); }
+.smark .mt { flex:1; min-width:0; overflow-wrap:anywhere; }
+.smark .mtime { display:block; margin-top:2px; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.smark .mdesc { display:none; }
+.smark.is-done .mt { text-decoration:line-through; opacity:.65; }
+.smark.is-done::after { content:"✓"; font-weight:700; color:var(--mc); }
+.sdots { display:none; flex-wrap:wrap; gap:3px; }
+.sdot { width:8px; height:8px; border-radius:50%; background:var(--mc); border:1.5px solid var(--poster-border); }
+.smore { flex-shrink:0; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; opacity:.8; }
+
+/* week: all 7 days across the screen, filling the height */
+.sweek { flex:1; min-height:0; display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:var(--s-gap); }
+.sweek .sday { cursor:pointer; }
 @media (max-width:699px) {
-  #page-schedule { --s-gap:5px; }
-  .smonth .sday { min-height:62px; padding:5px; gap:5px; box-shadow:none; }
-  .smonth .sday-num { font-size:17px; }
+  #page-schedule { --s-gap:5px; --s-shadow:3px; }
+  .sweek .sday { padding:6px 4px; gap:6px; border-width:2px; }
+  .sweek .sday-head { flex-direction:column; align-items:center; gap:2px; }
+  .sweek .sday-dow { font-size:9px; letter-spacing:0; }
+  .sweek .sday-num { font-size:20px; }
+  .sweek .sday-empty { display:none; }
+  .sweek .tlabel { display:none; }
+  .sweek .smarks { gap:4px; }
+  .sweek .smark { padding:2px 1px 2px 4px; border:0; border-left:3px solid var(--mc); background:transparent; color:inherit; font-size:9px; line-height:1.2; }
+  .sweek .smark .mtime { display:none; }
+  .sweek .smark .mt { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:normal; word-break:normal; }
+  .sweek .smark.is-done::after { display:none; }
+}
+
+/* month: the whole month fits; rows share the height */
+.smonth-dows { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:var(--s-gap); margin-bottom:6px; flex-shrink:0; }
+.smonth-dows span { font:600 11px/1.3 var(--poster-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--poster-text-soft); padding-left:4px; }
+.smonth { flex:1; min-height:0; display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:var(--s-gap); }
+.smonth .sday { padding:7px 8px; gap:5px; cursor:pointer; }
+.smonth .smarks { flex:1 1 0; }
+.smore:empty { display:none; }
+.smonth .sday-num { font-size:21px; }
+.smonth .smark { padding:2px 6px; font-size:11px; border-left-width:4px; }
+.smonth .smark .mt { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.smonth .smark .mtime, .smonth .smark.is-done::after { display:none; }
+@media (max-width:699px) {
+  .smonth .sday { padding:4px; gap:4px; border-width:2px; }
+  .smonth .sday-num { font-size:16px; }
   .smonth .smarks, .smonth .smore { display:none; }
   .smonth .sdots { display:flex; }
-  .smonth .sdot { width:8px; height:8px; }
   .smonth-dows span { font-size:9px; padding-left:2px; }
 }
 
-/* day: one box per day in a scroll window; scrolling moves to the next day */
-.sdays { height:min(64vh, 560px); overflow-y:auto; scroll-snap-type:y mandatory; display:flex; flex-direction:column; gap:var(--s-gap); padding:2px 8px 2px 2px; overscroll-behavior:contain; }
-.sdays .sday { flex:0 0 calc(100% - 8px); scroll-snap-align:start; padding:18px; gap:14px; overflow:auto; }
+/* day: one box per day filling the space; scroll inside it to reach the next day */
+.sdays { flex:1; min-height:0; overflow-y:auto; scroll-snap-type:y mandatory; display:flex; flex-direction:column; gap:var(--s-gap); overscroll-behavior:contain; scrollbar-width:none; }
+.sdays::-webkit-scrollbar { display:none; }
+.sdays .sday { flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always; padding:18px; gap:14px; overflow-y:auto; box-shadow:none; }
 .sdays .sday-num { font-size:44px; }
 .sdays .sday-dow { font-size:13px; }
-.sdays .sday-head { justify-content:flex-start; gap:14px; align-items:baseline; }
+.sdays .sday-head { justify-content:flex-start; gap:14px; }
+.sdays .smarks { overflow:visible; }
 .sdays .smark { padding:10px 12px; font-size:15px; }
 .sdays .smark .mdesc { display:block; margin-top:6px; font:400 13px/1.45 var(--poster-sans); color:var(--poster-text-soft); }
-.shint { margin-top:10px; font:var(--s-label-font); text-transform:uppercase; color:var(--poster-text-soft); }
-.smark .mdesc { display:none; }
-
-/* ---------- Theme 2: Soft. Rounded, no outlines, tinted fills ---------- */
-#page-schedule[data-sched-theme="soft"] {
-  --s-day-bg:var(--poster-accent-soft); --s-day-border:0 solid transparent; --s-day-radius:18px; --s-day-shadow:none;
-  --s-out-bg:transparent; --s-gap:12px;
-  --s-mark-bg:var(--poster-card-bg); --s-mark-border:0 solid transparent; --s-mark-radius:10px;
-  --s-ctl-radius:999px; --s-ctl-border:2px solid var(--poster-border);
-  --s-num-font:600 24px/1 var(--poster-sans); --s-label-font:500 11px/1.3 var(--poster-sans);
-}
-#page-schedule[data-sched-theme="soft"] .sched-title { font:700 clamp(30px,6vw,52px)/1 var(--poster-sans); text-transform:none; letter-spacing:-.03em; }
-#page-schedule[data-sched-theme="soft"] .sched-seg button, #page-schedule[data-sched-theme="soft"] .sched-nav button { font:600 13px/1 var(--poster-sans); text-transform:none; }
-#page-schedule[data-sched-theme="soft"] .sday.is-out { background:transparent; outline:2px dashed var(--poster-track); outline-offset:-2px; }
-#page-schedule[data-sched-theme="soft"] .smark { border-left:0; box-shadow:inset 4px 0 0 var(--mc); }
-#page-schedule[data-sched-theme="soft"] .sdot { border:0; }
-
-/* ---------- Theme 3: Graph paper. Thin lines, gridded boxes, mono type ---------- */
-#page-schedule[data-sched-theme="graph"] {
-  --s-day-border:1px solid var(--poster-border); --s-day-shadow:none; --s-gap:8px;
-  --s-mark-bg:transparent; --s-mark-border:0 solid transparent;
-  --s-ctl-border:1px solid var(--poster-border);
-  --s-num-font:500 20px/1 var(--poster-mono); --s-label-font:500 10.5px/1.3 var(--poster-mono);
-}
-#page-schedule[data-sched-theme="graph"] .sday {
-  background-color:var(--poster-card-bg);
-  background-image:linear-gradient(var(--poster-track) 1px, transparent 1px), linear-gradient(90deg, var(--poster-track) 1px, transparent 1px);
-  background-size:14px 14px;
-}
-#page-schedule[data-sched-theme="graph"] .sday.is-today { background-color:var(--s-today-bg); background-image:none; }
-#page-schedule[data-sched-theme="graph"] .sday.is-out { background-image:none; }
-#page-schedule[data-sched-theme="graph"] .sched-title { font:500 clamp(28px,5vw,46px)/1 var(--poster-mono); letter-spacing:-.04em; }
-#page-schedule[data-sched-theme="graph"] .sched-seg button, #page-schedule[data-sched-theme="graph"] .sched-nav button { font:500 12px/1 var(--poster-mono); }
-#page-schedule[data-sched-theme="graph"] .smark { padding:2px 0 2px 8px; border-left:3px solid var(--mc); font-family:var(--poster-mono); font-size:11.5px; background:var(--poster-card-bg); }
-#page-schedule[data-sched-theme="graph"] .sday.is-today .smark { background:var(--poster-card-bg); }
-#page-schedule[data-sched-theme="graph"] .sdot { border-radius:0; border:0; }
-
-/* ---------- Theme 4: Bold. Solid color blocks, big numbers ---------- */
-#page-schedule[data-sched-theme="bold"] {
-  --s-day-bg:var(--poster-ui-accent); --s-day-ink:var(--poster-on-accent); --s-day-soft:var(--poster-on-accent);
-  --s-day-border:0 solid transparent; --s-day-shadow:none; --s-day-radius:4px;
-  --s-out-bg:var(--poster-track); --s-out-ink:var(--poster-text-soft);
-  --s-today-bg:#FFD43B; --s-today-ink:#171914;
-  --s-mark-bg:var(--poster-card-bg); --s-mark-border:0 solid transparent; --s-mark-radius:3px;
-  --s-num-font:800 40px/.85 var(--poster-display); --s-gap:8px;
-}
-#page-schedule[data-sched-theme="bold"] .sday.is-out { opacity:1; }
-#page-schedule[data-sched-theme="bold"] .smonth .sday-num { font-size:30px; }
-#page-schedule[data-sched-theme="bold"] .sdays .sday-num { font-size:72px; }
-#page-schedule[data-sched-theme="bold"] .sday-dow { font-weight:700; opacity:.85; }
-#page-schedule[data-sched-theme="bold"] .sdot { border-color:var(--poster-on-accent); }
-#page-schedule[data-sched-theme="bold"] .sday.is-today .sdot { border-color:#171914; }
-#page-schedule[data-sched-theme="bold"] .smark { border-left-width:6px; }
-@media (max-width:699px) { #page-schedule[data-sched-theme="bold"] .smonth .sday-num { font-size:20px; } }
+.sdays-hint { flex-shrink:0; padding-top:8px; font:600 10px/1.3 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); text-align:center; }
 </style>
 </head>
 <body>
@@ -730,21 +699,19 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 </div>
 </div>
 
-<div class="page" id="page-schedule" data-sched-theme="poster" hidden>
+<div class="page" id="page-schedule" hidden>
   <div class="sched">
     <div class="sched-bar">
       <h1 class="sched-title" id="schedTitle">Schedule</h1>
-      <div class="sched-controls">
-        <div class="sched-seg" id="schedViews" role="group" aria-label="View">
-          <button type="button" data-v="day">Day</button><button type="button" data-v="week">Week</button><button type="button" data-v="month">Month</button>
-        </div>
-        <div class="sched-nav">
-          <button type="button" id="schedPrev" aria-label="Previous">&larr;</button>
-          <button type="button" id="schedToday">Today</button>
-          <button type="button" id="schedNext" aria-label="Next">&rarr;</button>
-        </div>
-        <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span>Show assignments</button>
+      <div class="sched-nav">
+        <button type="button" class="sched-btn" id="schedPrev" aria-label="Previous">&larr;</button>
+        <button type="button" class="sched-btn" id="schedToday">Today</button>
+        <button type="button" class="sched-btn" id="schedNext" aria-label="Next">&rarr;</button>
       </div>
+      <div class="sched-seg sched-views" id="schedViews" role="group" aria-label="View">
+        <button type="button" data-v="day">Day</button><button type="button" data-v="week">Week</button><button type="button" data-v="month">Month</button>
+      </div>
+      <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span><span class="long">Show </span>assignments</span></button>
     </div>
     <div id="schedBody"></div>
   </div>
@@ -1503,15 +1470,16 @@ function dayBoxHTML(key, items, opts) {
   const d = sParse(key);
   const today = key === getTodayStr();
   const out = opts.month && d.getMonth() !== opts.month.getMonth();
-  const tag = opts.month ? "button" : "div";
+  const past = key < getTodayStr();
+  const tag = opts.long ? "div" : "button";
   const dow = opts.long ? DOW[(d.getDay()+6)%7] : DOW[(d.getDay()+6)%7].slice(0,3);
   const num = opts.long ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : d.getDate();
   const list = items || [];
-  const shown = opts.month ? list.slice(0, 3) : list;
-  return `<${tag} class="sday${today ? " is-today" : ""}${out ? " is-out" : ""}" data-date="${key}"${opts.month ? ` type="button" aria-label="${fmtDate(key)}, ${list.length} item${list.length === 1 ? "" : "s"}"` : ""}>
-    <div class="sday-head">${opts.month ? `<span class="sday-num">${d.getDate()}</span>` : `<span class="sday-dow">${today ? "Today · " : ""}${dow}</span><span class="sday-num">${num}</span>`}</div>
+  const shown = list;
+  return `<${tag} class="sday${today ? " is-today" : ""}${out ? " is-out" : ""}${past && !out ? " is-past" : ""}" data-date="${key}"${!opts.long ? ` type="button" aria-label="${fmtDate(key)}, ${list.length} item${list.length === 1 ? "" : "s"}"` : ""}>
+    <div class="sday-head">${opts.month ? `<span class="sday-num">${d.getDate()}</span>` : `<span class="sday-dow">${today ? `<span class="tlabel">Today · </span>` : ""}${dow}</span><span class="sday-num">${num}</span>`}</div>
     ${list.length ? `<div class="smarks">${shown.map(it => markHTML(it, opts.long)).join("")}</div>` : (opts.month ? "" : `<div class="sday-empty">Nothing due</div>`)}
-    ${opts.month && list.length > 3 ? `<span class="smore">+${list.length - 3} more</span>` : ""}
+    ${opts.month ? `<span class="smore"></span>` : ""}
     ${opts.month && list.length ? `<div class="sdots">${list.map(it => `<span class="sdot" style="--mc:${it.color}"></span>`).join("")}</div>` : ""}
   </${tag}>`;
 }
@@ -1524,10 +1492,22 @@ function schedDayRange() {
   return [sAdd(start, -14), sAdd(end, 14)];
 }
 
+function openDay(key) { sched.view = "day"; sched.date = key; saveSchedPrefs(); renderSchedule(); }
+
+// Size the calendar area so the view fills the rest of the screen exactly
+function fitSchedule() {
+  const body = document.getElementById("schedBody");
+  if (!body || document.getElementById("page-schedule").hidden) return;
+  const top = body.getBoundingClientRect().top + window.scrollY;
+  body.style.height = Math.max(300, window.innerHeight - top - 12) + "px";
+}
+window.addEventListener("resize", fitSchedule);
+
 let schedObserver = null;
 function renderSchedule() {
   const root = document.getElementById("schedBody");
   if (!root) return;
+  fitSchedule();
   const items = schedItemsByDate();
   const title = document.getElementById("schedTitle");
   document.querySelectorAll("#schedViews button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === sched.view)));
@@ -1542,9 +1522,8 @@ function renderSchedule() {
     title.textContent = a.getMonth() === b.getMonth()
       ? `${a.toLocaleDateString("en-US",{month:"short"})} ${a.getDate()} – ${b.getDate()}`
       : `${a.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
-    root.innerHTML = `<div class="sweek-scroll"><div class="sweek">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}</div></div>`;
-    const t = root.querySelector(".sday.is-today");
-    if (t && window.innerWidth < 900) { const sc = root.querySelector(".sweek-scroll"); sc.scrollLeft = t.offsetLeft - sc.firstElementChild.offsetLeft; }
+    root.innerHTML = `<div class="sweek">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}</div>`;
+    root.querySelectorAll(".sweek .sday").forEach(el => el.onclick = () => openDay(el.dataset.date));
   } else if (sched.view === "month") {
     const m = sParse(sched.date); m.setDate(1);
     title.textContent = m.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -1553,13 +1532,22 @@ function renderSchedule() {
     const cells = [];
     for (let k = first; ; k = sAdd(k, 1)) { cells.push(k); if (cells.length % 7 === 0 && sParse(k) >= last) break; }
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
-      <div class="smonth">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
-    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = () => { sched.view = "day"; sched.date = el.dataset.date; saveSchedPrefs(); renderSchedule(); });
+      <div class="smonth" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
+    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = () => openDay(el.dataset.date));
+    // Show as many markers as fit in each box, then "+N more"
+    root.querySelectorAll(".smonth .smarks").forEach(box => {
+      const chips = [...box.children], more = box.parentElement.querySelector(".smore");
+      let hidden = 0;
+      while (chips.length - hidden > 0 && box.scrollHeight > box.clientHeight + 1) {
+        chips[chips.length - 1 - hidden].hidden = true; hidden++;
+        more.textContent = `+${hidden} more`;
+      }
+    });
   } else {
     const [start, end] = schedDayRange();
     const keys = []; for (let k = start; k <= end; k = sAdd(k, 1)) keys.push(k);
     root.innerHTML = `<div class="sdays" id="schedDays">${keys.map(k => dayBoxHTML(k, items[k], { long: true })).join("")}</div>
-      <div class="shint">Scroll inside the box for the next day</div>`;
+      <div class="sdays-hint">Scroll for the next day</div>`;
     const box = document.getElementById("schedDays");
     const target = box.querySelector(`[data-date="${sched.date}"]`);
     if (target) scrollBoxTo(box, target);
