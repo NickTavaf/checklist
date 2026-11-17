@@ -536,42 +536,82 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .sched { max-width:1440px; margin:0 auto; padding:4px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
 @media (min-width:900px) { .sched { padding-left:max(32px,env(safe-area-inset-left)); padding-right:max(32px,env(safe-area-inset-right)); } }
 
-/* toolbar: title + arrows on one line, view switch + assignments switch below */
-.sched-bar { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"title add" "views nav" "tog tog"; align-items:center; gap:10px 12px; margin:0 0 14px; }
-.sched-btn.sched-add { grid-area:add; justify-self:end; background:var(--poster-ui-accent); color:var(--poster-on-accent); white-space:nowrap; }
-@media (min-width:600px) and (max-width:999px) {
-  .sched-bar { grid-template-columns:minmax(0,1fr) auto auto; grid-template-areas:"title tog add" "views nav nav"; }
-}
-/* wide screens: everything on one line, which leaves more room for the calendar */
-@media (min-width:1000px) {
-  .sched-bar { grid-template-columns:minmax(0,1fr) auto auto auto auto; grid-template-areas:"title views nav tog add"; gap:14px; margin-bottom:12px; }
-  .sched-title { font-size:clamp(40px,4.4vw,56px); }
-}
-.sched-title { grid-area:title; min-width:0; margin:0; font:800 clamp(32px,6vw,60px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.sched-nav { grid-area:nav; display:flex; gap:6px; }
-.sched-views { grid-area:views; justify-self:start; }
-.sched-toggle { grid-area:tog; justify-self:start; }
-@media (min-width:600px) { .sched-toggle { justify-self:end; } }
-.sched-btn, .sched-seg, .sched-toggle { border:3px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); box-shadow:3px 3px 0 var(--poster-border); }
-.sched-btn { min-width:42px; min-height:42px; padding:6px 12px; font:600 17px/1 var(--poster-display); text-transform:uppercase; }
-.sched-btn:disabled { opacity:.35; cursor:default; box-shadow:none; }
-.sched-btn:not(:disabled):active, .sched-toggle:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
-.sched-seg { display:flex; }
-.sched-seg button { min-height:36px; padding:6px 16px; border:0; background:transparent; color:inherit; font:600 17px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
+/* ---- toolbar ----
+   Three layouts, set by data-bar on .sched-bar:
+   a = two rows (title + arrows + Add / views + Today + switch)
+   b = centered (‹ title › in the middle, Today and Add in the corners)
+   c = one strip (title on top, every control in a single joined bar) */
+.sched-bar { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:0 0 16px; }
+.sb-tools { display:contents; }
+.sb-break { flex-basis:100%; height:0; }
+.sched-title { flex:0 1 auto; min-width:0; margin:0; font:800 clamp(30px,5vw,56px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sched-btn { min-width:40px; min-height:40px; padding:6px 12px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 16px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
+.sched-btn:disabled { opacity:.3; cursor:default; }
+.sched-btn:not(:disabled):active { transform:translate(1px,1px); }
+.sb-arrow { width:40px; padding:0; font-size:18px; }
+.sched-btn.sched-add { background:var(--poster-ui-accent); color:var(--poster-on-accent); border:3px solid var(--poster-border); box-shadow:3px 3px 0 var(--poster-border); white-space:nowrap; }
+.sched-btn.sched-add:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
+.sched-seg { display:flex; border:3px solid var(--poster-border); background:var(--poster-card-bg); box-shadow:3px 3px 0 var(--poster-border); }
+.sched-seg button { min-height:36px; padding:6px 16px; border:0; background:transparent; color:var(--poster-text); font:600 16px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
 .sched-seg button + button { border-left:3px solid var(--poster-border); }
 .sched-seg button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
-.sched-toggle { display:inline-flex; align-items:center; gap:9px; min-height:42px; padding:6px 12px 6px 9px; font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; }
-.sched-toggle .knob { width:32px; height:18px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
-.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:10px; height:10px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
+.sched-toggle { display:inline-flex; align-items:center; gap:9px; min-height:40px; padding:4px 2px; border:0; background:transparent; color:var(--poster-text); font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; }
+.sched-toggle .knob { width:34px; height:20px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
+.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
 .sched-toggle[aria-checked="true"] .knob { background:var(--poster-ui-accent); }
 .sched-toggle[aria-checked="true"] .knob::after { transform:translateX(14px); background:var(--poster-on-accent); }
+.sched-toggle .short { display:none; }
+
+/* A: two rows */
+.sched-bar[data-bar="a"] .sched-title { order:1; }
+.sched-bar[data-bar="a"] .sb-prev { order:2; margin-left:4px; }
+.sched-bar[data-bar="a"] .sb-next { order:3; margin-left:-6px; }
+.sched-bar[data-bar="a"] .sched-add { order:4; margin-left:auto; }
+.sched-bar[data-bar="a"] .sb-break { order:5; }
+.sched-bar[data-bar="a"] .sched-views { order:6; }
+.sched-bar[data-bar="a"] .sb-today { order:7; }
+.sched-bar[data-bar="a"] .sched-toggle { order:8; margin-left:auto; }
+
+/* B: centered */
+.sched-bar[data-bar="b"] { row-gap:14px; }
+.sched-bar[data-bar="b"] .sb-today { order:1; margin-right:auto; }
+.sched-bar[data-bar="b"] .sb-prev { order:2; }
+.sched-bar[data-bar="b"] .sched-title { order:3; text-align:center; padding:0 6px; }
+.sched-bar[data-bar="b"] .sb-next { order:4; }
+.sched-bar[data-bar="b"] .sched-add { order:5; margin-left:auto; }
+.sched-bar[data-bar="b"] .sb-break { order:6; }
+.sched-bar[data-bar="b"] .sched-views { order:7; margin-left:auto; }
+.sched-bar[data-bar="b"] .sched-toggle { order:8; margin-right:auto; }
+.sched-bar[data-bar="b"] .sb-arrow { border:0; background:transparent; font-size:26px; }
+
+/* C: one strip */
+.sched-bar[data-bar="c"] { gap:12px; }
+.sched-bar[data-bar="c"] .sched-title { flex-basis:100%; }
+.sched-bar[data-bar="c"] .sb-tools { display:flex; flex-wrap:wrap; gap:3px; flex:1 1 100%; background:var(--poster-border); border:3px solid var(--poster-border); box-shadow:4px 4px 0 var(--poster-border); }
+.sched-bar[data-bar="c"] .sb-tools > * { flex:1 1 auto; border:0; box-shadow:none; background:var(--poster-card-bg); min-height:42px; justify-content:center; }
+.sched-bar[data-bar="c"] .sb-break { display:none; }
+.sched-bar[data-bar="c"] .sched-views { flex:2 1 auto; }
+.sched-bar[data-bar="c"] .sched-views button { flex:1; }
+.sched-bar[data-bar="c"] .sb-arrow { flex:0 0 46px; }
+.sched-bar[data-bar="c"] .sched-toggle { padding:4px 12px; }
+.sched-bar[data-bar="c"] .sched-btn.sched-add { background:var(--poster-ui-accent); }
+.sched-bar[data-bar="c"] .sched-btn.sched-add:active { transform:none; }
+.sched-bar[data-bar="c"] .sched-btn:disabled { opacity:1; color:color-mix(in srgb, var(--poster-text) 30%, transparent); }
+
 @media (max-width:520px) {
-  .sched-bar { gap:10px 8px; }
-  .sched-title { font-size:30px; }
-  .sched-btn { min-width:38px; min-height:38px; padding:5px 9px; font-size:15px; }
-  .sched-seg button { padding:5px 12px; font-size:15px; }
-  .sched-toggle { padding:5px 9px 5px 7px; }
-  .sched-toggle { min-height:32px; padding:3px 9px 3px 7px; box-shadow:2px 2px 0 var(--poster-border); }
+  .sched-bar { gap:10px 8px; margin-bottom:12px; }
+  .sched-title { font-size:28px; }
+  .sched-btn { min-height:36px; padding:5px 9px; font-size:14px; }
+  .sb-arrow { width:36px; min-width:36px; }
+  .sched-seg button { min-height:32px; padding:5px 11px; font-size:14px; }
+  .sched-toggle { min-height:32px; gap:7px; }
+  .sched-toggle .long { display:none; }
+  .sched-toggle .short { display:inline; }
+  .sched-add .long { display:none; }
+  .sched-bar[data-bar="b"] .sched-title { font-size:24px; }
+  .sched-bar[data-bar="b"] .sb-arrow { font-size:22px; width:28px; min-width:28px; }
+  .sched-bar[data-bar="c"] .sb-tools > * { min-height:38px; }
+  .sched-bar[data-bar="c"] .sched-views { flex-basis:100%; }
 }
 
 /* the schedule fills the screen, so the page itself never scrolls */
@@ -777,18 +817,19 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 
 <div class="page" id="page-schedule" hidden>
   <div class="sched">
-    <div class="sched-bar">
+    <div class="sched-bar" data-bar="a">
       <h1 class="sched-title" id="schedTitle">Schedule</h1>
-      <div class="sched-nav">
-        <button type="button" class="sched-btn" id="schedPrev" aria-label="Previous">&larr;</button>
-        <button type="button" class="sched-btn" id="schedToday">Today</button>
-        <button type="button" class="sched-btn" id="schedNext" aria-label="Next">&rarr;</button>
+      <div class="sb-tools">
+        <div class="sched-seg sched-views" id="schedViews" role="group" aria-label="View">
+          <button type="button" data-v="day">Day</button><button type="button" data-v="week">Week</button><button type="button" data-v="month">Month</button>
+        </div>
+        <button type="button" class="sched-btn sb-arrow sb-prev" id="schedPrev" aria-label="Previous">&lsaquo;</button>
+        <button type="button" class="sched-btn sb-today" id="schedToday">Today</button>
+        <button type="button" class="sched-btn sb-arrow sb-next" id="schedNext" aria-label="Next">&rsaquo;</button>
+        <span class="sb-break" aria-hidden="true"></span>
+        <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span class="long">Show assignments</span><span class="short">Homework</span></button>
+        <button type="button" class="sched-btn sched-add" id="schedAdd">+<span class="long"> Add</span></button>
       </div>
-      <div class="sched-seg sched-views" id="schedViews" role="group" aria-label="View">
-        <button type="button" data-v="day">Day</button><button type="button" data-v="week">Week</button><button type="button" data-v="month">Month</button>
-      </div>
-      <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span>Show assignments</span></button>
-      <button type="button" class="sched-btn sched-add" id="schedAdd">+ Add</button>
     </div>
     <div id="schedBody"></div>
   </div>
@@ -800,13 +841,12 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 <div class="modal-overlay" id="eventModal">
   <form class="modal ev-form" id="eventForm" autocomplete="off">
     <h2 id="eventModalTitle">Add to calendar</h2>
-    <div class="modal-sub">Flights, plans, reminders, anything that isn't homework.</div>
-    <label class="ev-field"><span>What</span><input id="evTitle" type="text" maxlength="120" placeholder="Flight to Chicago" required></label>
+    <label class="ev-field"><span>What</span><input id="evTitle" type="text" maxlength="120" placeholder="Title" required></label>
     <div class="ev-row">
       <label class="ev-field"><span>Date</span><input id="evDate" type="date" required></label>
       <label class="ev-field"><span>Time <i>(optional)</i></span><input id="evTime" type="time"></label>
     </div>
-    <label class="ev-field"><span>Notes <i>(optional)</i></span><textarea id="evNotes" rows="3" placeholder="Gate B12, leave by 2pm"></textarea></label>
+    <label class="ev-field"><span>Notes <i>(optional)</i></span><textarea id="evNotes" rows="3"></textarea></label>
     <div class="ev-field"><span>Color</span><div class="ev-colors" id="evColors"></div></div>
     <div class="modal-status error" id="evError" hidden></div>
     <div class="modal-actions">
@@ -1544,7 +1584,7 @@ function sAdd(s, n) { const d = sParse(s); d.setDate(d.getDate() + n); return sK
 function sMonday(s) { const d = sParse(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return sKey(d); }
 function sEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])); }
 
-// Your own events and reminders (flights, plans, anything that isn't homework)
+// Your own events and reminders (anything that isn't homework)
 let myEvents = [];
 try { myEvents = JSON.parse(localStorage.getItem("calendarEvents") || "[]"); } catch(e) { myEvents = []; }
 function saveEvents() { try { localStorage.setItem("calendarEvents", JSON.stringify(myEvents)); } catch(e) {} }
