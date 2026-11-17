@@ -959,7 +959,6 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
     var(--wood);
   box-shadow:inset 0 0 40px #0006, 0 6px 18px #0006; }
 .desk[data-desk="wood-oak"] { --wood:#b4844f; } .desk[data-desk="wood-walnut"] { --wood:#5a3a24; } .desk[data-desk="wood-maple"] { --wood:#d8b27a; }
-.desk[data-desk="wood-cherry"] { --wood:#8c4128; } .desk[data-desk="wood-ebony"] { --wood:#2a201b; }
 .desk[data-desk^="wood"] .desk-empty { color:#fffd; text-shadow:0 1px 2px #000; }
 .desk[data-desk="slate"] .desk-empty, .desk[data-desk="leather"] .desk-empty { color:#ffffff90; }
 /* soft, real shadows on every textured background */
@@ -986,7 +985,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-woods .nb-swatch { width:28px; height:28px; }
 .nb-swatch.bg-none { background:var(--poster-bg); }
 .desk-bar .short { display:none; }
-.desk-bg-menu { max-height:calc(100dvh - 140px); overflow-y:auto; }
+.desk-bg-menu { max-height:calc(100dvh - 140px); overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding-bottom:10px; }
 
 /* trash can: bottom-left corner of the desk; drag things onto it */
 .desk-trash { position:absolute; z-index:20; left:calc(max(16px, env(safe-area-inset-left)) + var(--in)); bottom:var(--in); width:56px; height:56px; padding:0;
@@ -1276,8 +1275,6 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
             <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-oak"><span class="nb-swatch bg-wood" data-w="oak"></span><span>Oak</span></button>
             <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-walnut"><span class="nb-swatch bg-wood" data-w="walnut"></span><span>Walnut</span></button>
             <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-maple"><span class="nb-swatch bg-wood" data-w="maple"></span><span>Maple</span></button>
-            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-cherry"><span class="nb-swatch bg-wood" data-w="cherry"></span><span>Cherry</span></button>
-            <button type="button" class="nb-opt" role="menuitemradio" data-bg="wood-ebony"><span class="nb-swatch bg-wood" data-w="ebony"></span><span>Ebony</span></button>
           </div>
         </div>
       </div>
@@ -2986,7 +2983,7 @@ function placeDeskItems() {
     el.style.transform = `translate(${x}px, ${y}px) rotate(${item.r || 0}deg)`;
   });
 }
-const DESK_BGS = ["scatter", "mat", "slate", "leather", "wood-oak", "wood-walnut", "wood-maple", "wood-cherry", "wood-ebony"];
+const DESK_BGS = ["scatter", "mat", "slate", "leather", "wood-oak", "wood-walnut", "wood-maple"];
 function paintBgMenu() {
   document.querySelectorAll("#deskBgMenu .nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.bg === desk.dataset.desk)));
   const wood = desk.dataset.desk.startsWith("wood"), more = document.getElementById("deskWoodMore");
@@ -2995,6 +2992,7 @@ function paintBgMenu() {
   if (wood) { document.getElementById("deskWoods").hidden = false; more.setAttribute("aria-expanded", "true"); }
 }
 function setDeskStyle(s) {
+  if (s === "wood-cherry" || s === "wood-ebony") s = "wood-walnut";
   desk.dataset.desk = DESK_BGS.includes(s) ? s : "mat";   // scatter = no background
   try { localStorage.setItem("deskStyle", desk.dataset.desk); } catch(e) {}
   paintBgMenu();
@@ -3384,6 +3382,7 @@ document.getElementById("nbDelete").onclick = e => {
 
 // Start where you left off: the notebook you had open, or the desk
 { let s = "mat"; try { s = localStorage.getItem("deskStyle") || "mat"; } catch(e) {}
+  if (s === "wood-cherry" || s === "wood-ebony") s = "wood-walnut";
   desk.dataset.desk = DESK_BGS.includes(s) ? s : "mat";
   paintBgMenu(); }
 { const btn = document.getElementById("deskBgBtn"), menu = document.getElementById("deskBgMenu");
@@ -3393,6 +3392,7 @@ document.getElementById("nbDelete").onclick = e => {
       const r = btn.getBoundingClientRect();
       menu.style.position = "fixed"; menu.style.top = (r.bottom + 8) + "px"; menu.style.right = "auto";
       menu.style.left = Math.max(12, Math.min(r.left, window.innerWidth - menu.offsetWidth - 12)) + "px";
+      menu.style.maxHeight = Math.max(200, window.innerHeight - r.bottom - 20) + "px";
     }
   };
   btn.onclick = e => { e.stopPropagation(); show(menu.hidden); };
