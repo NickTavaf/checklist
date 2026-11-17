@@ -715,16 +715,23 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 @media (max-width:699px) {
   .smonth .sday { padding:4px; gap:4px; border-width:2px; }
   .smonth .sday-num { font-size:16px; }
-  .smonth .smore { display:none; }
-  .smonth .smarks { gap:3px; }
-  .smonth .smark { padding:0; height:7px; border:0; background:var(--mc); }
+  /* phone month: the boxes fill the screen and the names are written in them, small */
+  #page-schedule .smonth { gap:3px; }
+  .smonth .sday { padding:3px 2px 2px 3px; gap:2px; border-width:1.5px; }
+  .smonth .sday-num { font-size:14px; }
+  .smonth .smore { font-size:7.5px; letter-spacing:0; }
+  .smonth .smarks { gap:2px; }
+  .smonth .smark { padding:1px 1px 1px 3px; border:0; border-left:2.5px solid var(--mc); background:color-mix(in srgb, var(--mc) 14%, transparent); color:inherit; font-size:8.5px; line-height:1.12; letter-spacing:-.01em; }
   .smonth .smark::before { display:none; }
-  .smonth .smark.is-done { background:transparent; box-shadow:inset 0 0 0 2px var(--mc); }
-  .smonth .smark .mt { display:none; }
+  .smonth .smark.is-done { background:color-mix(in srgb, var(--mc) 30%, transparent); }
+  .smonth .smark.is-done .mt { opacity:.6; }
+  .smonth .smark .mt { -webkit-line-clamp:3; overflow-wrap:anywhere; hyphens:auto; }
+  .smonth .smark.one-line .mt { -webkit-line-clamp:2; }
+  .smonth .sday .shol-line { font-size:7.5px; line-height:1.1; letter-spacing:0; overflow-wrap:anywhere; }
   .smonth-dows span { font-size:9px; padding-left:2px; }
   .smonth.has-pick { flex:0 0 auto; height:min(52%, 320px); }
   .smonth .sday.is-picked { outline:3px solid var(--poster-ui-accent); outline-offset:1px; }
-  .smonth .sday .shol-inline, .smonth .sday .shol-line { display:none !important; }   /* the star marks it; the name shows underneath */
+  .smonth .sday .shol-inline { display:none !important; }
   .smonth .sday.is-today.is-picked { outline-color:var(--poster-text); }
 }
 /* the day you tapped in the phone's month view, with every name written out */
@@ -748,9 +755,10 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .smonth .sday.hol-in .shol-line { display:none; }
 .smonth .sday-head { align-items:center; }
 @media (max-width:699px) {
-  .smonth .shol { display:none; }
-  .smonth .shol-star { display:inline; }
-  .sweek .shol { font-size:8px; letter-spacing:0; text-align:center; hyphens:auto; -webkit-hyphens:auto; }
+  .smonth .shol-inline { display:none; }
+  .smonth .shol-star { display:none; }
+  .smonth .sday .shol-line, .smonth .sday.hol-in .shol-line { display:block; white-space:normal; overflow:visible; text-overflow:clip; }
+  .sweek .shol { font-size:10px; letter-spacing:0; }
 }
 
 /* your own events and reminders: a diamond instead of a checkbox */
@@ -2641,7 +2649,7 @@ function renderSchedule() {
     markHTML.inMonth = true;
     // On a phone the boxes are too small for names, so the month gets a little shorter and the day
     // you tap is written out underneath (today to start)
-    const phone = window.innerWidth < 700;
+    const phone = false;   // phone: names go right in the boxes (no panel underneath)
     if (phone && (!sched.pick || sched.pick.slice(0, 7) !== sKey(m).slice(0, 7))) sched.pick = getTodayStr().slice(0, 7) === sKey(m).slice(0, 7) ? getTodayStr() : sKey(m);
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
       <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
