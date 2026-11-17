@@ -2607,11 +2607,15 @@ try {
 } catch(e) {}
 function saveSchedPrefs() { try { localStorage.setItem("scheduleView", JSON.stringify({ view: sched.view, showAssignments: sched.showAssignments })); } catch(e) {} }
 
-const DOW = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+// Weeks start on Sunday, like a standard US calendar (WEEK_START 1 would make them start on Monday)
+const WEEK_START = 0;
+const DOW_ALL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DOW = [...DOW_ALL.slice(WEEK_START), ...DOW_ALL.slice(0, WEEK_START)];
 function sParse(s) { return new Date(s + "T00:00:00"); }
 function sKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function sAdd(s, n) { const d = sParse(s); d.setDate(d.getDate() + n); return sKey(d); }
-function sMonday(s) { const d = sParse(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return sKey(d); }
+// the first day of the week a date falls in
+function sMonday(s) { const d = sParse(s); const off = (d.getDay() - WEEK_START + 7) % 7; d.setDate(d.getDate() - off); return sKey(d); }
 function sEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])); }
 
 // Your own events and reminders (anything that isn't homework)
@@ -2722,7 +2726,7 @@ function dayBoxHTML(key, items, opts) {
   const today = key === getTodayStr();
   const out = opts.month && d.getMonth() !== opts.month.getMonth();
   const tag = "div";
-  const dow = opts.long ? DOW[(d.getDay()+6)%7] : DOW[(d.getDay()+6)%7].slice(0,3);
+  const dow = opts.long ? DOW_ALL[d.getDay()] : DOW_ALL[d.getDay()].slice(0,3);
   const num = opts.long ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : d.getDate();
   const list = items || [];
   const hol = holidayOn(key);
