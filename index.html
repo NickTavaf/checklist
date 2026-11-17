@@ -14,6 +14,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
+// Apply the saved Light / Dark choice before the page draws (Auto = follow the device).
+try { var tm = localStorage.getItem("themeMode"); if (tm === "light" || tm === "dark") document.documentElement.setAttribute("data-theme", tm); } catch (e) {}
 // Apply the saved header colour immediately so reloads don't flash the default blue.
 try {
   var v = JSON.parse((location.hash === "#schedule" && localStorage.getItem("posterPaletteVarsSchedule")) || localStorage.getItem("posterPaletteVars") || "null");
@@ -124,6 +126,10 @@ button:disabled { opacity:.55; cursor:wait; }
 .customize-title { font:700 20px/1 var(--poster-display); text-transform:uppercase; color:var(--poster-text); margin-bottom:14px; }
 .customize-section-label { font:600 11px/1.4 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); margin:14px 0 8px; }
 .customize-section-label:first-of-type { margin-top:0; }
+.theme-choice { display:flex; border:1px solid var(--poster-border); border-radius:var(--poster-control-radius); overflow:hidden; }
+.theme-choice button { flex:1; min-height:36px; background:transparent; border:0; color:var(--poster-text); font:600 13px/1 var(--poster-mono); cursor:pointer; }
+.theme-choice button + button { border-left:1px solid var(--poster-border); }
+.theme-choice button[aria-pressed="true"] { background:var(--poster-text); color:var(--poster-card-bg); }
 .palette-swatches { display:flex; flex-wrap:wrap; gap:8px; }
 .palette-swatch {
   width:32px; height:32px; border-radius:50%; border:2px solid var(--poster-border);
@@ -1381,6 +1387,13 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
     <div class="customize-panel" id="customizePanel">
       <div class="customize-title">Customize</div>
 
+      <div class="customize-section-label">Appearance</div>
+      <div class="theme-choice" id="themeChoice" role="group" aria-label="Appearance">
+        <button type="button" data-theme-mode="light">Light</button>
+        <button type="button" data-theme-mode="dark">Dark</button>
+        <button type="button" data-theme-mode="auto">Auto</button>
+      </div>
+
       <div class="customize-section-label" id="paletteLabel">Header Color</div>
       <div class="palette-swatches" id="paletteSwatches"></div>
       <div class="color-picker" id="colorPicker" hidden></div>
@@ -1695,6 +1708,21 @@ function saveState() { try { localStorage.setItem("assignmentState", JSON.string
 let prefsT = 0;
 try { prefsT = parseInt(localStorage.getItem("prefsUpdatedAt") || "0", 10) || 0; } catch(e) { prefsT = 0; }
 function touchPrefs() { prefsT = Date.now(); try { localStorage.setItem("prefsUpdatedAt", String(prefsT)); } catch(e) {} }
+
+// Appearance: "light" or "dark" always, or "auto" to follow the device's day/night setting
+let themeMode = "auto";
+try { themeMode = localStorage.getItem("themeMode") || "auto"; } catch(e) {}
+function applyThemeMode(mode) {
+  themeMode = mode === "light" || mode === "dark" ? mode : "auto";
+  try { localStorage.setItem("themeMode", themeMode); } catch(e) {}
+  if (themeMode === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", themeMode);
+  document.querySelectorAll("#themeChoice [data-theme-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeMode === themeMode)));
+}
+document.querySelectorAll("#themeChoice [data-theme-mode]").forEach(b => b.addEventListener("click", () => {
+  applyThemeMode(b.dataset.themeMode); touchPrefs(); scheduleSync();
+}));
+applyThemeMode(themeMode);
 
 // Ask the browser to treat saved progress as persistent so it isn't cleared to free up space
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
@@ -2287,7 +2315,7 @@ function setSyncStatus(msg, isError) {
 function syncConfigured() { return SYNC_URL && SYNC_URL !== "PASTE_YOUR_SYNC_WORKER_URL_HERE"; }
 
 function localBundle() {
-  return { state, customAssignments, classColorOverrides, palette: currentPaletteId, prefsT, removedClasses };
+  return { state, customAssignments, classColorOverrides, palette: currentPaletteId, theme: themeMode, prefsT, removedClasses };
 }
 
 /* ---- Syncing everything else: notebooks, their pages, sticky notes, the trash and calendar events.
@@ -2395,6 +2423,7 @@ function mergeRemote(remote) {
   if ((remote.prefsT || 0) > prefsT) {
     classColorOverrides = remote.classColorOverrides || {};
     if (remote.palette) { currentPaletteId = remote.palette; savePaletteId(currentPaletteId); applyActivePalette(); }
+    if (remote.theme) applyThemeMode(remote.theme);
     prefsT = remote.prefsT;
     try { localStorage.setItem("prefsUpdatedAt", String(prefsT)); } catch(e) {}
     saveClassColorOverrides();
