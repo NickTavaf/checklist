@@ -1,5 +1,6 @@
 // Coursely Worker
-//   /parse  → reads pasted syllabus text with Claude and returns the assignments
+//   /parse  → reads a syllabus (pasted text, text pulled from a PDF, and/or photos of the
+//             pages) with AI and returns the assignments
 //   anything else → sync: stores progress in Cloudflare KV and merges updates
 //                   from every device, so nothing gets overwritten.
 //
@@ -14,6 +15,9 @@
 //   named ANTHROPIC_API_KEY. If both are set, Cloudflare's AI is used.
 
 const CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const CF_VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct"; // reads photos / scanned pages
+const MAX_IMAGES = 10;
+const MAX_IMAGE_CHARS = 4000000; // one base64 photo (the site shrinks them to ~1600px first)
 const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
 const MAX_SYLLABUS_CHARS = 60000;
 
@@ -125,6 +129,33 @@ async function askCloudflareAI(env, today, text) {
   return typeof r === "string" ? r : JSON.stringify(r || {});
 }
 
+// Photos come in as data URLs ("data:image/jpeg;base64,...").
+function cleanImages(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(s => typeof s === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(s) && s.length <= MAX_IMAGE_CHARS).slice(0, MAX_IMAGES);
+}
+
+// Cloudflare's vision model copies out the text of one page photo. The first time,
+// Meta's license has to be accepted for the account, which is done here automatically.
+async function transcribePage(env, image) {
+  const input = {
+    messages: [
+      { role: "system", content: "You copy text from photos of documents exactly. Output only the text, no commentary." },
+      { role: "user", content: "Write out all the text on this syllabus page, keeping dates, times, and table rows on the same line." },
+    ],
+    image,
+    max_tokens: 2048,
+    temperature: 0,
+  };
+  try {
+    return (await env.AI.run(CF_VISION_MODEL, input)).response || "";
+  } catch (e) {
+    if (!/agree|licen[cs]e/i.test(String(e && e.message || e))) throw e;
+    await env.AI.run(CF_VISION_MODEL, { prompt: "agree" });
+    return (await env.AI.run(CF_VISION_MODEL, input)).response || "";
+  }
+}
+
 async function handleParse(request, env) {
   if (request.method !== "POST") return json({ error: "Method not allowed." }, 405);
   if (!env.AI && !env.ANTHROPIC_API_KEY) {
@@ -133,13 +164,29 @@ async function handleParse(request, env) {
 
   let body;
   try { body = await request.json(); } catch (e) { return json({ error: "Bad request." }, 400); }
-  const text = String(body.syllabusText || "").trim();
-  if (text.length < 30) return json({ error: "Paste in more of the syllabus first." }, 400);
-  if (text.length > MAX_SYLLABUS_CHARS) {
-    return json({ error: "That syllabus is very long. Paste just the schedule / assignments part." }, 413);
-  }
+  let text = String(body.syllabusText || "").trim();
+  const images = cleanImages(body.images);
+  if (text.length < 30 && !images.length) return json({ error: "Upload a PDF or photos, or paste in more of the syllabus first." }, 400);
 
   const today = new Date().toISOString().slice(0, 10);
+
+  // Photos: with Cloudflare's AI, copy out each page's text first, then read it like pasted text.
+  if (images.length && env.AI) {
+    const pages = [];
+    for (let i = 0; i < images.length; i++) {
+      try { pages.push(`--- Page ${i + 1} ---\n` + await transcribePage(env, images[i])); }
+      catch (e) {
+        const m = String(e && e.message || e);
+        if (/limit|quota|neuron|429/i.test(m)) return json({ error: "Today's free AI allowance is used up. Try again tomorrow." }, 429);
+        return json({ error: "The AI couldn't read those photos. Try clearer photos, or paste the text." }, 502);
+      }
+    }
+    text = [text, ...pages].filter(Boolean).join("\n\n");
+    if (text.replace(/\s+/g, "").length < 30) return json({ error: "Couldn't find any text in those photos. Try clearer photos." }, 422);
+  }
+  if (text.length > MAX_SYLLABUS_CHARS) {
+    return json({ error: "That syllabus is very long. Paste or upload just the schedule / assignments part." }, 413);
+  }
 
   if (env.AI) {
     let outText;
@@ -169,7 +216,10 @@ async function handleParse(request, env) {
         model: CLAUDE_MODEL,
         max_tokens: 8000,
         system: PARSE_INSTRUCTIONS,
-        messages: [{ role: "user", content: `TODAY: ${today}\n\nSYLLABUS:\n${text}` }],
+        messages: [{ role: "user", content: [
+          ...images.map(src => { const [, type, data] = /^data:(image\/\w+);base64,(.*)$/.exec(src); return { type: "image", source: { type: "base64", media_type: type, data } }; }),
+          { type: "text", text: `TODAY: ${today}\n\nSYLLABUS:\n${text || "(see the photos of the syllabus pages above)"}` },
+        ] }],
       }),
     });
   } catch (e) {
