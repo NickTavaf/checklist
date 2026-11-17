@@ -788,6 +788,65 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
    spiral (spiral-bound, turns sideways), legal (legal pad, flips up over the top),
    comp (composition book, turns like a book), eng (engineering pad, page tears off). */
 body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
+/* ================= Desk: all your notebooks + sticky notes, laid out on the page background ================= */
+.desk { max-width:1176px; margin:0 auto; padding:4px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
+.desk[hidden], .nb[hidden] { display:none; }
+.desk-bar { display:flex; align-items:center; gap:10px; margin:0 0 14px; }
+.desk-bar h1 { margin:0 auto 0 0; min-width:0; font:800 clamp(28px,4vw,44px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.desk-area { position:relative; min-height:320px; overflow:hidden; touch-action:none; }
+.desk-empty { position:absolute; inset:0; display:grid; place-items:center; text-align:center; font:600 12px/1.5 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.desk-item { position:absolute; left:0; top:0; cursor:grab; user-select:none; -webkit-user-select:none; touch-action:none; transition:box-shadow .15s, filter .15s; }
+.desk-item.dragging { cursor:grabbing; filter:drop-shadow(8px 12px 10px #0006); transition:none; }
+/* a closed notebook seen from above */
+.desk-nb { --w:132px; width:var(--w); height:calc(var(--w) * 1.3); border:2px solid var(--poster-border); box-shadow:5px 5px 0 var(--poster-border); display:flex; flex-direction:column; justify-content:flex-end; padding:10px; color:#171914; background:#fff; }
+.desk-nb .dn-name { position:relative; z-index:1; font:700 21px/1 "Caveat", cursive; overflow-wrap:break-word; hyphens:auto; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.desk-nb .dn-count { position:relative; z-index:1; margin-top:4px; font:600 9px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; opacity:.65; }
+.desk-nb[data-type="spiral"] { padding-left:22px; background:linear-gradient(90deg, transparent 30px, #f08a8a 30px 31.5px, transparent 31.5px), repeating-linear-gradient(#fff 0 13px, #c8d9f2 13px 14px); }
+.desk-nb[data-type="spiral"]::before { content:""; position:absolute; left:-7px; top:6px; bottom:6px; width:16px; background:radial-gradient(circle at 50% 50%, transparent 3px, #555 3.5px 5px, transparent 5.5px) 0 0/16px 12px; }
+.desk-nb[data-type="spiral"] .dn-name { margin-left:12px; }
+.desk-nb[data-type="legal"] { border-top:16px solid #7b2f2a; background:linear-gradient(90deg, transparent 18px, #e0605a 18px 19px, transparent 19px 21px, #e0605a 21px 22px, transparent 22px), repeating-linear-gradient(#FFF4A3 0 13px, #8fb3dc 13px 14px); padding-left:28px; }
+.desk-nb[data-type="comp"] { background:#111 """+marble+r""" 0 0/300px 300px; padding:0; justify-content:center; align-items:center; }
+.desk-nb[data-type="comp"]::before { content:""; position:absolute; left:0; top:0; bottom:0; width:18px; background:#0d0d0d; border-right:2px solid #000; }
+.desk-nb[data-type="comp"] .dn-label { position:relative; z-index:1; width:72%; margin-left:12px; padding:8px 8px 6px; background:#fff; border:2px solid #111; border-radius:6px; }
+.desk-nb[data-type="comp"] .dn-label::before { content:"COMPOSITION"; display:block; font:800 8px/1 var(--poster-display); letter-spacing:.08em; margin-bottom:5px; }
+.desk-nb[data-type="comp"] .dn-name { font-size:18px; border-top:1px solid #888; padding-top:3px; }
+.desk-nb[data-type="eng"] { border-top:12px solid #3f6b34; background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/12px 12px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/12px 12px, #EAF4E2; }
+.desk-nb[data-type="eng"] .dn-name { font:600 13px/1.2 var(--poster-mono); text-transform:uppercase; }
+.desk-nb:focus-visible, .desk-sticky:focus-within { outline:3px solid var(--poster-ui-accent); outline-offset:3px; }
+/* sticky notes */
+.desk-sticky { --w:132px; width:var(--w); height:var(--w); display:flex; flex-direction:column; background:var(--sc); color:#171914; box-shadow:2px 3px 0 #0003, 6px 10px 14px -6px #0006; }
+.desk-sticky .ds-grip { height:22px; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:2px; padding:0 3px; background:linear-gradient(#0000000d, #00000005); cursor:grab; }
+.desk-sticky .ds-grip button { width:20px; height:20px; padding:0; border:0; background:transparent; color:#171914b0; font:700 14px/1 var(--poster-sans); cursor:pointer; display:grid; place-items:center; }
+.desk-sticky .ds-dot { width:11px; height:11px; border-radius:50%; background:var(--sn); border:1.5px solid #17191480; }
+.desk-sticky textarea { flex:1; min-height:0; width:100%; resize:none; border:0; outline:0; padding:4px 9px 8px; background:transparent; color:inherit; font:500 19px/1.15 "Caveat", cursive; touch-action:auto; }
+.desk-sticky textarea::placeholder { color:#17191470; }
+.desk-sticky.confirm .ds-del { width:auto; padding:0 5px; font-size:10px; background:#c62828; color:#fff; }
+@media (max-width:520px) {
+  .desk-bar { gap:8px; }
+  .desk-bar h1 { font-size:26px; }
+  .desk-nb, .desk-sticky { --w:98px; }
+  .desk-nb { padding:7px; box-shadow:4px 4px 0 var(--poster-border); }
+  .desk-nb .dn-name { font-size:17px; }
+  .desk-nb[data-type="spiral"] { padding-left:18px; }
+  .desk-nb[data-type="comp"] .dn-name { font-size:13px; }
+  .desk-nb[data-type="comp"] .dn-label { width:80%; padding:6px 5px 4px; }
+  .nb-bar h1 { font-size:24px; }
+  .desk-nb[data-type="comp"] .dn-label::before { font-size:6.5px; }
+  .desk-nb[data-type="eng"] .dn-name { font-size:10.5px; }
+  .desk-sticky textarea { font-size:16px; padding:3px 7px 6px; }
+  .nb-close .long { display:none; }
+}
+/* new-notebook form: pick a type */
+.nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+.nb-types button { display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 4px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 11px/1.2 var(--poster-sans); }
+.nb-types button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+.nb-menu-sep { height:2px; margin:4px 0; background:var(--poster-border); opacity:.25; }
+.nb-act { width:100%; padding:9px 8px; border:0; background:transparent; color:inherit; text-align:left; font:600 14px/1.2 var(--poster-sans); }
+.nb-act:hover { background:var(--poster-track); }
+.nb-act.danger { color:var(--poster-danger); }
+.nb-act.danger.confirm { background:var(--poster-danger); color:#fff; }
+.nb-close { padding-left:8px; padding-right:10px; }
+
 .nb { max-width:900px; margin:0 auto; padding:4px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
 .nb-bar { display:flex; align-items:center; gap:10px; margin:0 0 14px; }
 .nb-bar h1 { margin:0 auto 0 0; min-width:0; font:800 clamp(28px,4vw,44px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -835,7 +894,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-mic-icon="sticker"] .nb-mic svg { width:27px; height:27px; }
 .nb[data-mic-icon="studio"] .nb-mic { border-radius:6px; }
 .nb[data-mic-icon="studio"][data-mic-pos="corner"] .nb-mic { width:56px; height:56px; }
-.nb[data-mic-icon="studio"] .nb-mic svg { width:28px; height:28px; stroke-width:1.6; }
+.nb[data-mic-icon="studio"] .nb-mic svg { width:32px; height:32px; stroke-width:1.8; }
 .nb[data-mic-icon="studio"][data-mic-pos="side"] .nb-mic { border-radius:0 8px 8px 0; }
 .nb-mic-label { display:none; font:700 15px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.04em; }
 .nb-mic:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
@@ -1014,9 +1073,18 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   </div>
 </div>
 <div class="page" id="page-notebook" hidden>
-  <div class="nb" data-nb="spiral">
+  <div class="desk" id="desk">
+    <div class="desk-bar">
+      <h1>Notebooks</h1>
+      <button type="button" class="sched-btn" id="deskAddSticky">+<span class="long"> Sticky</span></button>
+      <button type="button" class="sched-btn sched-add" id="deskAddNb">+ Notebook</button>
+    </div>
+    <div class="desk-area" id="deskArea" aria-label="Your notebooks and sticky notes"></div>
+  </div>
+  <div class="nb" data-nb="spiral" hidden>
     <div class="nb-bar">
-      <h1>Notebook</h1>
+      <button type="button" class="sched-btn nb-close" id="nbClose" aria-label="Close notebook">&lsaquo;<span class="long"> Desk</span></button>
+      <h1 id="nbTitle">Notebook</h1>
       <span class="nb-saved" id="nbSaved" aria-live="polite"></span>
       <button type="button" class="sched-btn sb-arrow" id="nbPrev" aria-label="Previous page">&lsaquo;</button>
       <button type="button" class="sched-btn" id="nbToday">Today</button>
@@ -1029,6 +1097,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="legal"><span class="nb-swatch legal"></span><span>Legal pad<small>Yellow, flips up over the top</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="comp"><span class="nb-swatch comp"></span><span>Composition book<small>Marbled cover, turns like a book</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="eng"><span class="nb-swatch eng"></span><span>Engineering pad<small>Green grid, tear off each sheet</small></span></button>
+          <div class="nb-menu-sep"></div>
+          <button type="button" class="nb-act" id="nbRename">Rename notebook</button>
+          <button type="button" class="nb-act danger" id="nbDelete">Delete notebook</button>
         </div>
       </div>
     </div>
@@ -1043,6 +1114,25 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <div class="nb-mic-note" id="nbMicNote" role="status" hidden></div>
     </div>
   </div>
+</div>
+
+<div class="modal-overlay" id="newNbModal">
+  <form class="modal ev-form" id="newNbForm" autocomplete="off">
+    <h2 id="newNbTitle">New notebook</h2>
+    <label class="ev-field"><span>Name</span><input id="newNbName" type="text" maxlength="60" placeholder="e.g. Aesthetics" required></label>
+    <div class="ev-field"><span>Type</span>
+      <div class="nb-types" id="newNbTypes">
+        <button type="button" data-t="spiral" aria-pressed="true"><span class="nb-swatch spiral"></span>Spiral</button>
+        <button type="button" data-t="legal" aria-pressed="false"><span class="nb-swatch legal"></span>Legal pad</button>
+        <button type="button" data-t="comp" aria-pressed="false"><span class="nb-swatch comp"></span>Composition</button>
+        <button type="button" data-t="eng" aria-pressed="false"><span class="nb-swatch eng"></span>Engineering</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn secondary" id="newNbCancel">Cancel</button>
+      <button type="submit" class="modal-btn primary" id="newNbSave">Create</button>
+    </div>
+  </form>
 </div>
 
 <div class="modal-overlay" id="eventModal">
@@ -2354,14 +2444,28 @@ document.getElementById("eventForm").addEventListener("submit", e => {
   renderSchedule();
 });
 
-/* ---- Notebook: one page per day ---- */
+/* ---- Notebooks: several notebooks (each its own type and pages, one page per day) + sticky notes,
+   all laid out on a desk. Stored on this device: "notebooks", "notebookPagesBy" (pages per notebook),
+   "stickyNotes". The first time, the old single notebook becomes "My notebook". ---- */
+function nbLoad(key, fallback) { try { const v = JSON.parse(localStorage.getItem(key) || "null"); return v == null ? fallback : v; } catch(e) { return fallback; } }
+function nbStore(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch(e) {} }
+let notebooks = nbLoad("notebooks", null);
+let nbAllPages = nbLoad("notebookPagesBy", {});
+let stickies = nbLoad("stickyNotes", []);
+if (!Array.isArray(notebooks)) {
+  let style = "spiral"; try { style = localStorage.getItem("notebookStyle") || "spiral"; } catch(e) {}
+  notebooks = [{ id: "nb-main", name: "My notebook", type: ["spiral","legal","comp","eng"].includes(style) ? style : "spiral", x: .06, y: .08, r: -2 }];
+  nbAllPages = { "nb-main": nbLoad("notebookPages", {}) };
+  nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
+}
+let openNbId = null;
 let nbPages = {};
-try { nbPages = JSON.parse(localStorage.getItem("notebookPages") || "{}"); } catch(e) { nbPages = {}; }
 let nbDay = getTodayStr(), nbTimer = null;
 const nbText = document.getElementById("nbText");
 function fitNotebook() {
   const body = document.getElementById("nbBody");
   if (document.getElementById("page-notebook").hidden) return;
+  if (!openNbId) { fitDesk(); return; }
   const top = body.getBoundingClientRect().top + window.scrollY;
   body.style.height = Math.max(320, window.innerHeight - top - 12) + "px";
 }
@@ -2494,7 +2598,8 @@ const nbEl = document.querySelector(".nb"), nbMenu = document.getElementById("nb
 function setNotebook(style) {
   nbEl.dataset.nb = style;
   document.querySelectorAll(".nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.nb === style)));
-  try { localStorage.setItem("notebookStyle", style); } catch(e) {}
+  const cur = notebooks.find(n => n.id === openNbId);
+  if (cur && cur.type !== style) { cur.type = style; nbStore("notebooks", notebooks); }
   fillNbPage(document.getElementById("nbPage"), nbDay);
 }
 function toggleNbMenu(open) { nbMenu.hidden = !open; nbMenuBtn.setAttribute("aria-expanded", String(open)); }
@@ -2505,8 +2610,10 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !nbMenu.hi
 function saveNbPage() {
   clearTimeout(nbTimer);
   const text = nbText.value;
+  if (!openNbId) return;
   if (text.trim()) nbPages[nbDay] = { text, t: Date.now() }; else delete nbPages[nbDay];
-  try { localStorage.setItem("notebookPages", JSON.stringify(nbPages)); } catch(e) {}
+  nbAllPages[openNbId] = nbPages;
+  nbStore("notebookPagesBy", nbAllPages);
   document.getElementById("nbSaved").textContent = text ? "Saved" : "";
 }
 nbText.addEventListener("input", () => { document.getElementById("nbSaved").textContent = "Saving…"; clearTimeout(nbTimer); nbTimer = setTimeout(saveNbPage, 400); });
@@ -2518,7 +2625,8 @@ function flipNb(n) { stopDictation(); saveNbPage(); nbDay = sAdd(nbDay, n); show
 const MIC_ICONS = {
   classic: `<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path class="o" d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>`,
   sticker: `<svg viewBox="0 0 24 24"><rect x="7.5" y="2" width="9" height="13.5" rx="4.5"/><path class="o" d="M4.5 11a7.5 7.5 0 0 0 15 0M12 18.5V22" stroke-width="2.6"/></svg>`,
-  studio: `<svg viewBox="0 0 24 24"><rect class="o" x="7" y="2" width="10" height="13" rx="5"/><path class="o" d="M7.5 6h9M7.5 8.5h9M7.5 11h9M5 12.5a7 7 0 0 0 14 0M12 19.5V22M8 22h8"/></svg>`,
+  // Nick's pick: the classic mic, bigger, in the square box
+  studio: `<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path class="o" d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>`,
 };
 // Where the mic sits and how it looks (picked in the test copy; saved on this device)
 function setMicStyle(pos, icon) {
@@ -2529,9 +2637,8 @@ function setMicStyle(pos, icon) {
   btn.querySelector(".nb-mic-icon").innerHTML = MIC_ICONS[icon];
   if (pos === "bar") document.querySelector(".nb-bar .nb-menu-wrap").before(btn);
   else document.getElementById("nbBody").appendChild(btn);
-  try { localStorage.setItem("notebookMic", JSON.stringify([pos, icon])); } catch(e) {}
 }
-{ let s = []; try { s = JSON.parse(localStorage.getItem("notebookMic") || "[]") || []; } catch(e) {} setMicStyle(s[0], s[1]); }
+setMicStyle("corner", "studio");   // chosen: bottom-right corner, square box
 
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 const nbMic = document.getElementById("nbMic"), nbMicNote = document.getElementById("nbMicNote");
@@ -2601,8 +2708,179 @@ document.getElementById("nbNext").onclick = () => flipNb(1);
 document.getElementById("nbToday").onclick = () => { const dir = getTodayStr() > nbDay ? 1 : -1; saveNbPage(); nbDay = getTodayStr(); showNbPage(dir); };
 window.addEventListener("resize", fitNotebook);
 window.addEventListener("hashchange", () => { if (location.hash === "#notebook") showNbPage(0); else saveNbPage(); });
-{ let s = "spiral"; try { s = localStorage.getItem("notebookStyle") || "spiral"; } catch(e) {} setNotebook(["spiral","legal","comp","eng"].includes(s) ? s : "spiral"); }
-showNbPage(0);
+/* ---- the desk ---- */
+const desk = document.getElementById("desk"), deskArea = document.getElementById("deskArea");
+const STICKY_COLORS = ["#FFE66D", "#FFB3C7", "#9ED8FF", "#B6F0A0", "#FFC58A"];
+function fitDesk() {
+  const top = deskArea.getBoundingClientRect().top + window.scrollY;
+  deskArea.style.height = Math.max(320, window.innerHeight - top - 12) + "px";
+  placeDeskItems();
+}
+// positions are kept as fractions of the free space, so the layout survives phone <-> laptop
+function placeDeskItems() {
+  const W = deskArea.clientWidth, H = deskArea.clientHeight;
+  deskArea.querySelectorAll(".desk-item").forEach(el => {
+    const item = el._item, w = el.offsetWidth, hgt = el.offsetHeight;
+    const x = Math.max(0, Math.min(1, item.x)) * Math.max(0, W - w - 10), y = Math.max(0, Math.min(1, item.y)) * Math.max(0, H - hgt - 10);
+    el.style.transform = `translate(${x}px, ${y}px) rotate(${item.r || 0}deg)`;
+  });
+}
+function pageCount(id) { return Object.keys(nbAllPages[id] || {}).length; }
+function renderDesk() {
+  // notebooks and stickies share one stacking order: last touched is on top
+  const items = [...notebooks.map(n => ({ kind: "nb", item: n })), ...stickies.map(s => ({ kind: "sticky", item: s }))]
+    .sort((a, b) => (a.item.z || 0) - (b.item.z || 0));
+  deskArea.innerHTML = items.length ? "" : `<div class="desk-empty">Your desk is empty.<br>Add a notebook or a sticky note.</div>`;
+  items.forEach(({ kind, item }) => {
+    let el;
+    if (kind === "nb") {
+      el = document.createElement("div");
+      el.className = "desk-item desk-nb"; el.dataset.type = item.type; el.tabIndex = 0; el.setAttribute("role", "button");
+      const n = pageCount(item.id);
+      el.setAttribute("aria-label", `Open ${item.name}`);
+      const inner = `<span class="dn-name">${sEsc(item.name)}</span><span class="dn-count">${n} page${n === 1 ? "" : "s"}</span>`;
+      el.innerHTML = item.type === "comp" ? `<span class="dn-label">${inner}</span>` : inner;
+      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openNotebook(item.id); } });
+    } else {
+      el = document.createElement("div");
+      el.className = "desk-item desk-sticky";
+      el.style.setProperty("--sc", item.color);
+      const next = STICKY_COLORS[(STICKY_COLORS.indexOf(item.color) + 1) % STICKY_COLORS.length];
+      el.innerHTML = `<div class="ds-grip"><button type="button" class="ds-color" aria-label="Change color"><span class="ds-dot" style="--sn:${next}"></span></button><button type="button" class="ds-del" aria-label="Delete sticky note">&times;</button></div>
+        <textarea placeholder="Write a note…" aria-label="Sticky note">${sEsc(item.text)}</textarea>`;
+      const ta = el.querySelector("textarea");
+      let t = null;
+      ta.addEventListener("input", () => { item.text = ta.value; clearTimeout(t); t = setTimeout(() => nbStore("stickyNotes", stickies), 300); });
+      el.querySelector(".ds-color").onclick = () => { item.color = next; nbStore("stickyNotes", stickies); renderDesk(); };
+      const del = el.querySelector(".ds-del");
+      del.onclick = () => {
+        if (item.text.trim() && !el.classList.contains("confirm")) { el.classList.add("confirm"); del.textContent = "Delete?"; setTimeout(() => { el.classList.remove("confirm"); del.innerHTML = "&times;"; }, 2500); return; }
+        stickies = stickies.filter(s => s !== item); nbStore("stickyNotes", stickies); renderDesk();
+      };
+    }
+    el._item = item; el._kind = kind;
+    deskArea.appendChild(el);
+    makeDraggable(el);
+  });
+  placeDeskItems();
+}
+// Drag anything around the desk; a tap (no real movement) on a notebook opens it.
+function makeDraggable(el) {
+  el.addEventListener("pointerdown", e => {
+    if (e.button > 0) return;
+    if (e.target.closest("textarea, button")) return;   // typing / buttons on a sticky
+    const item = el._item, W = deskArea.clientWidth, H = deskArea.clientHeight;
+    const fw = Math.max(1, W - el.offsetWidth - 10), fh = Math.max(1, H - el.offsetHeight - 10);
+    const sx = e.clientX, sy = e.clientY, ox = item.x, oy = item.y;
+    let moved = false;
+    el.setPointerCapture(e.pointerId);
+    const move = ev => {
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      if (!moved && Math.hypot(dx, dy) < 6) return;
+      if (!moved) { moved = true; el.classList.add("dragging"); item.z = Date.now(); deskArea.appendChild(el); }
+      item.x = Math.max(0, Math.min(1, ox + dx / fw)); item.y = Math.max(0, Math.min(1, oy + dy / fh));
+      el.style.transform = `translate(${item.x * fw}px, ${item.y * fh}px) rotate(${item.r || 0}deg)`;
+    };
+    const up = () => {
+      el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up);
+      el.classList.remove("dragging");
+      if (moved) nbStore(el._kind === "nb" ? "notebooks" : "stickyNotes", el._kind === "nb" ? notebooks : stickies);
+      else if (el._kind === "nb") openNotebook(item.id);
+    };
+    el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+  });
+}
+// a free-ish spot for something new: try a grid of spots and take the one farthest from everything
+function freeSpot() {
+  const taken = [...notebooks, ...stickies].map(i => [i.x, i.y]);
+  let best = [.5, .5], bestD = -1;
+  for (let gy = 0; gy <= 3; gy++) for (let gx = 0; gx <= 4; gx++) {
+    const p = [gx / 4, gy / 3], d = taken.length ? Math.min(...taken.map(([x, y]) => Math.hypot((x - p[0]) * 1.4, y - p[1]))) : 1;
+    if (d > bestD + 1e-6) { best = p; bestD = d; }
+  }
+  return best;
+}
+const tilt = () => Math.round((Math.random() * 8 - 4) * 10) / 10;
+function addSticky() {
+  const [x, y] = freeSpot();
+  const s = { id: "st-" + Date.now(), text: "", color: STICKY_COLORS[stickies.length % STICKY_COLORS.length], x, y, r: tilt(), z: Date.now() };
+  stickies.push(s); nbStore("stickyNotes", stickies); renderDesk();
+  const el = [...deskArea.querySelectorAll(".desk-sticky")].find(x => x._item === s);
+  if (el) el.querySelector("textarea").focus();
+}
+function openNotebook(id) {
+  const n = notebooks.find(x => x.id === id); if (!n) return;
+  openNbId = id; nbPages = nbAllPages[id] || (nbAllPages[id] = {});
+  try { localStorage.setItem("openNotebook", id); } catch(e) {}
+  desk.hidden = true; nbEl.hidden = false;
+  document.getElementById("nbTitle").textContent = n.name;
+  nbDay = getTodayStr();
+  setNotebook(n.type);
+  showNbPage(0);
+}
+function closeNotebook() {
+  if (typeof stopDictation === "function") stopDictation();
+  saveNbPage();
+  openNbId = null; nbPages = {};
+  try { localStorage.removeItem("openNotebook"); } catch(e) {}
+  toggleNbMenu(false);
+  nbEl.hidden = true; desk.hidden = false;
+  renderDesk(); fitDesk();
+}
+document.getElementById("nbClose").onclick = closeNotebook;
+document.getElementById("deskAddSticky").onclick = addSticky;
+
+// New notebook / rename
+const newNbModal = document.getElementById("newNbModal");
+let newNbType = "spiral", renamingNb = false;
+function paintNbTypes() { document.querySelectorAll("#newNbTypes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === newNbType))); }
+document.getElementById("newNbTypes").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (b) { newNbType = b.dataset.t; paintNbTypes(); } });
+function openNewNb(rename) {
+  renamingNb = !!rename;
+  const cur = notebooks.find(n => n.id === openNbId);
+  document.getElementById("newNbTitle").textContent = rename ? "Rename notebook" : "New notebook";
+  document.getElementById("newNbSave").textContent = rename ? "Save" : "Create";
+  document.getElementById("newNbName").value = rename && cur ? cur.name : "";
+  document.getElementById("newNbTypes").closest(".ev-field").hidden = !!rename;
+  newNbType = "spiral"; paintNbTypes();
+  newNbModal.classList.add("open");
+  setTimeout(() => document.getElementById("newNbName").focus(), 30);
+}
+function closeNewNb() { newNbModal.classList.remove("open"); }
+document.getElementById("deskAddNb").onclick = () => openNewNb(false);
+document.getElementById("newNbCancel").onclick = closeNewNb;
+newNbModal.addEventListener("click", e => { if (e.target === newNbModal) closeNewNb(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && newNbModal.classList.contains("open")) closeNewNb(); });
+document.getElementById("newNbForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = document.getElementById("newNbName").value.trim(); if (!name) return;
+  if (renamingNb) {
+    const cur = notebooks.find(n => n.id === openNbId);
+    if (cur) { cur.name = name; nbStore("notebooks", notebooks); document.getElementById("nbTitle").textContent = name; }
+    closeNewNb(); return;
+  }
+  const [x, y] = freeSpot();
+  const n = { id: "nb-" + Date.now(), name, type: newNbType, x, y, r: tilt(), z: Date.now() };
+  notebooks.push(n); nbAllPages[n.id] = {};
+  nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
+  closeNewNb();
+  openNotebook(n.id);
+});
+document.getElementById("nbRename").onclick = e => { e.stopPropagation(); toggleNbMenu(false); openNewNb(true); };
+document.getElementById("nbDelete").onclick = e => {
+  e.stopPropagation();
+  const b = e.currentTarget;
+  if (!b.classList.contains("confirm")) { b.classList.add("confirm"); b.textContent = "Tap again to delete (pages too)"; setTimeout(() => { b.classList.remove("confirm"); b.textContent = "Delete notebook"; }, 3000); return; }
+  b.classList.remove("confirm"); b.textContent = "Delete notebook";
+  const id = openNbId;
+  notebooks = notebooks.filter(n => n.id !== id); delete nbAllPages[id];
+  nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
+  openNbId = null; closeNotebook();
+};
+
+// Start where you left off: the notebook you had open, or the desk
+{ let last = null; try { last = localStorage.getItem("openNotebook"); } catch(e) {}
+  if (last && notebooks.some(n => n.id === last)) openNotebook(last); else { nbEl.hidden = true; renderDesk(); } }
 
 // Keep the calendar in step with the Homework page (checking things off, syncing, new syllabi)
 const renderHomework = render;
