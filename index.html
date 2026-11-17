@@ -235,6 +235,22 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .modal-sub { margin-bottom:20px; color:var(--poster-text-soft); font-size:14px; line-height:1.5; }
 .modal textarea { display:block; width:100%; min-height:140px; resize:vertical; border:1px solid var(--poster-border); border-radius:var(--poster-control-radius); padding:12px; font:400 16px/1.5 var(--poster-sans); background:var(--poster-bg); color:var(--poster-text); }
 .modal textarea::placeholder { color:var(--poster-text-soft); opacity:1; }
+/* syllabus files: PDFs are read in the browser; photos (and scanned PDFs) go to the AI as images */
+.file-pick { display:flex; align-items:center; gap:12px; padding:14px; border:2px dashed var(--poster-border); border-radius:var(--poster-control-radius); background:var(--poster-bg); color:var(--poster-text); cursor:pointer; }
+.file-pick.drag { background:var(--poster-track); }
+.file-pick input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.file-pick:focus-within { outline:2px solid var(--poster-ui-accent); outline-offset:2px; }
+.fp-icon { width:36px; height:36px; flex-shrink:0; display:grid; place-items:center; border:2px solid var(--poster-border); font:700 20px/1 var(--poster-sans); }
+.file-pick b { display:block; font:600 15px/1.3 var(--poster-sans); }
+.file-pick small { display:block; font:400 12.5px/1.4 var(--poster-sans); color:var(--poster-text-soft); }
+.file-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.file-chips:empty { display:none; }
+.file-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:4px 4px 4px 10px; border:1px solid var(--poster-border); background:var(--poster-card-bg); font:500 12.5px/1.3 var(--poster-sans); }
+.file-chip .fc-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file-chip .fc-note { color:var(--poster-text-soft); white-space:nowrap; }
+.file-chip button { width:24px; height:24px; border:0; background:transparent; color:inherit; font-size:15px; cursor:pointer; }
+.or-line { display:flex; align-items:center; gap:10px; margin:14px 0 10px; font:600 11px/1 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.or-line::before, .or-line::after { content:""; flex:1; height:1px; background:var(--poster-border); opacity:.35; }
 .modal-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
 .modal-btn { flex:1 1 140px; min-height:44px; padding:12px; border:1px solid var(--poster-border); border-radius:var(--poster-control-radius); font:600 14px/1.3 var(--poster-sans); }
 .modal-btn.primary { background:var(--poster-ui-accent); color:var(--poster-on-accent); border-color:transparent; }
@@ -985,7 +1001,14 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 <div class="modal-overlay" id="uploadModal">
   <div class="modal">
     <h2>Add a syllabus</h2>
-    <div class="modal-sub">Paste the syllabus text below. The AI will read it and pull out every assignment and due date.</div>
+    <div class="modal-sub">Upload the syllabus as a PDF or photos, or paste its text. The AI will read it and pull out every assignment and due date.</div>
+    <label class="file-pick" id="filePick">
+      <input type="file" id="syllabusFiles" accept="application/pdf,.pdf,image/*" multiple>
+      <span class="fp-icon" aria-hidden="true">&#8679;</span>
+      <span><b>Upload PDF or photos</b><small>Tap to choose files, or drop them here</small></span>
+    </label>
+    <div class="file-chips" id="fileChips"></div>
+    <div class="or-line"><span>or paste the text</span></div>
     <textarea id="syllabusInput" placeholder="Paste your syllabus text here..."></textarea>
     <div class="modal-actions">
       <button class="modal-btn secondary" id="cancelUploadBtn">Cancel</button>
@@ -1616,8 +1639,99 @@ const confirmActions = document.getElementById("confirmActions");
 const parseBtn = document.getElementById("parseUploadBtn");
 let pendingAssignments = [];
 
+// Files picked in the upload box. PDFs with real text are read right here in the browser;
+// photos and scanned PDFs are shrunk to JPEGs and sent to the AI to read.
+let syllabusFiles = [];   // { name, note, text, images: [dataURL] }
+const MAX_IMAGES = 10;
+let pdfjsReady = null;
+function loadPdfJs() {
+  if (!pdfjsReady) pdfjsReady = new Promise((ok, fail) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; ok(window.pdfjsLib); };
+    s.onerror = () => { pdfjsReady = null; fail(new Error("pdf.js didn't load")); };
+    document.head.appendChild(s);
+  });
+  return pdfjsReady;
+}
+function canvasToJpeg(canvas) { return canvas.toDataURL("image/jpeg", 0.82); }
+async function imageFileToJpeg(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = url; });
+    const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    return canvasToJpeg(c);
+  } finally { URL.revokeObjectURL(url); }
+}
+async function readPdf(file) {
+  const pdfjs = await loadPdfJs();
+  const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  let text = "";
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n);
+    const tc = await page.getTextContent();
+    let line = "", lastY = null;
+    for (const it of tc.items) {
+      const y = it.transform ? Math.round(it.transform[5]) : lastY;
+      if (lastY !== null && y !== lastY) { text += line.trimEnd() + "\n"; line = ""; }
+      line += it.str + (it.hasEOL ? "\n" : " "); lastY = y;
+    }
+    text += line.trimEnd() + "\n\n";
+  }
+  const pages = pdf.numPages;
+  if (text.replace(/\s+/g, "").length >= 40 * Math.min(pages, 3)) return { text, note: `${pages} page${pages === 1 ? "" : "s"}` };
+  // hardly any text: it's a scan, so send pictures of the pages instead
+  const images = [];
+  for (let n = 1; n <= Math.min(pages, MAX_IMAGES); n++) {
+    const page = await pdf.getPage(n);
+    const v1 = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: Math.min(2.5, 1600 / Math.max(v1.width, v1.height)) });
+    const c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+    await page.render({ canvasContext: g, viewport: vp }).promise;
+    images.push(canvasToJpeg(c));
+  }
+  return { images, note: `scanned, ${images.length} page${images.length === 1 ? "" : "s"}` };
+}
+function renderFileChips() {
+  const el = document.getElementById("fileChips");
+  el.innerHTML = syllabusFiles.map((f, i) => `<span class="file-chip"><span class="fc-name">${sEsc(f.name)}</span><span class="fc-note">${sEsc(f.note)}</span><button type="button" data-i="${i}" aria-label="Remove ${sEsc(f.name)}">&times;</button></span>`).join("");
+  el.querySelectorAll("button").forEach(b => b.onclick = () => { syllabusFiles.splice(Number(b.dataset.i), 1); renderFileChips(); });
+}
+async function addSyllabusFiles(list) {
+  const files = [...list].filter(f => f.type === "application/pdf" || /\.pdf$/i.test(f.name) || f.type.startsWith("image/"));
+  if (!files.length) { modalStatus.innerHTML = `<div class="modal-status error">Choose a PDF or a photo.</div>`; return; }
+  for (const file of files) {
+    modalStatus.innerHTML = `<div class="modal-status loading">Opening ${sEsc(file.name)}...</div>`;
+    try {
+      if (file.type.startsWith("image/")) {
+        const used = syllabusFiles.reduce((n, f) => n + (f.images ? f.images.length : 0), 0);
+        if (used >= MAX_IMAGES) throw new Error(`Up to ${MAX_IMAGES} photos at a time.`);
+        syllabusFiles.push({ name: file.name, note: "photo", images: [await imageFileToJpeg(file)] });
+      } else {
+        syllabusFiles.push({ name: file.name, ...(await readPdf(file)) });
+      }
+      modalStatus.innerHTML = "";
+    } catch (e) {
+      modalStatus.innerHTML = `<div class="modal-status error">Couldn't open ${sEsc(file.name)}. ${sEsc(e && e.message && /photos at a time/.test(e.message) ? e.message : "Try another file, or paste the text instead.")}</div>`;
+    }
+    renderFileChips();
+  }
+}
+{
+  const pick = document.getElementById("filePick"), input = document.getElementById("syllabusFiles");
+  input.onchange = () => { addSyllabusFiles(input.files); input.value = ""; };
+  ["dragenter", "dragover"].forEach(t => pick.addEventListener(t, e => { e.preventDefault(); pick.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach(t => pick.addEventListener(t, e => { e.preventDefault(); pick.classList.toggle("drag", false); }));
+  pick.addEventListener("drop", e => addSyllabusFiles(e.dataTransfer.files));
+}
+
 function openModal() {
   uploadModal.classList.add("open");
+  syllabusFiles = []; renderFileChips();
   syllabusInput.value = "";
   modalStatus.innerHTML = "";
   previewList.innerHTML = "";
@@ -1632,23 +1746,24 @@ document.getElementById("cancelUploadBtn").onclick = closeModal;
 document.getElementById("discardPreviewBtn").onclick = closeModal;
 
 parseBtn.onclick = async () => {
-  const text = syllabusInput.value.trim();
-  if (text.length < 30) {
-    modalStatus.innerHTML = `<div class="modal-status error">Paste in more of the syllabus first.</div>`;
+  const text = [syllabusInput.value.trim(), ...syllabusFiles.filter(f => f.text).map(f => f.text.trim())].filter(Boolean).join("\n\n");
+  const images = syllabusFiles.flatMap(f => f.images || []).slice(0, MAX_IMAGES);
+  if (text.length < 30 && !images.length) {
+    modalStatus.innerHTML = `<div class="modal-status error">Upload a PDF or photos, or paste in more of the syllabus first.</div>`;
     return;
   }
   if (!WORKER_URL || WORKER_URL === "PASTE_YOUR_WORKER_URL_HERE") {
     modalStatus.innerHTML = `<div class="modal-status error">The AI backend isn't set up yet. Deploy the Worker and paste its URL into WORKER_URL in the code.</div>`;
     return;
   }
-  modalStatus.innerHTML = `<div class="modal-status loading">Reading your syllabus...</div>`;
+  modalStatus.innerHTML = `<div class="modal-status loading">${images.length ? "Reading your photos... this can take a minute." : "Reading your syllabus..."}</div>`;
   parseBtn.disabled = true;
 
   try {
     const resp = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ syllabusText: text })
+      body: JSON.stringify(images.length ? { syllabusText: text, images } : { syllabusText: text })
     });
     const data = await resp.json();
     if (!resp.ok || data.error) {
