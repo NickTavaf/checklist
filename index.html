@@ -2,7 +2,7 @@
 <html lang="en" data-palette="blue" data-header-mode="adaptive">
 <head>
 <meta charset="UTF-8">
-<title>Fall 2026 Assignments</title>
+<title>Checklist</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -171,6 +171,10 @@ button:disabled { opacity:.55; cursor:wait; }
 
 /* ---- Sync section in the Customize panel ---- */
 .sync-code { font:500 22px/1.1 var(--poster-mono); letter-spacing:.06em; color:var(--poster-text); }
+.sync-code-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:14px; margin:2px 0 4px; }
+.sync-code-value { font-family:var(--poster-mono, monospace); letter-spacing:.06em; }
+.sync-code-change { margin-left:auto; font:inherit; font-size:13px; padding:4px 10px; border:2px solid currentColor; background:none; color:inherit; cursor:pointer; }
+.sync-code-hint { font-size:12px; line-height:1.4; color:var(--poster-text-soft); margin-bottom:8px; }
 .sync-status { margin-top:4px; font-size:12px; color:var(--poster-text-soft); }
 .sync-status.error { color:var(--poster-danger); }
 .sync-join { display:flex; gap:6px; margin-top:10px; }
@@ -1356,8 +1360,8 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 <div class="topbar">
   <div class="topbar-badge"></div>
   <div>
-    <h1>Fall 2026 Assignments</h1>
-    <div class="sub">4 classes · every due date in one place</div>
+    <h1>My Assignments</h1>
+    <div class="sub" id="topbarSub">every due date in one place</div>
   </div>
   <button class="upload-btn" id="openUploadBtn">+ Add Syllabus</button>
   <div class="customize-wrap">
@@ -1375,6 +1379,12 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <div class="class-color-list" id="classColorList"></div>
 
       <div class="customize-section-label">Sync</div>
+      <div class="sync-code-row">
+        <span>Sync code</span>
+        <b class="sync-code-value" id="syncCodeValue"></b>
+        <button type="button" class="sync-code-change" id="syncCodeChange">Change</button>
+      </div>
+      <div class="sync-code-hint">Your private code. Enter it on your other devices to see the same checklist. Keep it to yourself: anyone with it can see your list.</div>
       <div class="sync-status" id="syncStatus"></div>
     </div>
   </div>
@@ -1593,59 +1603,13 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 </div>
 
 <script>
-const assignments = [
-  {id:"vm1", date:"2026-09-02", class:"Visual Merchandising", title:"Journal #1: Traffic Patterns", time:"12pm", desc:"Upload your Journal assignment on Traffic Patterns to the discussion board before class time."},
-  {id:"da1", date:"2026-09-02", class:"Digital Addiction", title:"Assignment 1: 24-Hour Digital Use Log", time:"11:30pm", desc:"Log every digital device use for 24 consecutive hours (time, device, reason, your own categories). Turn it into a visual postcard + key, Dear Data style. Bring a copy to class. Note: syllabus text says due before class on Sept 9, but Canvas lists this due date. Worth confirming which is correct."},
-  {id:"th1", date:"2026-09-03", class:"Thesis 1", title:"Choose First Prototype", time:"in class", desc:"Choose your first prototype direction based on your research questions."},
-  {id:"th2", date:"2026-09-08", class:"Thesis 1", title:"Blog Post 1: Intro Post", time:"in class", desc:"First blog post. Intro, dream life as an artist (vision board), what you want to make work about, timeline of 3-5 past projects."},
-  {id:"aes1", date:"2026-09-15", class:"Aesthetics", title:"Response Paper #1: Hegel and Symbolic Art", time:"10am", desc:"300-word response + ~50 word discussion question on this week's Hegel reading. Submit to your TA on Canvas before 10am. No late work accepted."},
-  {id:"vm2", date:"2026-09-16", class:"Visual Merchandising", title:"Presentation of Color and Composition", time:"12pm", desc:"Group assignment presenting on color and composition."},
-  {id:"da2", date:"2026-09-16", class:"Digital Addiction", title:"Assignment 2: 24-Hour Phone Fast", time:"before class", desc:"Stop using your phone for 24 consecutive hours. Keep a written log or postcard. Submit a 500-word reflection connecting it to readings on craving, choice, and the disease model of addiction."},
-  {id:"th3", date:"2026-09-17", class:"Thesis 1", title:"1st Prototype", time:"in class", desc:"First prototype due for internal playtest."},
-  {id:"aes2", date:"2026-09-22", class:"Aesthetics", title:"Response Paper #2: Hegel and Classical Art", time:"10am", desc:"300-word response + discussion question on classical art / Hegel reading."},
-  {id:"vm3", date:"2026-09-23", class:"Visual Merchandising", title:"Super Incisive Brand Identity Assignment", time:"11:59pm", desc:"Brand identity assignment."},
-  {id:"da3", date:"2026-09-23", class:"Digital Addiction", title:"Assignment 3: Monetizing Addiction", time:"in class", desc:"In-class screening (Web Junkie, The Social Dilemma excerpts) and assignment, details TBA."},
-  {id:"aes3", date:"2026-09-29", class:"Aesthetics", title:"Response Paper #3: Plato's Cave", time:"10am", desc:"300-word response + discussion question on Plato's Republic Book 7 / Cave of Forgotten Dreams."},
-  {id:"vm4", date:"2026-09-30", class:"Visual Merchandising", title:"Journal #2: Conveying the Brand Identity", time:"12pm", desc:"Upload your journal assignment on Conveying the Brand Identity."},
-  {id:"da4", date:"2026-09-30", class:"Digital Addiction", title:"Assignment 4: Participant Observation", time:"in class", desc:"Observe digital-device use in a public place for 30-40 min. Submit a 300-500 word fieldnote-based reflection."},
-  {id:"th4", date:"2026-10-01", class:"Thesis 1", title:"2nd Prototype", time:"in class", desc:"Second prototype due, playtest with other Games section."},
-  {id:"aes4", date:"2026-10-06", class:"Aesthetics", title:"Met Museum Visit (no response due)", time:"class time", desc:"No lecture this week. Visit the Metropolitan Museum of Art with your section. No response paper due."},
-  {id:"da5", date:"2026-10-07", class:"Digital Addiction", title:"Midterm", time:"11:59pm", desc:"Midterm exam, written in class."},
-  {id:"aes5", date:"2026-10-13", class:"Aesthetics", title:"Response Paper #4: Hegel on Painting", time:"10am", desc:"300-word response + discussion question on maternal love and Christian painting."},
-  {id:"vm5", date:"2026-10-14", class:"Visual Merchandising", title:"Journal #3: Wall Displays", time:"12pm", desc:"Upload your journal assignment on wall displays."},
-  {id:"th5", date:"2026-10-15", class:"Thesis 1", title:"3rd Prototype", time:"in class", desc:"Third prototype due, playtest with Games section + midterm discussion."},
-  {id:"aes6", date:"2026-10-20", class:"Aesthetics", title:"Response Paper #5: Hegel and Modernism", time:"10am", desc:"300-word response + discussion question on modernism, abstract painting, ready-mades."},
-  {id:"th6", date:"2026-10-20", class:"Thesis 1", title:"Midterm Presentation + Deliverables", time:"in class", desc:"Present progress so far, submit slides and a PDF documenting research and prototyping work."},
-  {id:"vm6", date:"2026-10-21", class:"Visual Merchandising", title:"Midterm", time:"12pm", desc:"Midterm given in class only, not online."},
-  {id:"da6", date:"2026-10-21", class:"Digital Addiction", title:"Assignment 5 & 6: Attention Audit / Media Time Capsule", time:"before class / in class", desc:"Attention Audit: pull weekly screen time, calculate a dollar value for your attention, respond in 300-500 words. Media Time Capsule: find a historical moral panic about media and respond in 300-500 words. Note: syllabus text says Oct 21 but the week header says Oct 23 — worth confirming with your professor."},
-  {id:"aes7", date:"2026-10-27", class:"Aesthetics", title:"Midterm Exam", time:"class time", desc:"In-class midterm, blue books, pen and paper only, no devices or extra materials."},
-  {id:"vm7", date:"2026-10-28", class:"Visual Merchandising", title:"Unique and Exciting Boutique Assignment", time:"12pm", desc:"Boutique assignment."},
-  {id:"aes8", date:"2026-11-03", class:"Aesthetics", title:"Response Paper #6: Aristotle and Tragedy", time:"10am", desc:"300-word response + discussion question on Aristotle's Poetics / tragedy."},
-  {id:"da7", date:"2026-11-04", class:"Digital Addiction", title:"Assignment 7: Landline Phone Call", time:"before class", desc:"Make a call from a landline, ideally a public phone booth. Take a photo, write a 300-500 word response."},
-  {id:"aes9", date:"2026-11-10", class:"Aesthetics", title:"Response Paper #7: Shakespeare", time:"10am", desc:"300-word response + discussion question on Hamlet."},
-  {id:"vm8", date:"2026-11-11", class:"Visual Merchandising", title:"Fashion Display Window Group Presentation", time:"12pm", desc:"Group presentation of your own creation for a fashion display window for a real brand."},
-  {id:"da8", date:"2026-11-11", class:"Digital Addiction", title:"Assignment 8: Host a Party Like It's 1996", time:"before class", desc:"Host a gathering without digital devices. No streaming music, no delivery apps. Take photos on disposable camera, write a 300-500 word reflection."},
-  {id:"aes10", date:"2026-11-17", class:"Aesthetics", title:"Response Paper #8: Adorno / Bach / Music", time:"10am", desc:"300-word response + discussion question on Adorno's Bach essay and Glenn Gould."},
-  {id:"da9", date:"2026-11-18", class:"Digital Addiction", title:"Assignment 9: Scaling Addiction", time:"in class", desc:"Details TBA, due in class."},
-  {id:"aes11", date:"2026-11-24", class:"Aesthetics", title:"Response Paper #9: Adorno and Jazz", time:"10am", desc:"300-word response + discussion question on Adorno's Jazz / Homage to Zerlina."},
-  {id:"aes12", date:"2026-12-01", class:"Aesthetics", title:"Response Paper #10: Departures", time:"10am", desc:"300-word response + discussion question on the film Departures."},
-  {id:"th7", date:"2026-12-01", class:"Thesis 1", title:"Final Presentation + Deliverables", time:"in class", desc:"Final presentation, slides, and final written design brief."},
-  {id:"vm9", date:"2026-12-02", class:"Visual Merchandising", title:"Final Group Presentation (1st half)", time:"12pm", desc:"Submit first half of final group presentation."},
-  {id:"da10", date:"2026-12-02", class:"Digital Addiction", title:"Assignment 10: Final Presentation", time:"in class", desc:"Final presentation due in class."},
-  {id:"aes13", date:"2026-12-08", class:"Aesthetics", title:"Response Papers #11 & #12", time:"10am", desc:"Two responses on Underground Railroad and Get Out, plus optional bonus response on Kant."},
-  {id:"vm10", date:"2026-12-09", class:"Visual Merchandising", title:"Final Project", time:"12pm", desc:"Complete final project posted to Discussions, with any revisions from first half. You will present it."},
-  {id:"da11", date:"2026-12-09", class:"Digital Addiction", title:"Final Project: Fieldwork Album", time:"11:30pm", desc:"Upload your final album and reflection to Canvas."},
-  {id:"aes14", date:"2026-12-15", class:"Aesthetics", title:"Final Exam", time:"class time", desc:"In-class final exam, same format as the midterm."}
-];
+// No assignments are built into the page: each person's list comes from their own
+// syllabi and syncs under their own private code (see "cloud sync" below).
+const assignments = [];
 
 const defaultAssignments = assignments;
 
-const knownClassColors = {
-  "Visual Merchandising": "#ea4335",
-  "Aesthetics": "#a142f4",
-  "Digital Addiction": "#12b5cb",
-  "Thesis 1": "#fbbc04"
-};
+const knownClassColors = {};   // per-class colours are picked in the ☰ menu and synced
 const extraPalette = ["#e67c73","#33b679","#8e24aa","#3f51b5","#0b8043","#d50000","#f4511e","#039be5","#c2185b","#00897b"];
 let classColorOverrides = {};
 try { classColorOverrides = JSON.parse(localStorage.getItem("classColorOverrides") || "{}"); } catch(e) { classColorOverrides = {}; }
@@ -1748,6 +1712,8 @@ function todayMarkerHTML() {
 function render() {
   const allAssignments = getAllAssignments();
   const classes = getAllClasses();
+  document.getElementById("topbarSub").textContent =
+    (classes.length ? classes.length + (classes.length === 1 ? " class · " : " classes · ") : "") + "every due date in one place";
   const filters = ["All", ...classes];
   const filterEl = document.getElementById("filters");
   filterEl.innerHTML = filters.map(f => {
@@ -1847,6 +1813,8 @@ function render() {
   if (dates.length === 0) {
     html = isDoneView
       ? `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Nothing here yet</div><div class="empty-state-text">Assignments land here once they're marked complete and turned in.</div></div>`
+      : !allAssignments.length
+      ? `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Add your first class</div><div class="empty-state-text">Tap <b>+ Add Syllabus</b> and upload a PDF or a photo of a syllabus, or paste its text. Every assignment and due date is added for you.</div></div>`
       : `<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-title">All caught up</div><div class="empty-state-text">Everything${activeFilter === "All" ? "" : " for " + activeFilter} is done and turned in.</div></div>`;
   }
 
@@ -2146,15 +2114,40 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---- cloud sync ----
-   Progress is saved on this device AND in the cloud. Every device that opens
-   this link shares the same built-in key, so they all show the same thing —
-   no code to enter. */
+   Progress is saved on this device AND in the cloud, under this device's private sync code.
+   A new device makes up its own random code, so it starts with an empty checklist.
+   To see the same checklist on another device, enter the code there (☰ → Sync code → Change). */
 
 // Replace with your deployed sync Worker URL, e.g.
 // "https://coursely-sync.yourname.workers.dev"
 const SYNC_URL = "https://checklist.tavan388.workers.dev/sync";
-// One shared key for everyone who opens this link (must look like XXXX-XXXX).
-const SYNC_KEY = "NICK-MAIN";
+// This device's private code (XXXX-XXXX), made up the first time the page opens
+const SYNC_CODE_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+const SYNC_KEY = (() => {
+  const make = () => {
+    const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = new Uint32Array(8);
+    crypto.getRandomValues(r);
+    const s = Array.from(r, x => A[x % A.length]).join("");
+    return s.slice(0, 4) + "-" + s.slice(4);
+  };
+  try {
+    let c = localStorage.getItem("syncCode");
+    if (!SYNC_CODE_RE.test(c || "")) { c = make(); localStorage.setItem("syncCode", c); }
+    return c;
+  } catch (e) { return make(); }
+})();
+document.getElementById("syncCodeValue").textContent = SYNC_KEY;
+document.getElementById("syncCodeChange").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const typed = prompt("Enter the sync code from your other device (like ABCD-1234):", "");
+  if (typed === null) return;
+  const next = typed.trim().toUpperCase().replace(/\s+/g, "");
+  if (!SYNC_CODE_RE.test(next)) { alert("That doesn't look like a sync code. It's 8 letters or numbers with a dash in the middle, like ABCD-1234."); return; }
+  if (next === SYNC_KEY) return;
+  if (!confirm("Switch this device to " + next + "? The checklist on this device will be replaced by the one saved under that code.")) return;
+  try { localStorage.clear(); localStorage.setItem("syncCode", next); } catch (err) {}
+  location.reload();
+});
 const LIVE_REFRESH_MS = 20000; // check for changes from other devices every 20s
 
 const syncStatusEl = document.getElementById("syncStatus");

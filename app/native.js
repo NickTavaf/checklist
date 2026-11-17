@@ -128,75 +128,6 @@
     });
   }
 
-  /* ---------- this phone's sync code (made up on first launch by the app's copy of the page) ---------- */
-  const CODE_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-  function currentCode() { try { return typeof APP_SYNC_CODE === "string" ? APP_SYNC_CODE : ""; } catch (e) { return ""; } }
-  function addSyncCodeRow() {
-    const panel = document.getElementById("customizePanel");
-    const code = currentCode();
-    if (!panel || !code || document.getElementById("nativeSyncCode")) return;
-    const box = document.createElement("div");
-    box.id = "nativeSyncCode";
-    box.style.cssText = "margin:4px 0 10px;font-size:14px;line-height:1.4";
-    box.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
-        '<span>Sync code</span>' +
-        '<b style="font-family:var(--poster-mono,monospace);letter-spacing:.06em" id="nativeSyncCodeValue"></b>' +
-        '<button type="button" id="nativeSyncCodeChange" style="margin-left:auto;font:inherit;font-size:13px;padding:4px 10px;border:2px solid currentColor;background:none;color:inherit;cursor:pointer">Change</button>' +
-      '</div>' +
-      '<div style="font-size:12px;opacity:.7;margin-top:2px">Enter this code on your other devices to share one checklist.</div>';
-    box.querySelector("#nativeSyncCodeValue").textContent = code;
-    const reminders = panel.querySelector(".native-reminders");
-    if (reminders) reminders.after(box);
-    else { const sync = document.getElementById("syncStatus"); if (sync && sync.parentNode === panel) panel.insertBefore(box, sync); else panel.appendChild(box); }
-    box.querySelector("#nativeSyncCodeChange").addEventListener("click", (e) => {
-      e.stopPropagation();
-      const typed = prompt("Enter the sync code from your other device (like ABCD-1234):", "");
-      if (typed === null) return;
-      const next = typed.trim().toUpperCase().replace(/\s+/g, "");
-      if (!CODE_RE.test(next)) { alert("That doesn't look like a sync code. It's 8 letters or numbers with a dash in the middle, like ABCD-1234."); return; }
-      if (next === code) return;
-      if (!confirm("Switch this phone to " + next + "? The checklist on this phone will be replaced by the one saved under that code.")) return;
-      try {
-        localStorage.clear();   // start clean, so nothing from this phone leaks into the other checklist
-        localStorage.setItem("appSyncCode", next);
-      } catch (err) {}
-      if (LocalNotifications) LocalNotifications.getPending().then(p => p.notifications.length && LocalNotifications.cancel({ notifications: p.notifications.map(n => ({ id: n.id })) })).catch(() => {});
-      location.reload();
-    });
-  }
-
-  /* ---------- a brand-new, empty checklist ---------- */
-  function hasBuiltin() { try { return !!APP_HAS_BUILTIN; } catch (e) { return true; } }
-  function personalizeHeader() {
-    if (hasBuiltin()) return;   // the website's own semester: keep its title as is
-    const h1 = document.querySelector(".topbar h1"), sub = document.querySelector(".topbar .sub");
-    let n = 0;
-    try { n = getAllClasses().length; } catch (e) {}
-    if (h1 && h1.textContent !== "My Assignments") h1.textContent = "My Assignments";
-    if (sub) {
-      const text = n ? n + (n === 1 ? " class" : " classes") + " · every due date in one place" : "every due date in one place";
-      if (sub.textContent !== text) sub.textContent = text;
-    }
-    document.title = "Checklist";
-  }
-  function welcomeIfEmpty() {
-    let count = 0;
-    try { count = getAllAssignments().length; } catch (e) { return; }
-    const list = document.querySelector(".empty-state");
-    if (count || !list || list.dataset.welcome) return;
-    list.dataset.welcome = "1";
-    list.innerHTML =
-      '<div class="empty-state-icon">📚</div>' +
-      '<div class="empty-state-title">Add your first class</div>' +
-      '<div class="empty-state-text">Tap <b>+ Add Syllabus</b> and upload a PDF or a photo of a syllabus, or paste its text. Every assignment and due date is added for you.</div>' +
-      '<button type="button" class="modal-btn primary" style="margin-top:18px" id="welcomeAddSyllabus">+ Add Syllabus</button>';
-    list.querySelector("#welcomeAddSyllabus").addEventListener("click", () => {
-      const btn = [...document.querySelectorAll("button")].find(b => /add syllabus/i.test(b.textContent) && b.id !== "welcomeAddSyllabus");
-      if (btn) btn.click();
-    });
-  }
-
   /* ---------- haptics ---------- */
   document.addEventListener("click", (e) => {
     if (!Haptics) return;
@@ -223,7 +154,7 @@
   /* ---------- hook into the page ---------- */
   if (typeof window.render === "function") {
     const pageRender = window.render;
-    window.render = function () { const r = pageRender.apply(this, arguments); personalizeHeader(); welcomeIfEmpty(); rescheduleSoon(); updateStatusBar(); if (!askedForReminders) setTimeout(askForReminders, 800); return r; };
+    window.render = function () { const r = pageRender.apply(this, arguments); rescheduleSoon(); updateStatusBar(); if (!askedForReminders) setTimeout(askForReminders, 800); return r; };
   }
   // calendar events are saved through saveEvents(); keep reminders in step
   if (typeof window.saveEvents === "function") {
@@ -260,10 +191,7 @@
 
   console.log("native.js ready · speech recognition " + (window.SpeechRecognition || window.webkitSpeechRecognition ? "available" : "missing"));
   addReminderSwitch();
-  addSyncCodeRow();
   addAiNotice();
-  personalizeHeader();
-  welcomeIfEmpty();
   updateStatusBar();
   if (SplashScreen) SplashScreen.hide().catch(() => {});
   setTimeout(askForReminders, 1200);

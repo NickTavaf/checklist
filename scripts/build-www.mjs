@@ -46,33 +46,7 @@ html = html.replace(/<link rel="manifest"[^>]*>\n?/, "");
 swap("viewport", '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
   '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">');
 
-// 5. Each install gets its own private sync code, so a new download starts with an empty
-//    checklist instead of the website's shared one. The website's built-in assignments only
-//    show when the phone is switched to the website's own sync code (☰ menu → Sync code).
-const keyMatch = html.match(/const SYNC_KEY = "([A-Z0-9]{4}-[A-Z0-9]{4})";/);
-if (!keyMatch) throw new Error("build-www: SYNC_KEY not found in index.html");
-swap("per-install sync code", "const assignments = [", `// --- app only: this phone's own sync code (made up on first launch) ---
-const BUILTIN_SYNC_CODE = ${JSON.stringify(keyMatch[1])};
-const APP_SYNC_CODE = (() => {
-  const ok = c => /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(c || "");
-  const make = () => {
-    const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = new Uint32Array(8);
-    crypto.getRandomValues(r);
-    const s = Array.from(r, x => A[x % A.length]).join("");
-    return s.slice(0, 4) + "-" + s.slice(4);
-  };
-  try {
-    let c = localStorage.getItem("appSyncCode");
-    if (!ok(c)) { c = make(); localStorage.setItem("appSyncCode", c); }
-    return c;
-  } catch (e) { return make(); }
-})();
-const APP_HAS_BUILTIN = APP_SYNC_CODE === BUILTIN_SYNC_CODE;
-const assignments = [`);
-swap("built-in assignments", "const defaultAssignments = assignments;", "const defaultAssignments = APP_HAS_BUILTIN ? assignments : [];");
-swap("sync key", keyMatch[0], "const SYNC_KEY = APP_SYNC_CODE;");
-
-// 6. Native extras, after the page's own script
+// 5. Native extras, after the page's own script
 swap("native.js", "</body>", '<script src="native.js"></script>\n</body>');
 cpSync(join(root, "app/native.js"), join(out, "native.js"));
 
