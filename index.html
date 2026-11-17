@@ -537,16 +537,21 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 @media (min-width:900px) { .sched { padding-left:max(32px,env(safe-area-inset-left)); padding-right:max(32px,env(safe-area-inset-right)); } }
 
 /* toolbar: title + arrows on one line, view switch + assignments switch below */
-.sched-bar { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"title nav" "views tog"; align-items:center; gap:12px 12px; margin:0 0 14px; }
+.sched-bar { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"title add" "views nav" "tog tog"; align-items:center; gap:10px 12px; margin:0 0 14px; }
+.sched-btn.sched-add { grid-area:add; justify-self:end; background:var(--poster-ui-accent); color:var(--poster-on-accent); white-space:nowrap; }
+@media (min-width:600px) and (max-width:999px) {
+  .sched-bar { grid-template-columns:minmax(0,1fr) auto auto; grid-template-areas:"title tog add" "views nav nav"; }
+}
 /* wide screens: everything on one line, which leaves more room for the calendar */
 @media (min-width:1000px) {
-  .sched-bar { grid-template-columns:minmax(0,1fr) auto auto auto; grid-template-areas:"title views nav tog"; gap:14px; margin-bottom:12px; }
+  .sched-bar { grid-template-columns:minmax(0,1fr) auto auto auto auto; grid-template-areas:"title views nav tog add"; gap:14px; margin-bottom:12px; }
   .sched-title { font-size:clamp(40px,4.4vw,56px); }
 }
 .sched-title { grid-area:title; min-width:0; margin:0; font:800 clamp(32px,6vw,60px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sched-nav { grid-area:nav; display:flex; gap:6px; }
 .sched-views { grid-area:views; justify-self:start; }
-.sched-toggle { grid-area:tog; justify-self:end; }
+.sched-toggle { grid-area:tog; justify-self:start; }
+@media (min-width:600px) { .sched-toggle { justify-self:end; } }
 .sched-btn, .sched-seg, .sched-toggle { border:3px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); box-shadow:3px 3px 0 var(--poster-border); }
 .sched-btn { min-width:42px; min-height:42px; padding:6px 12px; font:600 17px/1 var(--poster-display); text-transform:uppercase; }
 .sched-btn:disabled { opacity:.35; cursor:default; box-shadow:none; }
@@ -566,7 +571,7 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
   .sched-btn { min-width:38px; min-height:38px; padding:5px 9px; font-size:15px; }
   .sched-seg button { padding:5px 12px; font-size:15px; }
   .sched-toggle { padding:5px 9px 5px 7px; }
-  .sched-toggle .long { display:none; }
+  .sched-toggle { min-height:32px; padding:3px 9px 3px 7px; box-shadow:2px 2px 0 var(--poster-border); }
 }
 
 /* the schedule fills the screen, so the page itself never scrolls */
@@ -657,7 +662,10 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .sdays .sday.is-today .shol { color:var(--poster-ui-accent); }
 .sdays .shol { font-size:13px; }
 .shol-star { display:none; margin-left:2px; font-size:.6em; vertical-align:top; color:var(--poster-ui-accent); }
-.smonth .shol { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; }
+.smonth .shol { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.smonth .shol-inline { display:none; text-align:right; }
+.smonth .sday.hol-in .shol-inline { display:block; }
+.smonth .sday.hol-in .shol-line { display:none; }
 .smonth .sday-head { align-items:center; }
 @media (max-width:699px) {
   .smonth .shol { display:none; }
@@ -665,19 +673,41 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .sweek .shol { font-size:8px; letter-spacing:0; text-align:center; hyphens:auto; -webkit-hyphens:auto; }
 }
 
-/* assignment popover: tap a marker to see it and mark it done / turned in */
-.spop { position:fixed; z-index:1200; width:min(340px, calc(100vw - 32px)); padding:16px; background:var(--poster-card-bg); color:var(--poster-text); border:3px solid var(--poster-border); box-shadow:6px 6px 0 var(--poster-border); display:flex; flex-direction:column; gap:10px; }
-.spop-top { display:flex; align-items:flex-start; gap:10px; }
-.spop-class { display:inline-flex; align-items:center; gap:6px; font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; }
-.spop-class::before { content:""; width:10px; height:10px; background:var(--mc); border:1.5px solid var(--poster-border); }
-.spop-x { margin-left:auto; flex-shrink:0; width:32px; height:32px; border:2px solid var(--poster-border); background:transparent; color:inherit; font:700 16px/1 var(--poster-sans); }
-.spop h3 { margin:0; font:700 26px/1 var(--poster-display); text-transform:uppercase; text-wrap:balance; }
-.spop-when { font:600 11px/1.3 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
-.spop-desc { margin:0; font:400 13.5px/1.5 var(--poster-sans); color:var(--poster-text-soft); max-height:30vh; overflow:auto; }
-.spop-actions { display:flex; gap:8px; flex-wrap:wrap; }
-@media (max-width:699px) {
-  .spop { left:0 !important; right:0; top:auto !important; bottom:0; width:auto; border-width:3px 0 0; box-shadow:0 -6px 0 var(--poster-border); padding:18px max(16px,env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
-}
+/* your own events and reminders: a diamond instead of a checkbox */
+.smark.is-event::before { content:""; width:10px; height:10px; margin:3px 2px 0; border:0; border-radius:0; background:var(--mc); transform:rotate(45deg); }
+.ev-form { display:flex; flex-direction:column; gap:14px; }
+.ev-form .modal-sub { margin-bottom:0; }
+.ev-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.ev-field { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.ev-field > span { font:600 11px/1.3 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; color:var(--poster-text-soft); }
+.ev-field i { font-style:normal; opacity:.75; text-transform:none; }
+.ev-field input, .ev-form textarea { width:100%; min-height:44px; min-width:0; padding:10px 12px; border:2px solid var(--poster-border); border-radius:0; background:var(--poster-bg); color:var(--poster-text); font:400 16px/1.4 var(--poster-sans); }
+.ev-form textarea { min-height:80px; }
+.ev-colors { display:flex; flex-wrap:wrap; gap:10px; }
+.ev-colors button { width:32px; height:32px; border-radius:50%; border:2px solid var(--poster-border); background:var(--c); position:relative; }
+.ev-colors button[aria-pressed="true"]::after { content:""; position:absolute; inset:-6px; border:2px solid var(--poster-text); border-radius:50%; }
+.sday-add { flex-shrink:0; align-self:flex-start; margin-top:auto; min-height:38px; padding:6px 14px; border:2px dashed var(--poster-text-soft); background:transparent; color:var(--poster-text-soft); font:600 12px/1 var(--poster-mono); text-transform:uppercase; }
+.sday-add:hover { border-style:solid; color:var(--poster-text); border-color:var(--poster-text); }
+.sday.is-today .sday-add { color:inherit; border-color:currentColor; }
+.sdrop-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.sdrop-btns .action-btn { flex:1 1 70px; }
+.sdrop .action-btn.danger { color:var(--poster-danger); border-color:var(--poster-danger); }
+@media (max-width:520px) { .ev-row { grid-template-columns:1fr; } }
+
+/* tapping a marker opens a box right under it with the Homework buttons */
+.sopen { display:flex; flex-direction:column; flex-shrink:0; min-width:0; }
+.sopen .smark { border-bottom-width:0; }
+.sdrop { display:flex; flex-direction:column; gap:8px; padding:8px; background:var(--poster-card-bg); color:var(--poster-text); border:1.5px solid var(--poster-border); border-left:5px solid var(--mc); border-top:1px dashed var(--poster-text-soft); cursor:default; }
+.sdrop-when { font:600 10px/1.3 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.sdrop-desc { margin:0; font:400 12.5px/1.45 var(--poster-sans); color:var(--poster-text-soft); }
+.sdrop-actions { display:flex; flex-direction:column; gap:6px; }
+.sdrop .action-btn { flex:0 0 auto; min-height:36px; padding:7px 8px; font-size:11px; }
+.sweek .sday { overflow-y:auto; scrollbar-width:thin; }
+.sdays .sdrop { padding:12px 14px; gap:10px; }
+.sdays .sdrop-desc { font-size:14px; }
+.sdays .sdrop-actions { flex-direction:row; flex-wrap:wrap; }
+.sdays .sdrop .action-btn { flex:1 1 160px; min-height:44px; font-size:12px; }
+.sdays .sopen .smark .mdesc { display:none; }
 
 /* day: one box per day filling the space; scroll inside it to reach the next day */
 .sdays { flex:1; min-height:0; overflow-y:auto; scroll-snap-type:y mandatory; display:flex; flex-direction:column; gap:var(--s-gap); overscroll-behavior:contain; scrollbar-width:none; }
@@ -757,13 +787,33 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
       <div class="sched-seg sched-views" id="schedViews" role="group" aria-label="View">
         <button type="button" data-v="day">Day</button><button type="button" data-v="week">Week</button><button type="button" data-v="month">Month</button>
       </div>
-      <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span><span class="long">Show </span>assignments</span></button>
+      <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span>Show assignments</span></button>
+      <button type="button" class="sched-btn sched-add" id="schedAdd">+ Add</button>
     </div>
     <div id="schedBody"></div>
   </div>
 </div>
 <div class="page" id="page-notebook" hidden>
   <div class="page-soon"><h1>Notebook</h1><p>Coming soon</p></div>
+</div>
+
+<div class="modal-overlay" id="eventModal">
+  <form class="modal ev-form" id="eventForm" autocomplete="off">
+    <h2 id="eventModalTitle">Add to calendar</h2>
+    <div class="modal-sub">Flights, plans, reminders, anything that isn't homework.</div>
+    <label class="ev-field"><span>What</span><input id="evTitle" type="text" maxlength="120" placeholder="Flight to Chicago" required></label>
+    <div class="ev-row">
+      <label class="ev-field"><span>Date</span><input id="evDate" type="date" required></label>
+      <label class="ev-field"><span>Time <i>(optional)</i></span><input id="evTime" type="time"></label>
+    </div>
+    <label class="ev-field"><span>Notes <i>(optional)</i></span><textarea id="evNotes" rows="3" placeholder="Gate B12, leave by 2pm"></textarea></label>
+    <div class="ev-field"><span>Color</span><div class="ev-colors" id="evColors"></div></div>
+    <div class="modal-status error" id="evError" hidden></div>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn secondary" id="evCancel">Cancel</button>
+      <button type="submit" class="modal-btn primary" id="evSave">Add</button>
+    </div>
+  </form>
 </div>
 
 <div class="modal-overlay" id="uploadModal">
@@ -1494,14 +1544,28 @@ function sAdd(s, n) { const d = sParse(s); d.setDate(d.getDate() + n); return sK
 function sMonday(s) { const d = sParse(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return sKey(d); }
 function sEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])); }
 
+// Your own events and reminders (flights, plans, anything that isn't homework)
+let myEvents = [];
+try { myEvents = JSON.parse(localStorage.getItem("calendarEvents") || "[]"); } catch(e) { myEvents = []; }
+function saveEvents() { try { localStorage.setItem("calendarEvents", JSON.stringify(myEvents)); } catch(e) {} }
+const EVENT_COLORS = ["#FF7849", "#2459F6", "#1E9E5A", "#C2185B", "#7447DB", "#171914"];
+function fmtTime(t) {
+  if (!t) return "";
+  const [hh, mm] = t.split(":").map(Number);
+  return `${hh % 12 || 12}${mm ? ":" + String(mm).padStart(2,"0") : ""}${hh < 12 ? "am" : "pm"}`;
+}
+
 // Everything that shows up on the calendar, grouped by date. Assignments for now;
 // things you add yourself later will use the same marker.
 function schedItemsByDate() {
   const map = {};
+  [...myEvents].sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(ev => {
+    (map[ev.date] = map[ev.date] || []).push({ id: ev.id, date: ev.date, title: ev.title, time: fmtTime(ev.time), desc: ev.notes, cls: ev.time ? "" : "Reminder", color: ev.color || EVENT_COLORS[0], event: true });
+  });
   if (!sched.showAssignments) return map;
   getAllAssignments().forEach(a => {
     if (!a.date) return;
-    (map[a.date] = map[a.date] || []).push({ id: a.id, title: a.title, time: a.time, desc: a.desc, cls: a.class, color: getClassColor(a.class), done: isFinished(a) });
+    (map[a.date] = map[a.date] || []).push({ id: a.id, date: a.date, title: a.title, time: a.time, desc: a.desc, cls: a.class, color: getClassColor(a.class), done: isFinished(a) });
   });
   return map;
 }
@@ -1547,9 +1611,38 @@ function holidaysFor(year) {
 }
 function holidayOn(key) { return holidaysFor(+key.slice(0,4))[key] || ""; }
 
+let openMarkId = null, confirmDeleteId = null;
 function markHTML(it, withDesc) {
-  return `<div class="smark${it.done ? " is-done" : ""}" style="--mc:${it.color}" data-id="${sEsc(it.id)}" role="button" tabindex="0" aria-label="${sEsc(it.title)}${it.done ? ", finished" : ""}">
-    <span class="mt">${sEsc(it.title)}<span class="mtime">${sEsc(it.cls)}${it.time ? " · " + sEsc(it.time) : ""}</span>${withDesc && it.desc ? `<span class="mdesc">${sEsc(it.desc)}</span>` : ""}</span>
+  if (it.id === openMarkId && !markHTML.inMonth) {
+    if (it.event) {
+      const when = sParse(it.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+      return `<div class="sopen" style="--mc:${it.color}">${markChip(it, withDesc, true)}
+        <div class="sdrop">
+          <div class="sdrop-when">${when}${it.time ? " · " + sEsc(it.time) : ""}</div>
+          ${it.desc ? `<p class="sdrop-desc">${sEsc(it.desc)}</p>` : ""}
+          <div class="sdrop-btns">
+            <button type="button" class="action-btn" data-ev="edit" data-id="${sEsc(it.id)}">Edit</button>
+            <button type="button" class="action-btn danger" data-ev="delete" data-id="${sEsc(it.id)}">${confirmDeleteId === it.id ? "Tap to confirm" : "Delete"}</button>
+          </div>
+        </div></div>`;
+    }
+    const s = state[it.id] || {};
+    const when = sParse(it.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    return `<div class="sopen" style="--mc:${it.color}">${markChip(it, withDesc, true)}
+      <div class="sdrop">
+        <div class="sdrop-when">${sEsc(it.cls)} · ${when}${it.time ? " · " + sEsc(it.time) : ""}</div>
+        ${it.desc ? `<p class="sdrop-desc">${sEsc(it.desc)}</p>` : ""}
+        <div class="sdrop-actions">
+          <button type="button" class="action-btn complete ${s.complete ? "on" : ""}" data-action="complete" data-id="${sEsc(it.id)}">${s.complete ? "Marked Complete" : "Mark Complete"}</button>
+          <button type="button" class="action-btn turned ${s.turned ? "on" : ""}" data-action="turned" data-id="${sEsc(it.id)}">${s.turned ? "Marked Turned In" : "Mark Turned In"}</button>
+        </div>
+      </div></div>`;
+  }
+  return markChip(it, withDesc, false);
+}
+function markChip(it, withDesc, open) {
+  return `<div class="smark${it.done ? " is-done" : ""}${it.event ? " is-event" : ""}" style="--mc:${it.color}" data-id="${sEsc(it.id)}" role="button" tabindex="0" aria-expanded="${open}" aria-label="${sEsc(it.title)}${it.done ? ", finished" : ""}">
+    <span class="mt">${sEsc(it.title)}<span class="mtime">${[it.cls, it.time].filter(Boolean).map(sEsc).join(" · ")}</span>${withDesc && it.desc ? `<span class="mdesc">${sEsc(it.desc)}</span>` : ""}</span>
   </div>`;
 }
 
@@ -1557,16 +1650,17 @@ function dayBoxHTML(key, items, opts) {
   const d = sParse(key);
   const today = key === getTodayStr();
   const out = opts.month && d.getMonth() !== opts.month.getMonth();
-  const tag = opts.long ? "div" : "button";
+  const tag = "div";
   const dow = opts.long ? DOW[(d.getDay()+6)%7] : DOW[(d.getDay()+6)%7].slice(0,3);
   const num = opts.long ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : d.getDate();
   const list = items || [];
   const hol = holidayOn(key);
   const shown = list;
-  return `<${tag} class="sday${today ? " is-today" : ""}${out ? " is-out" : ""}" data-date="${key}"${!opts.long ? ` type="button" aria-label="${fmtDate(key)}, ${list.length} item${list.length === 1 ? "" : "s"}"` : ""}>
+  return `<${tag} class="sday${today ? " is-today" : ""}${out ? " is-out" : ""}" data-date="${key}"${opts.month ? ` role="button" tabindex="0" aria-label="${fmtDate(key)}, ${list.length} item${list.length === 1 ? "" : "s"}${hol ? ", " + hol : ""}"` : ""}>
     <div class="sday-head">${opts.month ? `<span class="sday-num">${d.getDate()}${hol ? `<span class="shol-star" aria-hidden="true">★</span>` : ""}</span>${hol ? `<span class="shol shol-inline" title="${hol}">★ ${hol}</span>` : ""}` : `<span class="sday-dow">${today ? `<span class="tlabel">Today · </span>` : ""}${dow}</span><span class="sday-num">${num}</span>`}</div>
-    ${hol && !opts.month ? `<div class="shol">★ ${hol}</div>` : ""}
+    ${hol ? `<div class="shol shol-line">★ ${hol}</div>` : ""}
     ${list.length ? `<div class="smarks">${shown.map(it => markHTML(it, opts.long)).join("")}</div>` : (opts.month ? "" : `<div class="sday-empty">Nothing due</div>`)}
+    ${opts.long ? `<button type="button" class="sday-add" data-add="${key}">+ Add to this day</button>` : ""}
     ${opts.month ? `<span class="smore"></span>` : ""}
     ${opts.month && list.length ? `<div class="sdots">${list.map(it => `<span class="sdot" style="--mc:${it.color}"></span>`).join("")}</div>` : ""}
   </${tag}>`;
@@ -1574,7 +1668,7 @@ function dayBoxHTML(key, items, opts) {
 
 // Day view covers the whole term (plus a little either side) so you can keep scrolling.
 function schedDayRange() {
-  const dates = getAllAssignments().map(a => a.date).filter(Boolean).sort();
+  const dates = [...getAllAssignments().map(a => a.date), ...myEvents.map(e => e.date)].filter(Boolean).sort();
   let start = dates[0] || getTodayStr(), end = dates[dates.length-1] || getTodayStr();
   [getTodayStr(), sched.date].forEach(k => { if (k < start) start = k; if (k > end) end = k; });
   return [sAdd(start, -14), sAdd(end, 14)];
@@ -1619,7 +1713,7 @@ function renderSchedule() {
       ? `${a.toLocaleDateString("en-US",{month:"short"})} ${a.getDate()} – ${b.getDate()}`
       : `${a.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
     root.innerHTML = `<div class="sweek">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}</div>`;
-    root.querySelectorAll(".sweek .sday").forEach(el => el.onclick = e => { if (!e.target.closest(".smark")) openDay(el.dataset.date); });
+    root.querySelectorAll(".sweek .sday").forEach(el => el.onclick = e => { if (!e.target.closest(".smark, .sopen, button")) openDay(el.dataset.date); });
   } else if (sched.view === "month") {
     const m = sParse(sched.date); m.setDate(1);
     title.textContent = m.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -1627,17 +1721,25 @@ function renderSchedule() {
     const last = new Date(m.getFullYear(), m.getMonth()+1, 0);
     const cells = [];
     for (let k = first; ; k = sAdd(k, 1)) { cells.push(k); if (cells.length % 7 === 0 && sParse(k) >= last) break; }
+    markHTML.inMonth = true;
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
       <div class="smonth" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
+    markHTML.inMonth = false;
     // In Month, tapping anywhere in a day (markers included) opens that day
-    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = () => openDay(el.dataset.date));
+    root.querySelectorAll(".smonth .sday").forEach(el => {
+      el.onclick = () => openDay(el.dataset.date);
+      el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDay(el.dataset.date); } };
+    });
     root.querySelectorAll(".smonth .smark").forEach(m => { m.removeAttribute("role"); m.removeAttribute("tabindex"); });
     // Show as many markers as fit in each box, then "+N more"
     root.querySelectorAll(".smonth .smarks").forEach(box => {
       const chips = [...box.children], more = box.parentElement.querySelector(".smore");
       let hidden = 0;
-      // Tight on space: first shrink every name to one line, then hide from the end
-      if (box.scrollHeight > box.clientHeight + 1) chips.forEach(c => c.classList.add("one-line"));
+      // Only squeeze a day that's full: first move its holiday beside the date,
+      // then shrink names to one line, then hide from the end
+      const over = () => box.scrollHeight > box.clientHeight + 1;
+      if (over() && box.parentElement.querySelector(".shol-line")) box.parentElement.classList.add("hol-in");
+      if (over()) chips.forEach(c => c.classList.add("one-line"));
       while (chips.length - hidden > 0 && box.scrollHeight > box.clientHeight + 1) {
         chips[chips.length - 1 - hidden].hidden = true; hidden++;
         more.textContent = `+${hidden} more`;
@@ -1690,70 +1792,101 @@ document.getElementById("schedNext").onclick = () => schedStep(1);
 document.getElementById("schedToday").onclick = () => { sched.date = getTodayStr(); renderSchedule(); };
 document.getElementById("schedToggle").onclick = () => { sched.showAssignments = !sched.showAssignments; saveSchedPrefs(); renderSchedule(); };
 
-// Tap an assignment on the calendar to open it, with the same buttons as Homework
-const schedPop = document.createElement("div");
-schedPop.className = "spop"; schedPop.hidden = true; schedPop.setAttribute("role", "dialog");
-document.body.appendChild(schedPop);
-let popId = null, popAnchor = null;
-
-function renderPop() {
-  const a = popId && getAllAssignments().find(x => x.id === popId);
-  if (!a) { closePop(); return; }
-  const s = state[a.id] || {};
-  const when = sParse(a.date).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
-  schedPop.style.setProperty("--mc", getClassColor(a.class));
-  schedPop.setAttribute("aria-label", a.title);
-  schedPop.innerHTML = `
-    <div class="spop-top"><span class="spop-class">${sEsc(a.class)}</span><button type="button" class="spop-x" aria-label="Close">✕</button></div>
-    <h3>${sEsc(a.title)}</h3>
-    <div class="spop-when">Due ${when}${a.time ? " · " + sEsc(a.time) : ""}</div>
-    ${a.desc ? `<p class="spop-desc">${sEsc(a.desc)}</p>` : ""}
-    <div class="spop-actions">
-      <button type="button" class="action-btn complete ${s.complete ? "on" : ""}" data-action="complete">${s.complete ? "Marked Complete" : "Mark Complete"}</button>
-      <button type="button" class="action-btn turned ${s.turned ? "on" : ""}" data-action="turned">${s.turned ? "Marked Turned In" : "Mark Turned In"}</button>
-    </div>`;
-  schedPop.querySelector(".spop-x").onclick = closePop;
-  schedPop.querySelectorAll(".action-btn").forEach(btn => btn.onclick = e => {
-    e.stopPropagation();
-    const action = btn.dataset.action;
-    if (!state[a.id]) state[a.id] = {};
-    const turningOn = !state[a.id][action];
-    state[a.id][action] = turningOn;
-    state[a.id].t = Date.now();
-    saveState(); scheduleSync();
-    if (turningOn && (isFinished(a) || action === "turned")) launchConfetti();
-    render();
-  });
+// Tap an assignment on the calendar (Week or Day) to open it in place, with the same buttons as Homework
+function toggleMark(id) {
+  // Phone week columns are too narrow, so open that day instead
+  if (sched.view === "week" && window.innerWidth < 700) {
+    const el = document.querySelector(`#schedBody .smark[data-id="${CSS.escape(id)}"]`);
+    const day = el && el.closest(".sday");
+    openMarkId = id; if (day) openDay(day.dataset.date); return;
+  }
+  openMarkId = openMarkId === id ? null : id;
+  confirmDeleteId = null;
+  renderSchedule();
 }
-function placePop() {
-  if (schedPop.hidden || !popAnchor || window.innerWidth < 700) return;
-  const anchor = document.querySelector(`#schedBody .smark[data-id="${CSS.escape(popId)}"]`) || popAnchor;
-  const r = anchor.getBoundingClientRect(), w = schedPop.offsetWidth, ph = schedPop.offsetHeight;
-  let left = Math.min(Math.max(16, r.left), window.innerWidth - w - 16);
-  let top = r.bottom + 8;
-  if (top + ph > window.innerHeight - 16) top = Math.max(16, r.top - ph - 8);
-  schedPop.style.left = left + "px"; schedPop.style.top = top + "px";
-}
-function openPop(id, anchor) { popId = id; popAnchor = anchor; schedPop.hidden = false; renderPop(); placePop(); schedPop.querySelector(".action-btn").focus({ preventScroll: true }); }
-function closePop() { schedPop.hidden = true; popId = null; popAnchor = null; }
-
 document.getElementById("schedBody").addEventListener("click", e => {
+  const btn = e.target.closest(".sdrop .action-btn");
+  if (btn) {
+    e.stopPropagation();
+    const id = btn.dataset.id, action = btn.dataset.action;
+    const a = getAllAssignments().find(x => x.id === id);
+    if (!state[id]) state[id] = {};
+    const turningOn = !state[id][action];
+    state[id][action] = turningOn;
+    state[id].t = Date.now();
+    saveState(); scheduleSync();
+    if (turningOn && a && (isFinished(a) || action === "turned")) launchConfetti();
+    render();
+    return;
+  }
+  const evBtn = e.target.closest(".sdrop [data-ev]");
+  if (evBtn) {
+    e.stopPropagation();
+    const id = evBtn.dataset.id;
+    if (evBtn.dataset.ev === "edit") openEventModal(myEvents.find(x => x.id === id));
+    else if (confirmDeleteId === id) { myEvents = myEvents.filter(x => x.id !== id); saveEvents(); openMarkId = confirmDeleteId = null; renderSchedule(); }
+    else { confirmDeleteId = id; renderSchedule(); }
+    return;
+  }
+  const addBtn = e.target.closest("[data-add]");
+  if (addBtn) { e.stopPropagation(); openEventModal(null, addBtn.dataset.add); return; }
+  if (e.target.closest(".sdrop")) { e.stopPropagation(); return; }
   const m = e.target.closest(".smark[data-id]");
   if (!m || m.closest(".smonth")) return;
-  e.stopPropagation(); openPop(m.dataset.id, m);
+  e.stopPropagation(); toggleMark(m.dataset.id);
 });
 document.getElementById("schedBody").addEventListener("keydown", e => {
   const m = e.target.closest(".smark[data-id]");
-  if (m && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openPop(m.dataset.id, m); }
+  if (m && !m.closest(".smonth") && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleMark(m.dataset.id); }
 });
-document.addEventListener("click", e => { if (!schedPop.hidden && !schedPop.contains(e.target) && !e.target.closest(".smark[data-id]")) closePop(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !schedPop.hidden) closePop(); });
-window.addEventListener("resize", placePop);
-window.addEventListener("hashchange", closePop);
+
+// Add / edit modal for your own events
+const eventModal = document.getElementById("eventModal");
+let editingEventId = null, evColor = EVENT_COLORS[0];
+function paintColors() {
+  document.getElementById("evColors").innerHTML = EVENT_COLORS.map(c =>
+    `<button type="button" style="--c:${c}" data-c="${c}" aria-label="Color ${c}" aria-pressed="${c === evColor}"></button>`).join("");
+}
+document.getElementById("evColors").addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b) return; evColor = b.dataset.c; paintColors();
+});
+function openEventModal(ev, date) {
+  editingEventId = ev ? ev.id : null;
+  evColor = ev ? ev.color : EVENT_COLORS[0];
+  document.getElementById("eventModalTitle").textContent = ev ? "Edit" : "Add to calendar";
+  document.getElementById("evSave").textContent = ev ? "Save" : "Add";
+  document.getElementById("evTitle").value = ev ? ev.title : "";
+  document.getElementById("evDate").value = ev ? ev.date : (date || sched.date);
+  document.getElementById("evTime").value = ev ? (ev.time || "") : "";
+  document.getElementById("evNotes").value = ev ? (ev.notes || "") : "";
+  document.getElementById("evError").hidden = true;
+  paintColors();
+  eventModal.classList.add("open");
+  setTimeout(() => document.getElementById("evTitle").focus(), 30);
+}
+function closeEventModal() { eventModal.classList.remove("open"); }
+document.getElementById("schedAdd").onclick = () => openEventModal(null);
+document.getElementById("evCancel").onclick = closeEventModal;
+eventModal.addEventListener("click", e => { if (e.target === eventModal) closeEventModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && eventModal.classList.contains("open")) closeEventModal(); });
+document.getElementById("eventForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const title = document.getElementById("evTitle").value.trim();
+  const date = document.getElementById("evDate").value;
+  const err = document.getElementById("evError");
+  if (!title || !date) { err.textContent = !title ? "Give it a name first." : "Pick a date."; err.hidden = false; return; }
+  const data = { title, date, time: document.getElementById("evTime").value, notes: document.getElementById("evNotes").value.trim(), color: evColor };
+  if (editingEventId) { const ev = myEvents.find(x => x.id === editingEventId); if (ev) Object.assign(ev, data); }
+  else { const id = "ev-" + Date.now(); myEvents.push({ id, ...data }); openMarkId = null; }
+  saveEvents();
+  closeEventModal();
+  sched.date = date;
+  renderSchedule();
+});
 
 // Keep the calendar in step with the Homework page (checking things off, syncing, new syllabi)
 const renderHomework = render;
-render = function() { renderHomework(); renderSchedule(); if (!schedPop.hidden) { renderPop(); placePop(); } };
+render = function() { renderHomework(); renderSchedule(); };
 renderSchedule();
 
 // Boxes can only be scrolled to "today" once the page is visible
