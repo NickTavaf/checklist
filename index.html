@@ -2304,8 +2304,15 @@ async function syncNow() {
     if (!resp.ok || data.error) throw new Error(data.error || "Sync failed");
     if (mergeRemote(data)) render();
     // only count the records as delivered once the server knows about records at all
-    if (data.docs && typeof data.docs === "object") { docsSentT = Math.max(docsSentT, sentAt); saveDocRecs(); mergeDocs(data.docs); }
-    setSyncStatus("Synced " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    if (data.docs && typeof data.docs === "object") {
+      docsSentT = Math.max(docsSentT, sentAt); saveDocRecs(); mergeDocs(data.docs);
+      setSyncStatus("Synced " + time);
+    } else {
+      // An older sync Worker keeps only the checklist. Notebooks, sticky notes and events stay
+      // saved here (and are sent later) until the Worker is updated, so say so instead of "Synced".
+      setSyncStatus("Checklist synced " + time + ". Notebooks & notes: this device only (sync Worker needs updating)", true);
+    }
   } catch (e) {
     setSyncStatus("Offline — saved on this device, will sync later.", true);
   }
@@ -2331,6 +2338,10 @@ window.addEventListener("storage", (e) => {
     render();
   }
 });
+
+// Ask the browser not to clear this site's saved data when space runs low (Safari otherwise may
+// clear it after weeks without a visit). The cloud copy is the backup either way.
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 
 render();
 setTimeout(syncNow, 0);   // after the notebooks and the calendar have loaded

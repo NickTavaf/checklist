@@ -14,6 +14,7 @@
 //   Optional: instead of Cloudflare's AI you can use Claude by adding a secret
 //   named ANTHROPIC_API_KEY. If both are set, Cloudflare's AI is used.
 
+const WORKER_VERSION = "2026-11-17";
 const CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const CF_VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct"; // reads photos / scanned pages
 const MAX_IMAGES = 10;
@@ -255,7 +256,10 @@ export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
-    if (new URL(request.url).pathname.replace(/\/+$/, "") === "/parse") return handleParse(request, env);
+    const path = new URL(request.url).pathname.replace(/\/+$/, "");
+    if (path === "/parse") return handleParse(request, env);
+    // Quick check that this version is the one running: open <worker url>/version in a browser
+    if (path === "/version") return json({ version: WORKER_VERSION, syncsNotebooks: true, kv: !!env.SYNC, ai: !!env.AI });
 
     const code = (new URL(request.url).searchParams.get("code") || "").toUpperCase();
     if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) return json({ error: "Invalid sync code." }, 400);
