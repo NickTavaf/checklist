@@ -2743,7 +2743,7 @@ function schedDayRange() {
 // Phone month: what fills the spots before the 1st and after the last day, so the grid never looks
 // lopsided. Looks: "label" (month names), "line" (a thin rule), "ghost" (faded neighbor dates), "stripes"
 const MONTH_EDGES = ["label", "line", "ghost", "stripes"];
-function monthEdge() { try { const v = localStorage.getItem("monthEdge"); return MONTH_EDGES.includes(v) ? v : "label"; } catch (e) { return "label"; } }
+function monthEdge() { try { const v = localStorage.getItem("monthEdge"); return MONTH_EDGES.includes(v) ? v : "ghost"; } catch (e) { return "ghost"; } }
 function monthCellsPhone(cells, m, items) {
   const look = monthEdge();
   const inM = k => sParse(k).getMonth() === m.getMonth();
