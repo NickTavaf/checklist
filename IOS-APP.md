@@ -78,9 +78,15 @@ These steps need you (they involve your Apple account and money):
 
 For each later release, raise *Version* (or *Build*) in Xcode → App → General before archiving.
 
-## Before going public (other people using it)
+## Your data vs. everyone else's
 
-Right now the app is set up for you: your Fall 2026 assignments are built into the page,
-and every copy syncs to one shared sync code. Before strangers download it, the app needs
-each person to start with an empty list and get their own sync code; otherwise everyone
-would share one checklist. That's a change to `index.html`, not to the app wrapper.
+Each new install of the app starts with an **empty checklist and its own private sync
+code** (shown in the ☰ menu under Sync code). Nobody who downloads the app sees your
+classes, and nothing they do touches your checklist.
+
+To use your own checklist on your phone: ☰ → Sync code → **Change** → type the code your
+website uses (the `SYNC_KEY` in `index.html`). The app then shows your built-in Fall 2026
+assignments and syncs with the website. The same works for anyone with two devices: they
+type the code from one device into the other.
+
+The website itself is unchanged and still uses its one shared code.
