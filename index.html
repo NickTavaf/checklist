@@ -549,7 +549,8 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 .sched-toggle { grid-area:tog; justify-self:end; }
 .sched-btn, .sched-seg, .sched-toggle { border:3px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); box-shadow:3px 3px 0 var(--poster-border); }
 .sched-btn { min-width:42px; min-height:42px; padding:6px 12px; font:600 17px/1 var(--poster-display); text-transform:uppercase; }
-.sched-btn:active, .sched-toggle:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
+.sched-btn:disabled { opacity:.35; cursor:default; box-shadow:none; }
+.sched-btn:not(:disabled):active, .sched-toggle:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
 .sched-seg { display:flex; }
 .sched-seg button { min-height:36px; padding:6px 16px; border:0; background:transparent; color:inherit; font:600 17px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
 .sched-seg button + button { border-left:3px solid var(--poster-border); }
@@ -588,11 +589,24 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 
 /* marker: the same chip will be used for things you add yourself */
 .smark { display:flex; align-items:flex-start; gap:7px; width:100%; min-width:0; flex-shrink:0; padding:6px 8px; text-align:left; background:var(--poster-card-bg); color:var(--poster-text); border:1.5px solid var(--poster-border); border-left:5px solid var(--mc); font:500 12.5px/1.25 var(--poster-sans); }
-.smark .mt { flex:1; min-width:0; overflow-wrap:anywhere; }
+.smark .mt { flex:1; min-width:0; overflow-wrap:break-word; }
 .smark .mtime { display:block; margin-top:2px; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
 .smark .mdesc { display:none; }
-.smark.is-done .mt { text-decoration:line-through; opacity:.65; }
-.smark.is-done::after { content:"✓"; font-weight:700; color:var(--mc); }
+/* Finished assignments (done AND turned in). Three looks, set by data-done on #page-schedule */
+/* 1. strike: crossed out and faded, with a check at the end */
+#page-schedule[data-done="strike"] .smark.is-done .mt { text-decoration:line-through; text-decoration-thickness:2px; opacity:.55; }
+#page-schedule[data-done="strike"] .smark.is-done::after { content:"✓"; display:block; flex-shrink:0; font:800 14px/1.1 var(--poster-sans); color:var(--mc); }
+#page-schedule[data-done="strike"] .smark.is-done { border-color:color-mix(in srgb, var(--poster-border) 35%, transparent); border-left-color:var(--mc); }
+/* 2. check: every marker has a round checkbox; finished ones are filled in with a check */
+#page-schedule[data-done="check"] .smark::before { content:""; flex-shrink:0; width:14px; height:14px; margin-top:1px; border-radius:50%; border:2px solid var(--mc); box-sizing:border-box; display:grid; place-items:center; font:900 9px/1 var(--poster-sans); color:#fff; }
+#page-schedule[data-done="check"] .smark.is-done::before { content:"✓"; background:var(--mc); }
+#page-schedule[data-done="check"] .smark.is-done { background:color-mix(in srgb, var(--mc) 16%, var(--poster-card-bg)); }
+#page-schedule[data-done="check"] .smark.is-done .mt { color:var(--poster-text-soft); }
+/* 3. stamp: a green DONE stamp, with a dashed, faded marker */
+#page-schedule[data-done="stamp"] .smark.is-done { position:relative; border-style:dashed; border-left-style:solid; background:transparent; }
+#page-schedule[data-done="stamp"] .smark.is-done .mt { opacity:.6; }
+#page-schedule[data-done="stamp"] .smarks { padding:7px 5px 0 0; }
+#page-schedule[data-done="stamp"] .smark.is-done::after { content:"Done"; display:block; position:absolute; top:-7px; right:-5px; padding:2px 5px; border:2px solid var(--poster-done); color:var(--poster-done); background:var(--poster-done-bg); font:700 9.5px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.06em; transform:rotate(-6deg); }
 .sdots { display:none; flex-wrap:wrap; gap:3px; }
 .sdot { width:8px; height:8px; border-radius:50%; background:var(--mc); border:1.5px solid var(--poster-border); }
 .smore { flex-shrink:0; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; opacity:.8; }
@@ -612,7 +626,9 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .sweek .smark { padding:2px 1px 2px 4px; border:0; border-left:3px solid var(--mc); background:transparent; color:inherit; font-size:9px; line-height:1.2; }
   .sweek .smark .mtime { display:none; }
   .sweek .smark .mt { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:normal; word-break:normal; }
-  .sweek .smark.is-done::after { display:none; }
+  #page-schedule .sweek .smark.is-done::after, #page-schedule .sweek .smark::before { display:none; }
+  #page-schedule[data-done="check"] .sweek .smark.is-done { background:color-mix(in srgb, var(--mc) 22%, transparent); }
+  #page-schedule[data-done="stamp"] .sweek .smark.is-done { border-left-style:dashed; }
 }
 
 /* month: the whole month fits; rows share the height */
@@ -633,6 +649,10 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .smonth .smore { display:none; }
   .smonth .smarks { gap:3px; }
   .smonth .smark { padding:0; height:7px; border:0; background:var(--mc); }
+  #page-schedule .smonth .smark::before, #page-schedule .smonth .smark::after { display:none; }
+  #page-schedule[data-done="strike"] .smonth .smark.is-done { opacity:.3; }
+  #page-schedule[data-done="check"] .smonth .smark.is-done { background:transparent; box-shadow:inset 0 0 0 2px var(--mc); }
+  #page-schedule[data-done="stamp"] .smonth .smark.is-done { background:repeating-linear-gradient(-45deg, var(--mc) 0 3px, transparent 3px 6px); }
   .smonth .smark .mt { display:none; }
   .smonth-dows span { font-size:9px; padding-left:2px; }
 }
@@ -703,7 +723,7 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 </div>
 </div>
 
-<div class="page" id="page-schedule" hidden>
+<div class="page" id="page-schedule" data-done="strike" hidden>
   <div class="sched">
     <div class="sched-bar">
       <h1 class="sched-title" id="schedTitle">Schedule</h1>
@@ -1506,6 +1526,13 @@ function fitSchedule() {
 }
 window.addEventListener("resize", fitSchedule);
 
+// The Today button only lights up once you've moved away from today
+function updateTodayBtn() {
+  const t = getTodayStr(), d = sched.date;
+  const here = sched.view === "week" ? sMonday(d) === sMonday(t) : sched.view === "month" ? d.slice(0,7) === t.slice(0,7) : d === t;
+  document.getElementById("schedToday").disabled = here;
+}
+
 let schedObserver = null;
 function renderSchedule() {
   const root = document.getElementById("schedBody");
@@ -1517,6 +1544,7 @@ function renderSchedule() {
   const tog = document.getElementById("schedToggle");
   tog.setAttribute("aria-checked", String(sched.showAssignments));
   if (schedObserver) { schedObserver.disconnect(); schedObserver = null; }
+  updateTodayBtn();
 
   if (sched.view === "week") {
     const mon = sMonday(sched.date);
@@ -1561,7 +1589,7 @@ function renderSchedule() {
     const setTitle = k => { title.textContent = sParse(k).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); };
     setTitle(sched.date);
     schedObserver = new IntersectionObserver(entries => {
-      entries.forEach(en => { if (en.isIntersecting) { sched.date = en.target.dataset.date; setTitle(sched.date); } });
+      entries.forEach(en => { if (en.isIntersecting) { sched.date = en.target.dataset.date; setTitle(sched.date); updateTodayBtn(); } });
     }, { root: box, threshold: 0.6 });
     box.querySelectorAll(".sday").forEach(el => schedObserver.observe(el));
   }
