@@ -42,7 +42,7 @@ try {
    Example: <html data-palette="blue-peach" data-header-mode="adaptive">
    Keep your existing assignment/upload JavaScript. No new backend required.
 */
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Caveat:wght@500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 :root {
   --poster-bg:#ffffff;
   --poster-card-bg:#ffffff;
@@ -537,81 +537,87 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 @media (min-width:900px) { .sched { padding-left:max(32px,env(safe-area-inset-left)); padding-right:max(32px,env(safe-area-inset-right)); } }
 
 /* ---- toolbar ----
-   Three layouts, set by data-bar on .sched-bar:
-   a = two rows (title + arrows + Add / views + Today + switch)
-   b = centered (‹ title › in the middle, Today and Add in the corners)
-   c = one strip (title on top, every control in a single joined bar) */
-.sched-bar { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:0 0 16px; }
+   One slim row on wide screens so the calendar keeps its height. Three looks, set by data-bar:
+   a = compact boxes, b = light tabs, c = centered title (views left, actions right) */
+.sched-bar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 12px; }
 .sb-tools { display:contents; }
-.sb-break { flex-basis:100%; height:0; }
-.sched-title { flex:0 1 auto; min-width:0; margin:0; font:800 clamp(30px,5vw,56px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.sched-btn { min-width:40px; min-height:40px; padding:6px 12px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 16px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
+.sb-break { display:none; flex-basis:100%; height:0; }
+.sb-space { flex:1 1 0; min-width:0; }
+.sched-title { flex:0 1 auto; min-width:0; margin:0; font:800 clamp(28px,3.4vw,44px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sched-btn { min-width:36px; min-height:36px; padding:5px 11px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 15px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
 .sched-btn:disabled { opacity:.3; cursor:default; }
 .sched-btn:not(:disabled):active { transform:translate(1px,1px); }
-.sb-arrow { width:40px; padding:0; font-size:18px; }
-.sched-btn.sched-add { background:var(--poster-ui-accent); color:var(--poster-on-accent); border:3px solid var(--poster-border); box-shadow:3px 3px 0 var(--poster-border); white-space:nowrap; }
+.sb-arrow { width:36px; padding:0; font-size:18px; }
+.sched-btn.sched-add { background:var(--poster-ui-accent); color:var(--poster-on-accent); border:2px solid var(--poster-border); box-shadow:3px 3px 0 var(--poster-border); white-space:nowrap; }
 .sched-btn.sched-add:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
-.sched-seg { display:flex; border:3px solid var(--poster-border); background:var(--poster-card-bg); box-shadow:3px 3px 0 var(--poster-border); }
-.sched-seg button { min-height:36px; padding:6px 16px; border:0; background:transparent; color:var(--poster-text); font:600 16px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
-.sched-seg button + button { border-left:3px solid var(--poster-border); }
+.sched-seg { display:flex; border:2px solid var(--poster-border); background:var(--poster-card-bg); }
+.sched-seg button { min-height:32px; padding:5px 14px; border:0; background:transparent; color:var(--poster-text); font:600 15px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.03em; }
+.sched-seg button + button { border-left:2px solid var(--poster-border); }
 .sched-seg button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
-.sched-toggle { display:inline-flex; align-items:center; gap:9px; min-height:40px; padding:4px 2px; border:0; background:transparent; color:var(--poster-text); font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; }
-.sched-toggle .knob { width:34px; height:20px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
-.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
+.sched-toggle { display:inline-flex; align-items:center; gap:8px; min-height:36px; padding:4px 2px; border:0; background:transparent; color:var(--poster-text); font:600 10.5px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+.sched-toggle .knob { width:32px; height:18px; border-radius:20px; border:2px solid var(--poster-border); position:relative; flex-shrink:0; background:var(--poster-track); transition:background .15s; }
+.sched-toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:10px; height:10px; border-radius:50%; background:var(--poster-border); transition:transform .15s; }
 .sched-toggle[aria-checked="true"] .knob { background:var(--poster-ui-accent); }
 .sched-toggle[aria-checked="true"] .knob::after { transform:translateX(14px); background:var(--poster-on-accent); }
 .sched-toggle .short { display:none; }
 
-/* A: two rows */
-.sched-bar[data-bar="a"] .sched-title { order:1; }
-.sched-bar[data-bar="a"] .sb-prev { order:2; margin-left:4px; }
-.sched-bar[data-bar="a"] .sb-next { order:3; margin-left:-6px; }
-.sched-bar[data-bar="a"] .sched-add { order:4; margin-left:auto; }
-.sched-bar[data-bar="a"] .sb-break { order:5; }
-.sched-bar[data-bar="a"] .sched-views { order:6; }
-.sched-bar[data-bar="a"] .sb-today { order:7; }
-.sched-bar[data-bar="a"] .sched-toggle { order:8; margin-left:auto; }
+/* order shared by a and b: title ‹ › … views today switch add */
+.sched-title { order:1; } .sb-prev { order:2; } .sb-next { order:3; } .sb-space { order:4; }
+.sched-views { order:5; } .sb-today { order:6; } .sched-toggle { order:7; } .sched-add { order:8; }
+.sb-prev { margin-left:2px; } .sb-next { margin-left:-6px; }
 
-/* B: centered */
-.sched-bar[data-bar="b"] { row-gap:14px; }
-.sched-bar[data-bar="b"] .sb-today { order:1; margin-right:auto; }
-.sched-bar[data-bar="b"] .sb-prev { order:2; }
-.sched-bar[data-bar="b"] .sched-title { order:3; text-align:center; padding:0 6px; }
-.sched-bar[data-bar="b"] .sb-next { order:4; }
-.sched-bar[data-bar="b"] .sched-add { order:5; margin-left:auto; }
-.sched-bar[data-bar="b"] .sb-break { order:6; }
-.sched-bar[data-bar="b"] .sched-views { order:7; margin-left:auto; }
-.sched-bar[data-bar="b"] .sched-toggle { order:8; margin-right:auto; }
-.sched-bar[data-bar="b"] .sb-arrow { border:0; background:transparent; font-size:26px; }
+/* B: light tabs, nothing boxed except Add */
+.sched-bar[data-bar="b"] .sched-seg { border:0; background:transparent; gap:4px; }
+.sched-bar[data-bar="b"] .sched-seg button { border:0; padding:6px 10px; border-bottom:3px solid transparent; }
+.sched-bar[data-bar="b"] .sched-seg button[aria-pressed="true"] { background:transparent; color:var(--poster-text); border-bottom-color:var(--poster-ui-accent); }
+.sched-bar[data-bar="b"] .sched-btn:not(.sched-add) { border-color:transparent; background:transparent; }
+.sched-bar[data-bar="b"] .sb-today { text-decoration:underline; text-underline-offset:4px; }
+.sched-bar[data-bar="b"] .sb-arrow { font-size:24px; }
+/* chip switch for b and c */
+.sched-bar[data-bar="b"] .sched-toggle, .sched-bar[data-bar="c"] .sched-toggle { padding:4px 12px; min-height:32px; border:2px solid var(--poster-border); border-radius:999px; }
+.sched-bar[data-bar="b"] .sched-toggle .knob, .sched-bar[data-bar="c"] .sched-toggle .knob { display:none; }
+.sched-bar[data-bar="b"] .sched-toggle::before, .sched-bar[data-bar="c"] .sched-toggle::before { content:"○"; font-size:12px; }
+.sched-bar[data-bar="b"] .sched-toggle[aria-checked="true"], .sched-bar[data-bar="c"] .sched-toggle[aria-checked="true"] { background:var(--poster-text); color:var(--poster-bg); }
+.sched-bar[data-bar="b"] .sched-toggle[aria-checked="true"]::before, .sched-bar[data-bar="c"] .sched-toggle[aria-checked="true"]::before { content:"✓"; }
 
-/* C: one strip */
-.sched-bar[data-bar="c"] { gap:12px; }
-.sched-bar[data-bar="c"] .sched-title { flex-basis:100%; }
-.sched-bar[data-bar="c"] .sb-tools { display:flex; flex-wrap:wrap; gap:3px; flex:1 1 100%; background:var(--poster-border); border:3px solid var(--poster-border); box-shadow:4px 4px 0 var(--poster-border); }
-.sched-bar[data-bar="c"] .sb-tools > * { flex:1 1 auto; border:0; box-shadow:none; background:var(--poster-card-bg); min-height:42px; justify-content:center; }
-.sched-bar[data-bar="c"] .sb-break { display:none; }
-.sched-bar[data-bar="c"] .sched-views { flex:2 1 auto; }
-.sched-bar[data-bar="c"] .sched-views button { flex:1; }
-.sched-bar[data-bar="c"] .sb-arrow { flex:0 0 46px; }
-.sched-bar[data-bar="c"] .sched-toggle { padding:4px 12px; }
-.sched-bar[data-bar="c"] .sched-btn.sched-add { background:var(--poster-ui-accent); }
-.sched-bar[data-bar="c"] .sched-btn.sched-add:active { transform:none; }
-.sched-bar[data-bar="c"] .sched-btn:disabled { opacity:1; color:color-mix(in srgb, var(--poster-text) 30%, transparent); }
+/* C: views on the left, ‹ title › in the middle, actions on the right */
+.sched-bar[data-bar="c"] .sched-views { order:1; }
+.sched-bar[data-bar="c"] .sb-space { order:2; }
+.sched-bar[data-bar="c"] .sb-prev { order:3; border-color:transparent; background:transparent; font-size:24px; }
+.sched-bar[data-bar="c"] .sched-title { order:4; text-align:center; }
+.sched-bar[data-bar="c"] .sb-next { order:5; margin-left:0; border-color:transparent; background:transparent; font-size:24px; }
+.sched-bar[data-bar="c"] .sb-space2 { order:6; }
+.sched-bar[data-bar="c"] .sb-today { order:7; }
+.sched-bar[data-bar="c"] .sched-toggle { order:8; }
+.sched-bar[data-bar="c"] .sched-add { order:9; }
+.sb-space2 { display:none; flex:1 1 0; min-width:0; }
+.sched-bar[data-bar="c"] .sb-space2 { display:block; }
 
+/* narrower screens: two short rows */
+@media (max-width:899px) {
+  .sb-break { display:block; order:5; }
+  .sched-bar .sb-space { order:4; }
+  .sched-bar .sched-add { order:4; margin-left:auto; }
+  .sched-bar .sched-views { order:6; }
+  .sched-bar .sb-today { order:7; }
+  .sched-bar .sched-toggle { order:8; margin-left:auto; }
+  .sched-bar[data-bar="c"] .sched-title { order:1; text-align:left; }
+  .sched-bar[data-bar="c"] .sb-prev { order:2; } .sched-bar[data-bar="c"] .sb-next { order:3; }
+  .sched-bar[data-bar="c"] .sb-space2 { display:none; }
+  .sched-bar[data-bar="c"] .sched-add, .sched-bar[data-bar="c"] .sb-space { order:4; }
+  .sched-bar[data-bar="c"] .sched-views { order:6; } .sched-bar[data-bar="c"] .sb-today { order:7; } .sched-bar[data-bar="c"] .sched-toggle { order:8; }
+}
 @media (max-width:520px) {
-  .sched-bar { gap:10px 8px; margin-bottom:12px; }
-  .sched-title { font-size:28px; }
-  .sched-btn { min-height:36px; padding:5px 9px; font-size:14px; }
-  .sb-arrow { width:36px; min-width:36px; }
-  .sched-seg button { min-height:32px; padding:5px 11px; font-size:14px; }
-  .sched-toggle { min-height:32px; gap:7px; }
+  .sched-bar { gap:8px; margin-bottom:10px; }
+  .sched-title { font-size:26px; }
+  .sched-btn { min-height:34px; padding:4px 8px; font-size:14px; }
+  .sb-arrow { width:32px; min-width:32px; }
+  .sched-seg button { min-height:30px; padding:4px 10px; font-size:14px; }
+  .sched-toggle { min-height:30px; gap:6px; }
   .sched-toggle .long { display:none; }
   .sched-toggle .short { display:inline; }
   .sched-add .long { display:none; }
-  .sched-bar[data-bar="b"] .sched-title { font-size:24px; }
-  .sched-bar[data-bar="b"] .sb-arrow { font-size:22px; width:28px; min-width:28px; }
-  .sched-bar[data-bar="c"] .sb-tools > * { min-height:38px; }
-  .sched-bar[data-bar="c"] .sched-views { flex-basis:100%; }
+  .sched-bar[data-bar="b"] .sched-toggle, .sched-bar[data-bar="c"] .sched-toggle { padding:3px 9px; min-height:30px; }
 }
 
 /* the schedule fills the screen, so the page itself never scrolls */
@@ -764,6 +770,71 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .sdays .smark { padding:10px 12px; font-size:15px; }
 .sdays .smark .mdesc { display:block; margin-top:6px; font:400 13px/1.45 var(--poster-sans); color:var(--poster-text-soft); }
 .sdays-hint { flex-shrink:0; padding-top:8px; font:600 10px/1.3 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); text-align:center; }
+
+/* ================= Notebook page =================
+   One page per day. The date sits in the corner; flip back and forward through days.
+   Three looks, set by data-nb on .nb: lined (spiral notebook), dots (dot-grid journal), legal (legal pad). */
+body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
+.nb { max-width:900px; margin:0 auto; padding:4px max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left)); }
+.nb-bar { display:flex; align-items:center; gap:10px; margin:0 0 14px; flex-wrap:wrap; }
+.nb-bar h1 { margin:0 auto 0 0; font:800 clamp(30px,5vw,52px)/.9 var(--poster-display); text-transform:uppercase; }
+.nb-saved { font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.05em; color:var(--poster-text-soft); min-width:56px; text-align:right; }
+.nb-body { display:flex; flex-direction:column; min-height:0; padding:0 6px 6px 0; }
+.nb-page { --line:32px; --ink:#1d2433; --paper:#ffffff; --rule:#c8d9f2; --margin:#f08a8a; --head-pad:20px;
+  flex:1; min-height:0; position:relative; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); }
+.nb-head { flex-shrink:0; display:flex; align-items:baseline; justify-content:flex-end; gap:10px; padding:var(--head-pad) 22px 6px; }
+.nb-dow { font:700 15px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.08em; opacity:.6; }
+.nb-date { font:700 22px/1 var(--poster-display); text-transform:uppercase; }
+.nb-text { flex:1; min-height:0; width:100%; resize:none; border:0; outline:none; background-color:transparent; color:inherit;
+  padding:0 22px 22px; font:400 17px/var(--line) var(--poster-sans); background-attachment:local; }
+.nb-text:focus-visible { outline:none; }
+.nb-text::placeholder { color:inherit; opacity:.35; }
+.nb-page.flip-next { animation:nbNext .28s ease-out; }
+.nb-page.flip-prev { animation:nbPrev .28s ease-out; }
+@keyframes nbNext { from { opacity:.2; transform:translateX(24px) rotate(.6deg); } to { opacity:1; transform:none; } }
+@keyframes nbPrev { from { opacity:.2; transform:translateX(-24px) rotate(-.6deg); } to { opacity:1; transform:none; } }
+
+/* 1. Lined spiral notebook: ruled lines, red margin, punched holes, handwriting */
+.nb[data-nb="lined"] .nb-page { box-shadow:4px 4px 0 var(--poster-border); border:2px solid var(--poster-border); border-radius:4px 10px 10px 4px; padding-left:46px;
+  background-image:radial-gradient(circle at 20px 50%, var(--poster-bg) 8px, rgba(0,0,0,.25) 9px, transparent 10px);
+  background-size:40px 64px; background-repeat:repeat-y; background-position:0 20px; }
+.nb[data-nb="lined"] .nb-page::before { content:""; position:absolute; top:0; bottom:0; left:86px; width:2px; background:var(--margin); opacity:.8; }
+.nb[data-nb="lined"] .nb-head { justify-content:flex-end; padding-top:18px; border-bottom:2px solid var(--rule); margin:0 0 0 0; }
+.nb[data-nb="lined"] .nb-dow { font:700 22px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; opacity:.7; }
+.nb[data-nb="lined"] .nb-date { font:700 30px/1 "Caveat", cursive; text-transform:none; }
+.nb[data-nb="lined"] .nb-text { padding-left:56px; font:500 24px/var(--line) "Caveat", cursive;
+  background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
+
+/* 2. Dot-grid journal: poster frame, dots, big date block */
+.nb[data-nb="dots"] .nb-page { --line:28px; --paper:var(--poster-card-bg); --ink:var(--poster-text); border:3px solid var(--poster-border); box-shadow:5px 5px 0 var(--poster-border); }
+.nb[data-nb="dots"] .nb-head { justify-content:space-between; align-items:stretch; padding:0; border-bottom:3px solid var(--poster-border); }
+.nb[data-nb="dots"] .nb-dow { align-self:center; padding:0 16px; font-size:12px; opacity:.7; }
+.nb[data-nb="dots"] .nb-date { padding:12px 18px; background:var(--poster-ui-accent); color:var(--poster-on-accent); font-size:28px; border-left:3px solid var(--poster-border); }
+.nb[data-nb="dots"] .nb-text { padding:14px 22px 22px; font:400 16px/var(--line) var(--poster-sans);
+  background-image:radial-gradient(circle, color-mix(in srgb, var(--poster-text) 28%, transparent) 1.2px, transparent 1.6px); background-size:var(--line) var(--line); background-position:-14px 0; }
+
+/* 3. Legal pad: yellow paper, blue rules, double red margin, glued top strip */
+.nb[data-nb="legal"] .nb-page { --paper:#FFF4A3; --ink:#1f2a3a; --rule:#8fb3dc; --margin:#e0605a; box-shadow:0 2px 0 #e9dc86, 0 4px 0 #f5ea99, 4px 8px 0 var(--poster-border); border-top:22px solid #7b2f2a; }
+.nb[data-nb="legal"] .nb-page::before, .nb[data-nb="legal"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; width:1.5px; background:var(--margin); left:64px; }
+.nb[data-nb="legal"] .nb-page::after { left:69px; }
+.nb[data-nb="legal"] .nb-head { padding-top:14px; padding-bottom:10px; }
+.nb[data-nb="legal"] .nb-dow { font-size:12px; }
+.nb[data-nb="legal"] .nb-date { font:600 20px/1 var(--poster-mono); letter-spacing:-.02em; }
+.nb[data-nb="legal"] .nb-text { padding-left:84px; font:400 16px/var(--line) var(--poster-sans);
+  background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
+
+@media (max-width:520px) {
+  .nb-bar { gap:8px; }
+  .nb-bar h1 { font-size:28px; }
+  .nb-saved { display:none; }
+  .nb[data-nb="lined"] .nb-page { padding-left:30px; background-position:-8px 20px; }
+  .nb[data-nb="lined"] .nb-page::before { left:58px; }
+  .nb[data-nb="lined"] .nb-text { padding-left:40px; padding-right:12px; }
+  .nb[data-nb="legal"] .nb-page::before { left:36px; } .nb[data-nb="legal"] .nb-page::after { left:41px; }
+  .nb[data-nb="legal"] .nb-text { padding-left:52px; padding-right:12px; }
+  .nb-head { padding-left:12px; padding-right:12px; }
+}
+@media (prefers-reduced-motion:reduce) { .nb-page.flip-next, .nb-page.flip-prev { animation:none; } }
 </style>
 </head>
 <body>
@@ -827,6 +898,8 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
         <button type="button" class="sched-btn sb-today" id="schedToday">Today</button>
         <button type="button" class="sched-btn sb-arrow sb-next" id="schedNext" aria-label="Next">&rsaquo;</button>
         <span class="sb-break" aria-hidden="true"></span>
+        <span class="sb-space" aria-hidden="true"></span>
+        <span class="sb-space2" aria-hidden="true"></span>
         <button type="button" class="sched-toggle" id="schedToggle" role="switch" aria-checked="true"><span class="knob"></span><span class="long">Show assignments</span><span class="short">Homework</span></button>
         <button type="button" class="sched-btn sched-add" id="schedAdd">+<span class="long"> Add</span></button>
       </div>
@@ -835,7 +908,21 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   </div>
 </div>
 <div class="page" id="page-notebook" hidden>
-  <div class="page-soon"><h1>Notebook</h1><p>Coming soon</p></div>
+  <div class="nb" data-nb="lined">
+    <div class="nb-bar">
+      <h1>Notebook</h1>
+      <span class="nb-saved" id="nbSaved" aria-live="polite"></span>
+      <button type="button" class="sched-btn sb-arrow" id="nbPrev" aria-label="Previous page">&lsaquo;</button>
+      <button type="button" class="sched-btn" id="nbToday">Today</button>
+      <button type="button" class="sched-btn sb-arrow" id="nbNext" aria-label="Next page">&rsaquo;</button>
+    </div>
+    <div class="nb-body" id="nbBody">
+      <div class="nb-page" id="nbPage">
+        <div class="nb-head"><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
+        <textarea class="nb-text" id="nbText" placeholder="Start writing…" aria-label="Notes for this day"></textarea>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="eventModal">
@@ -1923,6 +2010,45 @@ document.getElementById("eventForm").addEventListener("submit", e => {
   sched.date = date;
   renderSchedule();
 });
+
+/* ---- Notebook: one page per day ---- */
+let nbPages = {};
+try { nbPages = JSON.parse(localStorage.getItem("notebookPages") || "{}"); } catch(e) { nbPages = {}; }
+let nbDay = getTodayStr(), nbTimer = null;
+const nbText = document.getElementById("nbText");
+function fitNotebook() {
+  const body = document.getElementById("nbBody");
+  if (document.getElementById("page-notebook").hidden) return;
+  const top = body.getBoundingClientRect().top + window.scrollY;
+  body.style.height = Math.max(320, window.innerHeight - top - 12) + "px";
+}
+function showNbPage(dir) {
+  const d = sParse(nbDay);
+  document.getElementById("nbDow").textContent = (nbDay === getTodayStr() ? "Today · " : "") + d.toLocaleDateString("en-US", { weekday: "long" });
+  document.getElementById("nbDate").textContent = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  nbText.value = (nbPages[nbDay] && nbPages[nbDay].text) || "";
+  document.getElementById("nbToday").disabled = nbDay === getTodayStr();
+  document.getElementById("nbSaved").textContent = nbText.value ? "Saved" : "";
+  const page = document.getElementById("nbPage");
+  page.classList.remove("flip-next", "flip-prev");
+  if (dir) { void page.offsetWidth; page.classList.add(dir > 0 ? "flip-next" : "flip-prev"); }
+  fitNotebook();
+}
+function saveNbPage() {
+  clearTimeout(nbTimer);
+  const text = nbText.value;
+  if (text.trim()) nbPages[nbDay] = { text, t: Date.now() }; else delete nbPages[nbDay];
+  try { localStorage.setItem("notebookPages", JSON.stringify(nbPages)); } catch(e) {}
+  document.getElementById("nbSaved").textContent = text ? "Saved" : "";
+}
+nbText.addEventListener("input", () => { document.getElementById("nbSaved").textContent = "Saving…"; clearTimeout(nbTimer); nbTimer = setTimeout(saveNbPage, 400); });
+function flipNb(n) { saveNbPage(); nbDay = sAdd(nbDay, n); showNbPage(n); }
+document.getElementById("nbPrev").onclick = () => flipNb(-1);
+document.getElementById("nbNext").onclick = () => flipNb(1);
+document.getElementById("nbToday").onclick = () => { const dir = getTodayStr() > nbDay ? 1 : -1; saveNbPage(); nbDay = getTodayStr(); showNbPage(dir); };
+window.addEventListener("resize", fitNotebook);
+window.addEventListener("hashchange", () => { if (location.hash === "#notebook") showNbPage(0); else saveNbPage(); });
+showNbPage(0);
 
 // Keep the calendar in step with the Homework page (checking things off, syncing, new syllabi)
 const renderHomework = render;
