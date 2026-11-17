@@ -836,6 +836,34 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .desk-sticky textarea { font-size:16px; padding:3px 7px 6px; }
   .nb-close .long { display:none; }
 }
+/* ---- desk layouts (data-desk on .desk) ----
+   scatter: things lie where you drop them, a little crooked (default above)
+   grid:    tidy rows like a shelf; notebooks first, sticky notes in their own row
+   mat:     a dark cutting mat; notebooks have page edges and soft real shadows */
+.desk[data-desk="grid"] .desk-area { display:flex; flex-direction:column; gap:22px; overflow-y:auto; touch-action:auto; padding:6px 8px 20px 4px; }
+.desk-shelf { display:flex; flex-wrap:wrap; gap:22px 20px; align-items:flex-end; }
+.desk-shelf:not(:has(.desk-item)) { display:none; }
+.desk-shelf-label { width:100%; font:600 11px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.08em; color:var(--poster-text-soft); padding-bottom:8px; border-bottom:2px solid var(--poster-border); margin-bottom:2px; }
+.desk[data-desk="grid"] .desk-item { position:relative; transform:none !important; cursor:pointer; }
+.desk[data-desk="grid"] .desk-sticky { box-shadow:3px 3px 0 var(--poster-border); border:2px solid var(--poster-border); }
+.desk[data-desk="grid"] .desk-sticky .ds-grip { cursor:default; }
+.desk[data-desk="grid"] .desk-nb:hover { translate:0 -4px; }
+.desk[data-desk="mat"] .desk-area { border-radius:14px; border:2px solid #0b0d0b;
+  background:
+    linear-gradient(#ffffff10 1px, transparent 1px) 0 0/24px 24px,
+    linear-gradient(90deg, #ffffff10 1px, transparent 1px) 0 0/24px 24px,
+    linear-gradient(#ffffff22 1px, transparent 1px) 0 0/120px 120px,
+    linear-gradient(90deg, #ffffff22 1px, transparent 1px) 0 0/120px 120px,
+    #1d2421;
+  box-shadow:inset 0 0 0 10px #161b19, inset 0 0 40px #0008; }
+.desk[data-desk="mat"] .desk-nb { border:0; box-shadow:1px 1px 0 #ddd, 2px 2px 0 #bbb, 3px 3px 0 #ddd, 4px 4px 0 #aaa, 5px 5px 0 #ccc, 10px 16px 22px #000a; }
+.desk[data-desk="mat"] .desk-nb[data-type="legal"] { box-shadow:1px 1px 0 #f3e78f, 2px 2px 0 #d9cc70, 3px 3px 0 #f3e78f, 4px 4px 0 #cfc068, 10px 16px 22px #000a; }
+.desk[data-desk="mat"] .desk-nb[data-type="eng"] { box-shadow:1px 1px 0 #dbe9d2, 2px 2px 0 #b9cdb0, 3px 3px 0 #dbe9d2, 4px 4px 0 #b0c4a6, 10px 16px 22px #000a; }
+.desk[data-desk="mat"] .desk-nb[data-type="comp"] { box-shadow:2px 2px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 #111, 10px 16px 22px #000a; }
+.desk[data-desk="mat"] .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
+.desk[data-desk="mat"] .desk-sticky::after { content:""; position:absolute; right:0; bottom:0; width:18px; height:18px; background:linear-gradient(135deg, var(--sc) 50%, #00000030 50%, #0000 70%); }
+.desk[data-desk="mat"] .desk-empty { color:#ffffff90; }
+
 /* new-notebook form: pick a type */
 .nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
 .nb-types button { display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 4px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 11px/1.2 var(--poster-sans); }
@@ -1073,7 +1101,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   </div>
 </div>
 <div class="page" id="page-notebook" hidden>
-  <div class="desk" id="desk">
+  <div class="desk" id="desk" data-desk="scatter">
     <div class="desk-bar">
       <h1>Notebooks</h1>
       <button type="button" class="sched-btn" id="deskAddSticky">+<span class="long"> Sticky</span></button>
@@ -2718,6 +2746,7 @@ function fitDesk() {
 }
 // positions are kept as fractions of the free space, so the layout survives phone <-> laptop
 function placeDeskItems() {
+  if (desk.dataset.desk === "grid") return;
   const W = deskArea.clientWidth, H = deskArea.clientHeight;
   deskArea.querySelectorAll(".desk-item").forEach(el => {
     const item = el._item, w = el.offsetWidth, hgt = el.offsetHeight;
@@ -2725,12 +2754,20 @@ function placeDeskItems() {
     el.style.transform = `translate(${x}px, ${y}px) rotate(${item.r || 0}deg)`;
   });
 }
+function setDeskStyle(s) {
+  desk.dataset.desk = ["scatter", "grid", "mat"].includes(s) ? s : "scatter";
+  try { localStorage.setItem("deskStyle", desk.dataset.desk); } catch(e) {}
+  renderDesk();
+}
 function pageCount(id) { return Object.keys(nbAllPages[id] || {}).length; }
 function renderDesk() {
   // notebooks and stickies share one stacking order: last touched is on top
   const items = [...notebooks.map(n => ({ kind: "nb", item: n })), ...stickies.map(s => ({ kind: "sticky", item: s }))]
     .sort((a, b) => (a.item.z || 0) - (b.item.z || 0));
-  deskArea.innerHTML = items.length ? "" : `<div class="desk-empty">Your desk is empty.<br>Add a notebook or a sticky note.</div>`;
+  const grid = desk.dataset.desk === "grid";
+  deskArea.innerHTML = items.length ? (grid ? `<div class="desk-shelf" data-k="nb"><div class="desk-shelf-label">Notebooks</div></div><div class="desk-shelf" data-k="sticky"><div class="desk-shelf-label">Sticky notes</div></div>` : "")
+    : `<div class="desk-empty">Your desk is empty.<br>Add a notebook or a sticky note.</div>`;
+  if (grid) items.sort((a, b) => (a.item.id > b.item.id ? 1 : -1));
   items.forEach(({ kind, item }) => {
     let el;
     if (kind === "nb") {
@@ -2759,8 +2796,10 @@ function renderDesk() {
       };
     }
     el._item = item; el._kind = kind;
-    deskArea.appendChild(el);
-    makeDraggable(el);
+    if (grid) {
+      deskArea.querySelector(`.desk-shelf[data-k="${kind}"]`).appendChild(el);
+      if (kind === "nb") el.onclick = () => openNotebook(item.id);
+    } else { deskArea.appendChild(el); makeDraggable(el); }
   });
   placeDeskItems();
 }
@@ -2879,6 +2918,7 @@ document.getElementById("nbDelete").onclick = e => {
 };
 
 // Start where you left off: the notebook you had open, or the desk
+try { desk.dataset.desk = localStorage.getItem("deskStyle") || "scatter"; } catch(e) {}
 { let last = null; try { last = localStorage.getItem("openNotebook"); } catch(e) {}
   if (last && notebooks.some(n => n.id === last)) openNotebook(last); else { nbEl.hidden = true; renderDesk(); } }
 
