@@ -2965,7 +2965,7 @@ function toggleMark(id) {
   renderSchedule();
 }
 document.getElementById("schedBody").addEventListener("click", e => {
-  const btn = e.target.closest(".sdrop .action-btn");
+  const btn = e.target.closest(".sdrop .action-btn[data-action]");   // homework buttons only (events have their own below)
   if (btn) {
     e.stopPropagation();
     const id = btn.dataset.id, action = btn.dataset.action;
@@ -3043,7 +3043,8 @@ document.getElementById("eventForm").addEventListener("submit", e => {
   if (!title || !date) { err.textContent = !title ? "Give it a name first." : "Pick a date."; err.hidden = false; return; }
   const data = { title, date, time: document.getElementById("evTime").value, notes: document.getElementById("evNotes").value.trim(), color: evColor };
   if (editingEventId) { const ev = myEvents.find(x => x.id === editingEventId); if (ev) Object.assign(ev, data); }
-  else { const id = "ev-" + Date.now(); myEvents.push({ id, ...data }); openMarkId = null; }
+  else { const id = "ev-" + Date.now(); myEvents.push({ id, ...data }); }
+  openMarkId = confirmDeleteId = null;
   saveEvents();
   closeEventModal();
   sched.date = date;
