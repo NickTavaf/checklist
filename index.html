@@ -488,27 +488,37 @@ canvas#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-even
 
 /* ---- site nav (Homework / Schedule / Notebook) ---- */
 .site-nav {
-  display:flex; gap:10px; background:var(--poster-bg);
-  padding:calc(14px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 14px max(16px,env(safe-area-inset-left));
+  display:flex; gap:14px; background:var(--poster-bg);
+  padding:calc(20px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 22px max(16px,env(safe-area-inset-left));
 }
-@media (min-width:900px) { .site-nav { padding-left:max(32px,calc((100% - 1176px)/2)); padding-right:max(32px,calc((100% - 1176px)/2)); gap:14px; } }
+/* Sticker buttons: each its own pastel, tilted a little; the current page straightens and takes the header color */
 .nav-link {
   flex:1 1 0; min-width:0; min-height:48px; display:flex; align-items:center; justify-content:center;
-  padding:10px 8px; border:3px solid var(--poster-border); border-radius:var(--poster-radius);
-  background:var(--poster-card-bg); color:var(--poster-text); text-decoration:none;
-  box-shadow:4px 4px 0 var(--poster-border); transition:transform .12s, box-shadow .12s;
-  font:500 20px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.02em;
+  padding:10px 8px; border:3px solid var(--poster-border); border-radius:6px;
+  color:#171914; text-decoration:none; box-shadow:5px 5px 0 var(--poster-border);
+  transition:transform .12s, box-shadow .12s;
+  font:800 21px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.02em;
 }
-.nav-link:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--poster-border); }
-.nav-link:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--poster-border); }
-.nav-link[aria-current="page"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+.nav-link[data-page="homework"] { background:#FFD8E4; transform:rotate(-2.5deg); }
+.nav-link[data-page="schedule"] { background:#C8F0D4; transform:rotate(1.8deg); }
+.nav-link[data-page="notebook"] { background:#FFE9A8; transform:rotate(-1.4deg); }
+.nav-link:hover { transform:rotate(0) translate(-1px,-2px); box-shadow:6px 7px 0 var(--poster-border); }
+.nav-link:active { transform:rotate(0) translate(3px,3px); box-shadow:1px 1px 0 var(--poster-border); }
+.nav-link[aria-current="page"] { transform:rotate(0) scale(1.04); background:var(--poster-ui-accent); color:var(--poster-on-accent); }
 .nav-link:focus-visible { outline:3px solid var(--poster-ui-accent); outline-offset:4px; }
+@media (min-width:900px) {
+  .site-nav { padding-left:max(32px,calc((100% - 1176px)/2)); padding-right:max(32px,calc((100% - 1176px)/2)); }
+  .nav-link { font-size:26px; }
+  .nav-link[data-page="homework"] { transform:rotate(-1deg); }
+  .nav-link[data-page="schedule"] { transform:rotate(.8deg); }
+  .nav-link[data-page="notebook"] { transform:rotate(-.6deg); }
+  .nav-link[aria-current="page"] { transform:rotate(0) scale(1.02); }
+}
 @media (prefers-reduced-motion:reduce) { .nav-link { transition:none; } }
 .site-nav ~ .page .topbar { padding-top:24px; }
 .page-soon { max-width:1176px; margin:0 auto; padding:64px max(20px,env(safe-area-inset-left)) 64px max(20px,env(safe-area-inset-right)); }
 .page-soon h1 { margin:0 0 12px; font:800 clamp(48px,10vw,96px)/.9 var(--poster-display); text-transform:uppercase; }
 .page-soon p { margin:0; color:var(--poster-text-soft); font:500 12px/1.5 var(--poster-mono); text-transform:uppercase; }
-@media (min-width:900px) { .nav-link { font-size:24px; } }
 </style>
 </head>
 <body>
