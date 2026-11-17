@@ -2163,6 +2163,9 @@ function nbPeel(front, corner, reverse, done) {
     // soft shadow the flap casts on the revealed page, strongest mid-turn
     strip(cast, M, angN, Math.max(10, Math.min(60, reach * .5) * lift + 10),
       `linear-gradient(to right, rgba(0,0,0,${.32 * lift}), rgba(0,0,0,0))`);
+    // the flap fades out over the end of the turn (fades in at the start when going back)
+    const fade = Math.min(1, (reverse ? t : 1 - t) / 0.35);
+    flap.style.opacity = castWrap.style.opacity = (fade * fade * (3 - 2 * fade)).toFixed(3);
     if (t < 1) requestAnimationFrame(frame);
     else { flap.remove(); castWrap.remove(); done && done(); }
   }
