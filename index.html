@@ -592,21 +592,15 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .smark .mt { flex:1; min-width:0; overflow-wrap:break-word; }
 .smark .mtime { display:block; margin-top:2px; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
 .smark .mdesc { display:none; }
-/* Finished assignments (done AND turned in). Three looks, set by data-done on #page-schedule */
-/* 1. strike: crossed out and faded, with a check at the end */
-#page-schedule[data-done="strike"] .smark.is-done .mt { text-decoration:line-through; text-decoration-thickness:2px; opacity:.55; }
-#page-schedule[data-done="strike"] .smark.is-done::after { content:"✓"; display:block; flex-shrink:0; font:800 14px/1.1 var(--poster-sans); color:var(--mc); }
-#page-schedule[data-done="strike"] .smark.is-done { border-color:color-mix(in srgb, var(--poster-border) 35%, transparent); border-left-color:var(--mc); }
-/* 2. check: every marker has a round checkbox; finished ones are filled in with a check */
-#page-schedule[data-done="check"] .smark::before { content:""; flex-shrink:0; width:14px; height:14px; margin-top:1px; border-radius:50%; border:2px solid var(--mc); box-sizing:border-box; display:grid; place-items:center; font:900 9px/1 var(--poster-sans); color:#fff; }
-#page-schedule[data-done="check"] .smark.is-done::before { content:"✓"; background:var(--mc); }
-#page-schedule[data-done="check"] .smark.is-done { background:color-mix(in srgb, var(--mc) 16%, var(--poster-card-bg)); }
-#page-schedule[data-done="check"] .smark.is-done .mt { color:var(--poster-text-soft); }
-/* 3. stamp: a green DONE stamp, with a dashed, faded marker */
-#page-schedule[data-done="stamp"] .smark.is-done { position:relative; border-style:dashed; border-left-style:solid; background:transparent; }
-#page-schedule[data-done="stamp"] .smark.is-done .mt { opacity:.6; }
-#page-schedule[data-done="stamp"] .smarks { padding:7px 5px 0 0; }
-#page-schedule[data-done="stamp"] .smark.is-done::after { content:"Done"; display:block; position:absolute; top:-7px; right:-5px; padding:2px 5px; border:2px solid var(--poster-done); color:var(--poster-done); background:var(--poster-done-bg); font:700 9.5px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.06em; transform:rotate(-6deg); }
+/* Finished assignments (done AND turned in): every marker has a round checkbox,
+   finished ones are filled in with a check and tinted with the class color */
+.smark::before { content:""; flex-shrink:0; width:14px; height:14px; margin-top:1px; border-radius:50%; border:2px solid var(--mc); box-sizing:border-box; display:grid; place-items:center; font:900 9px/1 var(--poster-sans); color:#fff; }
+.smark.is-done::before { content:"✓"; background:var(--mc); }
+.smark.is-done { background:color-mix(in srgb, var(--mc) 16%, var(--poster-card-bg)); }
+.smark.is-done .mt { color:var(--poster-text-soft); }
+.smark[data-id] { cursor:pointer; }
+.smark[data-id]:hover { filter:brightness(.96); }
+.smark[data-id]:focus-visible { outline:3px solid var(--poster-ui-accent); outline-offset:1px; }
 .sdots { display:none; flex-wrap:wrap; gap:3px; }
 .sdot { width:8px; height:8px; border-radius:50%; background:var(--mc); border:1.5px solid var(--poster-border); }
 .smore { flex-shrink:0; font:600 10px/1.2 var(--poster-mono); text-transform:uppercase; opacity:.8; }
@@ -626,9 +620,8 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .sweek .smark { padding:2px 1px 2px 4px; border:0; border-left:3px solid var(--mc); background:transparent; color:inherit; font-size:9px; line-height:1.2; }
   .sweek .smark .mtime { display:none; }
   .sweek .smark .mt { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:normal; word-break:normal; }
-  #page-schedule .sweek .smark.is-done::after, #page-schedule .sweek .smark::before { display:none; }
-  #page-schedule[data-done="check"] .sweek .smark.is-done { background:color-mix(in srgb, var(--mc) 22%, transparent); }
-  #page-schedule[data-done="stamp"] .sweek .smark.is-done { border-left-style:dashed; }
+  .sweek .smark::before { display:none; }
+  .sweek .smark.is-done { background:color-mix(in srgb, var(--mc) 22%, transparent); }
 }
 
 /* month: the whole month fits; rows share the height */
@@ -641,7 +634,7 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .smonth .sday-num { font-size:19px; }
 .smonth .smark { padding:4px 7px; font-size:13px; line-height:1.2; border-left-width:5px; }
 .smonth .smark .mt { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:normal; }
-.smonth .smark .mtime, .smonth .smark.is-done::after { display:none; }
+.smonth .smark .mtime { display:none; }
 .smonth .smark.one-line .mt { -webkit-line-clamp:1; }
 @media (max-width:699px) {
   .smonth .sday { padding:4px; gap:4px; border-width:2px; }
@@ -649,12 +642,24 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
   .smonth .smore { display:none; }
   .smonth .smarks { gap:3px; }
   .smonth .smark { padding:0; height:7px; border:0; background:var(--mc); }
-  #page-schedule .smonth .smark::before, #page-schedule .smonth .smark::after { display:none; }
-  #page-schedule[data-done="strike"] .smonth .smark.is-done { opacity:.3; }
-  #page-schedule[data-done="check"] .smonth .smark.is-done { background:transparent; box-shadow:inset 0 0 0 2px var(--mc); }
-  #page-schedule[data-done="stamp"] .smonth .smark.is-done { background:repeating-linear-gradient(-45deg, var(--mc) 0 3px, transparent 3px 6px); }
+  .smonth .smark::before { display:none; }
+  .smonth .smark.is-done { background:transparent; box-shadow:inset 0 0 0 2px var(--mc); }
   .smonth .smark .mt { display:none; }
   .smonth-dows span { font-size:9px; padding-left:2px; }
+}
+
+/* assignment popover: tap a marker to see it and mark it done / turned in */
+.spop { position:fixed; z-index:1200; width:min(340px, calc(100vw - 32px)); padding:16px; background:var(--poster-card-bg); color:var(--poster-text); border:3px solid var(--poster-border); box-shadow:6px 6px 0 var(--poster-border); display:flex; flex-direction:column; gap:10px; }
+.spop-top { display:flex; align-items:flex-start; gap:10px; }
+.spop-class { display:inline-flex; align-items:center; gap:6px; font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; }
+.spop-class::before { content:""; width:10px; height:10px; background:var(--mc); border:1.5px solid var(--poster-border); }
+.spop-x { margin-left:auto; flex-shrink:0; width:32px; height:32px; border:2px solid var(--poster-border); background:transparent; color:inherit; font:700 16px/1 var(--poster-sans); }
+.spop h3 { margin:0; font:700 26px/1 var(--poster-display); text-transform:uppercase; text-wrap:balance; }
+.spop-when { font:600 11px/1.3 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
+.spop-desc { margin:0; font:400 13.5px/1.5 var(--poster-sans); color:var(--poster-text-soft); max-height:30vh; overflow:auto; }
+.spop-actions { display:flex; gap:8px; flex-wrap:wrap; }
+@media (max-width:699px) {
+  .spop { left:0 !important; right:0; top:auto !important; bottom:0; width:auto; border-width:3px 0 0; box-shadow:0 -6px 0 var(--poster-border); padding:18px max(16px,env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
 }
 
 /* day: one box per day filling the space; scroll inside it to reach the next day */
@@ -723,7 +728,7 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 </div>
 </div>
 
-<div class="page" id="page-schedule" data-done="strike" hidden>
+<div class="page" id="page-schedule" hidden>
   <div class="sched">
     <div class="sched-bar">
       <h1 class="sched-title" id="schedTitle">Schedule</h1>
@@ -1485,7 +1490,7 @@ function schedItemsByDate() {
 }
 
 function markHTML(it, withDesc) {
-  return `<div class="smark${it.done ? " is-done" : ""}" style="--mc:${it.color}" title="${sEsc(it.cls)}: ${sEsc(it.title)}">
+  return `<div class="smark${it.done ? " is-done" : ""}" style="--mc:${it.color}" data-id="${sEsc(it.id)}" role="button" tabindex="0" aria-label="${sEsc(it.title)}${it.done ? ", finished" : ""}">
     <span class="mt">${sEsc(it.title)}<span class="mtime">${sEsc(it.cls)}${it.time ? " · " + sEsc(it.time) : ""}</span>${withDesc && it.desc ? `<span class="mdesc">${sEsc(it.desc)}</span>` : ""}</span>
   </div>`;
 }
@@ -1554,7 +1559,7 @@ function renderSchedule() {
       ? `${a.toLocaleDateString("en-US",{month:"short"})} ${a.getDate()} – ${b.getDate()}`
       : `${a.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
     root.innerHTML = `<div class="sweek">${days.map(k => dayBoxHTML(k, items[k], {})).join("")}</div>`;
-    root.querySelectorAll(".sweek .sday").forEach(el => el.onclick = () => openDay(el.dataset.date));
+    root.querySelectorAll(".sweek .sday").forEach(el => el.onclick = e => { if (!e.target.closest(".smark")) openDay(el.dataset.date); });
   } else if (sched.view === "month") {
     const m = sParse(sched.date); m.setDate(1);
     title.textContent = m.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -1564,7 +1569,7 @@ function renderSchedule() {
     for (let k = first; ; k = sAdd(k, 1)) { cells.push(k); if (cells.length % 7 === 0 && sParse(k) >= last) break; }
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
       <div class="smonth" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
-    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = () => openDay(el.dataset.date));
+    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = e => { if (!e.target.closest(".smark") || window.innerWidth < 700) openDay(el.dataset.date); });
     // Show as many markers as fit in each box, then "+N more"
     root.querySelectorAll(".smonth .smarks").forEach(box => {
       const chips = [...box.children], more = box.parentElement.querySelector(".smore");
@@ -1621,9 +1626,70 @@ document.getElementById("schedNext").onclick = () => schedStep(1);
 document.getElementById("schedToday").onclick = () => { sched.date = getTodayStr(); renderSchedule(); };
 document.getElementById("schedToggle").onclick = () => { sched.showAssignments = !sched.showAssignments; saveSchedPrefs(); renderSchedule(); };
 
+// Tap an assignment on the calendar to open it, with the same buttons as Homework
+const schedPop = document.createElement("div");
+schedPop.className = "spop"; schedPop.hidden = true; schedPop.setAttribute("role", "dialog");
+document.body.appendChild(schedPop);
+let popId = null, popAnchor = null;
+
+function renderPop() {
+  const a = popId && getAllAssignments().find(x => x.id === popId);
+  if (!a) { closePop(); return; }
+  const s = state[a.id] || {};
+  const when = sParse(a.date).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  schedPop.style.setProperty("--mc", getClassColor(a.class));
+  schedPop.setAttribute("aria-label", a.title);
+  schedPop.innerHTML = `
+    <div class="spop-top"><span class="spop-class">${sEsc(a.class)}</span><button type="button" class="spop-x" aria-label="Close">✕</button></div>
+    <h3>${sEsc(a.title)}</h3>
+    <div class="spop-when">Due ${when}${a.time ? " · " + sEsc(a.time) : ""}</div>
+    ${a.desc ? `<p class="spop-desc">${sEsc(a.desc)}</p>` : ""}
+    <div class="spop-actions">
+      <button type="button" class="action-btn complete ${s.complete ? "on" : ""}" data-action="complete">${s.complete ? "Marked Complete" : "Mark Complete"}</button>
+      <button type="button" class="action-btn turned ${s.turned ? "on" : ""}" data-action="turned">${s.turned ? "Marked Turned In" : "Mark Turned In"}</button>
+    </div>`;
+  schedPop.querySelector(".spop-x").onclick = closePop;
+  schedPop.querySelectorAll(".action-btn").forEach(btn => btn.onclick = e => {
+    e.stopPropagation();
+    const action = btn.dataset.action;
+    if (!state[a.id]) state[a.id] = {};
+    const turningOn = !state[a.id][action];
+    state[a.id][action] = turningOn;
+    state[a.id].t = Date.now();
+    saveState(); scheduleSync();
+    if (turningOn && (isFinished(a) || action === "turned")) launchConfetti();
+    render();
+  });
+}
+function placePop() {
+  if (schedPop.hidden || !popAnchor || window.innerWidth < 700) return;
+  const anchor = document.querySelector(`#schedBody .smark[data-id="${CSS.escape(popId)}"]`) || popAnchor;
+  const r = anchor.getBoundingClientRect(), w = schedPop.offsetWidth, ph = schedPop.offsetHeight;
+  let left = Math.min(Math.max(16, r.left), window.innerWidth - w - 16);
+  let top = r.bottom + 8;
+  if (top + ph > window.innerHeight - 16) top = Math.max(16, r.top - ph - 8);
+  schedPop.style.left = left + "px"; schedPop.style.top = top + "px";
+}
+function openPop(id, anchor) { popId = id; popAnchor = anchor; schedPop.hidden = false; renderPop(); placePop(); schedPop.querySelector(".action-btn").focus({ preventScroll: true }); }
+function closePop() { schedPop.hidden = true; popId = null; popAnchor = null; }
+
+document.getElementById("schedBody").addEventListener("click", e => {
+  const m = e.target.closest(".smark[data-id]");
+  if (!m || (window.innerWidth < 700 && m.closest(".smonth"))) return;
+  e.stopPropagation(); openPop(m.dataset.id, m);
+});
+document.getElementById("schedBody").addEventListener("keydown", e => {
+  const m = e.target.closest(".smark[data-id]");
+  if (m && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openPop(m.dataset.id, m); }
+});
+document.addEventListener("click", e => { if (!schedPop.hidden && !schedPop.contains(e.target) && !e.target.closest(".smark[data-id]")) closePop(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !schedPop.hidden) closePop(); });
+window.addEventListener("resize", placePop);
+window.addEventListener("hashchange", closePop);
+
 // Keep the calendar in step with the Homework page (checking things off, syncing, new syllabi)
 const renderHomework = render;
-render = function() { renderHomework(); renderSchedule(); };
+render = function() { renderHomework(); renderSchedule(); if (!schedPop.hidden) { renderPop(); placePop(); } };
 renderSchedule();
 
 // Boxes can only be scrolled to "today" once the page is visible
