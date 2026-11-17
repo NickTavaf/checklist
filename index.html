@@ -16,7 +16,7 @@
 <script>
 // Apply the saved header colour immediately so reloads don't flash the default blue.
 try {
-  var v = JSON.parse(localStorage.getItem("posterPaletteVars") || "null");
+  var v = JSON.parse((location.hash === "#schedule" && localStorage.getItem("posterPaletteVarsSchedule")) || localStorage.getItem("posterPaletteVars") || "null");
   if (v && v.length === 4) {
     var r = document.documentElement.style;
     r.setProperty("--poster-header-day", v[0]);
@@ -808,6 +808,46 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb-swatch.eng { background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/6px 6px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/6px 6px, #EAF4E2; border-top:7px solid #EAF4E2; box-shadow:inset 0 1px 0 #6a9a5a; }
 
 .nb-body { position:relative; min-height:0; padding:0 8px 8px 0; perspective:1800px; }
+/* dictation button. Where it sits (data-mic-pos on .nb): "corner" floats on the page's bottom-right,
+   "bar" sits in the top bar, "side" is a tab sticking out of the page's right edge.
+   How it looks (data-mic-icon): "classic" round outline, "sticker" tilted colored sticker, "studio" retro mic in a box.
+   While listening it turns red, pulses, and says Stop. */
+.nb-mic { position:absolute; z-index:9; display:flex; align-items:center; justify-content:center; gap:6px; padding:0 14px;
+  border:2.5px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); box-shadow:3px 3px 0 var(--poster-border); cursor:pointer; }
+.nb-mic-icon { display:flex; }
+.nb-mic svg { width:24px; height:24px; fill:currentColor; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.nb-mic svg .o { fill:none; }
+/* place */
+.nb[data-mic-pos="corner"] .nb-mic { right:22px; bottom:24px; height:52px; min-width:52px; border-radius:28px; }
+.nb[data-mic-pos="bar"] .nb-mic { position:relative; height:36px; min-width:40px; padding:0 9px; border-width:2px; box-shadow:none; border-radius:0; }
+.nb[data-mic-pos="bar"] .nb-mic svg { width:20px; height:20px; }
+.nb[data-mic-pos="side"] .nb-mic { right:-6px; top:50%; transform:translateY(-50%); width:38px; min-height:72px; padding:10px 0; flex-direction:column; border-radius:0 14px 14px 0; border-left:0; }
+.nb[data-mic-pos="side"] .nb-mic-label { writing-mode:vertical-rl; font-size:12px !important; }
+.nb.nb[data-mic-pos="side"] .nb-page { right:30px; }
+.nb[data-mic-pos="side"] .nb-mic svg { width:22px; height:22px; }
+.nb-bar .sched-btn { white-space:nowrap; }
+@media (max-width:520px) { .nb[data-mic-pos="bar"] .nb-bar { gap:6px; } .nb[data-mic-pos="bar"] .nb-mic { min-width:36px; padding:0 6px; } }
+.nb[data-mic-pos="side"] .nb-mic:active { transform:translate(2px, calc(-50% + 2px)); }
+/* look */
+.nb[data-mic-icon="sticker"] .nb-mic { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+.nb[data-mic-icon="sticker"][data-mic-pos="corner"] .nb-mic { border-radius:16px; transform:rotate(-4deg); min-width:62px; height:56px; }
+.nb[data-mic-icon="sticker"][data-mic-pos="corner"] .nb-mic:active { transform:rotate(-4deg) translate(2px,2px); }
+.nb[data-mic-icon="sticker"] .nb-mic svg { width:27px; height:27px; }
+.nb[data-mic-icon="studio"] .nb-mic { border-radius:6px; }
+.nb[data-mic-icon="studio"][data-mic-pos="corner"] .nb-mic { width:56px; height:56px; }
+.nb[data-mic-icon="studio"] .nb-mic svg { width:28px; height:28px; stroke-width:1.6; }
+.nb[data-mic-icon="studio"][data-mic-pos="side"] .nb-mic { border-radius:0 8px 8px 0; }
+.nb-mic-label { display:none; font:700 15px/1 var(--poster-display); text-transform:uppercase; letter-spacing:.04em; }
+.nb-mic:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--poster-border); }
+.nb .nb-mic[aria-pressed="true"] { background:#E5251B; color:#fff; }
+.nb-mic[aria-pressed="true"] .nb-mic-label { display:inline; }
+.nb-mic[aria-pressed="true"]::before { content:""; position:absolute; inset:-3px; border-radius:30px; border:3px solid #E5251B; animation:micPulse 1.4s ease-out infinite; pointer-events:none; }
+@keyframes micPulse { from { transform:scale(1); opacity:.7; } to { transform:scale(1.35); opacity:0; } }
+@media (prefers-reduced-motion:reduce) { .nb-mic[aria-pressed="true"]::before { animation:none; opacity:.5; } }
+.nb[data-mic-pos="bar"] .nb-mic-note { top:10px; bottom:auto; }
+.nb[data-mic-pos="side"] .nb-mic-note { bottom:24px; right:60px; }
+.nb-mic-note { position:absolute; z-index:9; right:22px; bottom:86px; max-width:min(300px, calc(100% - 44px)); padding:8px 10px; background:var(--poster-text); color:var(--poster-bg); font:500 13px/1.35 var(--poster-sans); }
+.nb-mic-note[hidden] { display:none; }
 .nb-page { --line:32px; --ink:#1d2433; --paper:#ffffff; --rule:#c8d9f2; --margin:#f08a8a;
   position:absolute; inset:0 8px 8px 0; display:flex; flex-direction:column; background:var(--paper); color:var(--ink); }
 .nb-head { flex-shrink:0; display:flex; align-items:baseline; justify-content:flex-end; gap:10px; padding:18px 22px 6px; }
@@ -923,7 +963,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
     <div class="customize-panel" id="customizePanel">
       <div class="customize-title">Customize</div>
 
-      <div class="customize-section-label">Header Color</div>
+      <div class="customize-section-label" id="paletteLabel">Header Color</div>
       <div class="palette-swatches" id="paletteSwatches"></div>
       <div class="color-picker" id="colorPicker" hidden></div>
 
@@ -997,6 +1037,10 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         <div class="nb-head"><span class="nb-label" id="nbLabel"></span><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
         <textarea class="nb-text" id="nbText" placeholder="Start writing…" aria-label="Notes for this day"></textarea>
       </div>
+      <button type="button" class="nb-mic" id="nbMic" aria-label="Dictate" aria-pressed="false">
+        <span class="nb-mic-icon" aria-hidden="true"></span><span class="nb-mic-label">Stop</span>
+      </button>
+      <div class="nb-mic-note" id="nbMicNote" role="status" hidden></div>
     </div>
   </div>
 </div>
@@ -1393,7 +1437,7 @@ function customPalette(id) {
   return { id, label: "Your color", light, lightInk: inkFor(light), dark, darkInk: inkFor(dark) };
 }
 
-function applyPalette(id) {
+function applyPalette(id, page) {
   const opt = customPalette(id) || PALETTE_OPTIONS.find(p => p.id === id) || PALETTE_OPTIONS[0];
   const root = document.documentElement.style;
   root.setProperty("--poster-header-day", opt.light);
@@ -1402,11 +1446,31 @@ function applyPalette(id) {
   root.setProperty("--poster-header-night-ink", opt.darkInk);
   document.documentElement.dataset.palette = id;
   // Saved so the <head> script can paint the right header before anything loads
-  try { localStorage.setItem("posterPaletteVars", JSON.stringify([opt.light, opt.lightInk, opt.dark, opt.darkInk])); } catch(e) {}
+  try { localStorage.setItem(page === "schedule" ? "posterPaletteVarsSchedule" : "posterPaletteVars", JSON.stringify([opt.light, opt.lightInk, opt.dark, opt.darkInk])); } catch(e) {}
 }
 
 let currentPaletteId = getSavedPaletteId();
-applyPalette(currentPaletteId);
+// The Schedule page can have its own header color (null = same as Homework). Kept on this device only.
+let schedPaletteId = null;
+try { schedPaletteId = localStorage.getItem("schedulePalette"); } catch(e) {}
+const onSchedulePage = () => (location.hash || "").slice(1) === "schedule";
+// Which page the Customize panel is changing right now
+const panelForSchedule = () => !!document.getElementById("customizePanel").closest(".sched-menu-wrap");
+function panelPaletteId() { return panelForSchedule() ? (schedPaletteId || currentPaletteId) : currentPaletteId; }
+function applyActivePalette() {
+  if (onSchedulePage()) applyPalette(schedPaletteId || currentPaletteId, "schedule");
+  else applyPalette(currentPaletteId);
+}
+function setPanelPalette(id, save) {
+  if (panelForSchedule()) {
+    schedPaletteId = id; applyPalette(id, "schedule");
+    if (save) try { localStorage.setItem("schedulePalette", id); } catch(e) {}
+  } else {
+    currentPaletteId = id; applyPalette(id);
+    if (save) { savePaletteId(id); touchPrefs(); scheduleSync(); }
+  }
+}
+applyActivePalette();
 
 // Colours picked before sync existed have no timestamp, so they'd never be
 // uploaded. Give them the oldest possible one: they get shared, but any real
@@ -1463,18 +1527,20 @@ function makeColorWheel(host, label, onPick) {
 const colorPicker = document.getElementById("colorPicker");
 let cpSaveTimer = null;
 const headerWheel = makeColorWheel(colorPicker, "Header", hex => {
-  currentPaletteId = "custom:" + hex;
-  applyPalette(currentPaletteId);
+  setPanelPalette("custom:" + hex, false);
   document.querySelectorAll("#paletteSwatches .palette-swatch:not(.custom-add)").forEach(b => b.classList.toggle("selected", false));
   clearTimeout(cpSaveTimer);
-  cpSaveTimer = setTimeout(() => { savePaletteId(currentPaletteId); touchPrefs(); scheduleSync(); renderCustomizePanel(); }, 400);
+  cpSaveTimer = setTimeout(() => { setPanelPalette(panelPaletteId(), true); renderCustomizePanel(); }, 400);
 });
 function openColorPicker() {
-  const now = customPalette(currentPaletteId) || PALETTE_OPTIONS.find(p => p.id === currentPaletteId) || PALETTE_OPTIONS[0];
+  const pid = panelPaletteId();
+  const now = customPalette(pid) || PALETTE_OPTIONS.find(p => p.id === pid) || PALETTE_OPTIONS[0];
   headerWheel.set(now.light);
 }
 
 function renderCustomizePanel() {
+  const currentPaletteId = panelPaletteId();   // the page this panel is changing
+  document.getElementById("paletteLabel").textContent = panelForSchedule() ? "Schedule Color" : "Header Color";
   const swatchesEl = document.getElementById("paletteSwatches");
   swatchesEl.innerHTML = PALETTE_OPTIONS.map(p => `
     <button class="palette-swatch ${p.id === currentPaletteId ? 'selected' : ''}"
@@ -1485,11 +1551,7 @@ function renderCustomizePanel() {
   document.getElementById("customColorBtn").onclick = () => { colorPicker.hidden = !colorPicker.hidden; if (!colorPicker.hidden) openColorPicker(); renderCustomizePanel(); };
   swatchesEl.querySelectorAll(".palette-swatch:not(.custom-add)").forEach(btn => {
     btn.addEventListener("click", () => {
-      currentPaletteId = btn.dataset.paletteId;
-      applyPalette(currentPaletteId);
-      savePaletteId(currentPaletteId);
-      touchPrefs();
-      scheduleSync();
+      setPanelPalette(btn.dataset.paletteId, true);
       renderCustomizePanel();
     });
   });
@@ -1611,7 +1673,7 @@ function mergeRemote(remote) {
   pruneRemoved();
   if ((remote.prefsT || 0) > prefsT) {
     classColorOverrides = remote.classColorOverrides || {};
-    if (remote.palette) { currentPaletteId = remote.palette; applyPalette(currentPaletteId); savePaletteId(currentPaletteId); }
+    if (remote.palette) { currentPaletteId = remote.palette; savePaletteId(currentPaletteId); applyActivePalette(); }
     prefsT = remote.prefsT;
     try { localStorage.setItem("prefsUpdatedAt", String(prefsT)); } catch(e) {}
     saveClassColorOverrides();
@@ -1916,6 +1978,7 @@ document.getElementById("addPreviewBtn").onclick = () => {
 const PAGES = ["homework", "schedule", "notebook"];
 function showPage() {
   { const cp = document.getElementById("customizePanel"); if (cp) cp.classList.toggle("open", false); }
+  if (typeof applyActivePalette === "function") applyActivePalette();
   const id = (location.hash || "").slice(1);
   const page = PAGES.includes(id) ? id : "homework";
   PAGES.forEach(p => { document.getElementById("page-" + p).hidden = p !== page; });
@@ -2447,7 +2510,92 @@ function saveNbPage() {
   document.getElementById("nbSaved").textContent = text ? "Saved" : "";
 }
 nbText.addEventListener("input", () => { document.getElementById("nbSaved").textContent = "Saving…"; clearTimeout(nbTimer); nbTimer = setTimeout(saveNbPage, 400); });
-function flipNb(n) { saveNbPage(); nbDay = sAdd(nbDay, n); showNbPage(n); }
+function flipNb(n) { stopDictation(); saveNbPage(); nbDay = sAdd(nbDay, n); showNbPage(n); }
+
+/* ---- dictation: talk and it types into the page, like the keyboard's mic ----
+   Uses the browser's built-in speech recognition (Safari on iPhone, Chrome). Words go in where the
+   cursor is; the text updates live as you talk and settles once each phrase is final. */
+const MIC_ICONS = {
+  classic: `<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path class="o" d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>`,
+  sticker: `<svg viewBox="0 0 24 24"><rect x="7.5" y="2" width="9" height="13.5" rx="4.5"/><path class="o" d="M4.5 11a7.5 7.5 0 0 0 15 0M12 18.5V22" stroke-width="2.6"/></svg>`,
+  studio: `<svg viewBox="0 0 24 24"><rect class="o" x="7" y="2" width="10" height="13" rx="5"/><path class="o" d="M7.5 6h9M7.5 8.5h9M7.5 11h9M5 12.5a7 7 0 0 0 14 0M12 19.5V22M8 22h8"/></svg>`,
+};
+// Where the mic sits and how it looks (picked in the test copy; saved on this device)
+function setMicStyle(pos, icon) {
+  pos = ["corner", "bar", "side"].includes(pos) ? pos : "corner";
+  icon = MIC_ICONS[icon] ? icon : "classic";
+  nbEl.dataset.micPos = pos; nbEl.dataset.micIcon = icon;
+  const btn = document.getElementById("nbMic");
+  btn.querySelector(".nb-mic-icon").innerHTML = MIC_ICONS[icon];
+  if (pos === "bar") document.querySelector(".nb-bar .nb-menu-wrap").before(btn);
+  else document.getElementById("nbBody").appendChild(btn);
+  try { localStorage.setItem("notebookMic", JSON.stringify([pos, icon])); } catch(e) {}
+}
+{ let s = []; try { s = JSON.parse(localStorage.getItem("notebookMic") || "[]") || []; } catch(e) {} setMicStyle(s[0], s[1]); }
+
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const nbMic = document.getElementById("nbMic"), nbMicNote = document.getElementById("nbMicNote");
+let rec = null, dictating = false, dictBefore = "", dictAfter = "", dictFinal = "", micNoteTimer = null;
+function micNote(msg) {
+  nbMicNote.textContent = msg; nbMicNote.hidden = !msg;
+  clearTimeout(micNoteTimer); if (msg) micNoteTimer = setTimeout(() => { nbMicNote.hidden = true; }, 5000);
+}
+function joinSpeech(before, said) {
+  if (!said) return before;
+  const needsSpace = before && !/\s$/.test(before);
+  const startOfSentence = !before.trim() || /[.!?\n]\s*$/.test(before);
+  said = said.trim();
+  if (startOfSentence) said = said.charAt(0).toUpperCase() + said.slice(1);
+  return before + (needsSpace ? " " : "") + said;
+}
+function showDictation(interim) {
+  const typed = joinSpeech(dictBefore, (dictFinal + " " + interim).trim());
+  nbText.value = typed + dictAfter;
+  nbText.selectionStart = nbText.selectionEnd = typed.length;
+  nbText.scrollTop = nbText.scrollHeight;
+}
+function startDictation() {
+  if (!SpeechRec) { micNote("Talking to type isn't supported in this browser. On iPhone, use Safari."); return; }
+  const pos = nbText.selectionStart ?? nbText.value.length;
+  const at = document.activeElement === nbText ? pos : nbText.value.length;
+  dictBefore = nbText.value.slice(0, at); dictAfter = nbText.value.slice(at); dictFinal = "";
+  rec = new SpeechRec();
+  rec.continuous = true; rec.interimResults = true; rec.lang = navigator.language || "en-US";
+  rec.onresult = e => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) dictFinal = (dictFinal + " " + t).trim(); else interim += t;
+    }
+    showDictation(interim);
+    if (!interim) { document.getElementById("nbSaved").textContent = "Saving…"; clearTimeout(nbTimer); nbTimer = setTimeout(saveNbPage, 400); }
+  };
+  rec.onerror = e => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") micNote("The microphone is blocked. Allow it for this site in your browser settings.");
+    else if (e.error === "no-speech") return;
+    else micNote("Dictation stopped. Tap the mic to try again.");
+    stopDictation();
+  };
+  // Safari stops listening after a pause; keep going until you tap Stop
+  rec.onend = () => {
+    if (!dictating) return;
+    dictBefore = joinSpeech(dictBefore, dictFinal); dictFinal = "";
+    try { rec.start(); } catch (err) { stopDictation(); }
+  };
+  try { rec.start(); } catch (err) { micNote("Couldn't start the microphone."); return; }
+  dictating = true; micNote("");
+  nbMic.setAttribute("aria-pressed", "true"); nbMic.setAttribute("aria-label", "Stop dictation");
+}
+function stopDictation() {
+  if (!dictating && !rec) return;
+  dictating = false;
+  if (rec) { try { rec.stop(); } catch (err) {} rec = null; }
+  nbMic.setAttribute("aria-pressed", "false"); nbMic.setAttribute("aria-label", "Dictate");
+  saveNbPage();
+}
+nbMic.onclick = () => dictating ? stopDictation() : startDictation();
+// keep the cursor where it was so the words land there
+nbMic.addEventListener("pointerdown", e => e.preventDefault());
 document.getElementById("nbPrev").onclick = () => flipNb(-1);
 document.getElementById("nbNext").onclick = () => flipNb(1);
 document.getElementById("nbToday").onclick = () => { const dir = getTodayStr() > nbDay ? 1 : -1; saveNbPage(); nbDay = getTodayStr(); showNbPage(dir); };
