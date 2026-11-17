@@ -3,6 +3,8 @@ PODS:
     - CapacitorCordova
   - CapacitorApp (8.1.2):
     - Capacitor
+  - CapacitorCommunityAppleSignIn (7.1.0):
+    - Capacitor
   - CapacitorCordova (8.6.2)
   - CapacitorHaptics (8.0.2):
     - Capacitor
@@ -16,6 +18,7 @@ PODS:
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
@@ -27,6 +30,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
     :path: "../../node_modules/@capacitor/app"
+  CapacitorCommunityAppleSignIn:
+    :path: "../../node_modules/@capacitor-community/apple-sign-in"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorHaptics:
@@ -41,12 +46,13 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Capacitor: 0a406b8a50b1ddcfe49fbc5795515918d5294708
   CapacitorApp: 7b7e43debe505bc61beedb83796aa1368c86078b
+  CapacitorCommunityAppleSignIn: 271cb2860576fd2961508bbfa7a82117d93eadca
   CapacitorCordova: 8e68a712e47128cf5b97e88b9c2b406b9b956b22
   CapacitorHaptics: 296f771ecd89c7a1bd92a7b6826a7d268e2e70f5
   CapacitorLocalNotifications: e0747a329ddde3074d52dc74a003688af90e42be
   CapacitorSplashScreen: 7bf61c2001557ff9e195e601c6b87344480d3c65
   CapacitorStatusBar: ff844df1f126da6c4fbc4028272425fa3a91e7e3
 
-PODFILE CHECKSUM: 6214c128acf8f3295003243a6380610f136cb404
+PODFILE CHECKSUM: a2a96f77f79916db718162113565c244226450f1
 
 COCOAPODS: 1.17.0

@@ -171,6 +171,16 @@ button:disabled { opacity:.55; cursor:wait; }
 
 /* ---- Sync section in the Customize panel ---- */
 .sync-code { font:500 22px/1.1 var(--poster-mono); letter-spacing:.06em; color:var(--poster-text); }
+.account-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; margin:2px 0 10px; }
+.account-row .acct-email { flex:1 1 100%; overflow:hidden; text-overflow:ellipsis; }
+.account-row button { font:inherit; font-size:13px; padding:5px 10px; border:2px solid currentColor; background:none; color:inherit; cursor:pointer; }
+.account-row button.danger { color:var(--poster-danger); }
+.auth-form { max-width:420px; }
+.auth-form #authError { color:var(--poster-danger); font-size:14px; margin:-4px 0 10px; }
+.auth-form .ev-field { margin-bottom:12px; }
+.apple-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:46px; margin-bottom:6px; border:0; border-radius:8px; background:#000; color:#fff; font:600 16px/1 -apple-system, BlinkMacSystemFont, sans-serif; cursor:pointer; }
+.apple-btn svg { width:15px; height:18px; }
+.auth-cancel { display:block; margin:14px auto 0; background:none; border:0; color:var(--poster-text-soft); font:inherit; font-size:14px; text-decoration:underline; cursor:pointer; }
 .sync-code-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:14px; margin:2px 0 4px; }
 .sync-code-value { font-family:var(--poster-mono, monospace); letter-spacing:.06em; }
 .sync-code-change { margin-left:auto; font:inherit; font-size:13px; padding:4px 10px; border:2px solid currentColor; background:none; color:inherit; cursor:pointer; }
@@ -1378,6 +1388,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <div class="customize-section-label">Classes</div>
       <div class="class-color-list" id="classColorList"></div>
 
+      <div class="customize-section-label">Account</div>
+      <div class="account-row" id="accountRow"></div>
+
       <div class="customize-section-label">Sync</div>
       <div class="sync-code-row">
         <span>Sync code</span>
@@ -1574,6 +1587,23 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <button type="button" class="modal-btn secondary" id="evCancel">Cancel</button>
       <button type="submit" class="modal-btn primary" id="evSave">Add</button>
     </div>
+  </form>
+</div>
+
+<div class="modal-overlay" id="authModal">
+  <form class="modal ev-form auth-form" id="authForm" autocomplete="on">
+    <h2>Sign in</h2>
+    <div class="modal-sub">Sign in to see your checklist on all your devices. It's optional: the app works without an account.</div>
+    <button type="button" class="apple-btn" id="appleSignInBtn" hidden><svg viewBox="0 0 14 17" aria-hidden="true"><path fill="currentColor" d="M11.6 9c0-2 1.7-3 1.8-3.1-1-1.4-2.5-1.6-3-1.6-1.3-.1-2.5.8-3.2.8-.7 0-1.7-.8-2.8-.7-1.4 0-2.7.8-3.5 2.1-1.5 2.6-.4 6.4 1.1 8.5.7 1 1.5 2.2 2.6 2.1 1-.1 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.8-1 2.5-2.1.8-1.2 1.1-2.3 1.1-2.4 0 0-2-.8-2-3.6zM9.5 3c.6-.7 1-1.7.9-2.7-.9 0-1.9.6-2.5 1.3-.6.6-1 1.6-.9 2.6 1 .1 1.9-.5 2.5-1.2z"/></svg>Sign in with Apple</button>
+    <div class="or-line" id="authOr" hidden><span>or use email</span></div>
+    <label class="ev-field"><span>Email</span><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+    <label class="ev-field"><span>Password</span><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required></label>
+    <div class="modal-status error" id="authError" hidden></div>
+    <div class="modal-actions">
+      <button type="submit" class="modal-btn primary" id="authLoginBtn" data-mode="login">Sign in</button>
+      <button type="submit" class="modal-btn secondary" id="authSignupBtn" data-mode="signup">Create account</button>
+    </div>
+    <button type="button" class="auth-cancel" id="authCancel">Not now</button>
   </form>
 </div>
 
@@ -1814,7 +1844,7 @@ function render() {
     html = isDoneView
       ? `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Nothing here yet</div><div class="empty-state-text">Assignments land here once they're marked complete and turned in.</div></div>`
       : !allAssignments.length
-      ? `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Add your first class</div><div class="empty-state-text">Tap <b>+ Add Syllabus</b> and upload a PDF or a photo of a syllabus, or paste its text. Every assignment and due date is added for you.</div></div>`
+      ? `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Add your first class</div><div class="empty-state-text">Tap <b>+ Add Syllabus</b> and upload a PDF or a photo of a syllabus, or paste its text. Every assignment and due date is added for you.</div><button type="button" class="auth-cancel" onclick="openAuth()">Already have an account? Sign in</button></div>`
       : `<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-title">All caught up</div><div class="empty-state-text">Everything${activeFilter === "All" ? "" : " for " + activeFilter} is done and turned in.</div></div>`;
   }
 
@@ -2148,6 +2178,103 @@ document.getElementById("syncCodeChange").addEventListener("click", (e) => {
   try { localStorage.clear(); localStorage.setItem("syncCode", next); } catch (err) {}
   location.reload();
 });
+
+/* ---- accounts (optional): an account remembers which sync code holds your checklist,
+   so signing in on a new device loads the same list ---- */
+const AUTH_URL = SYNC_URL.replace(/\/sync$/, "/auth");
+// The website's Sign in with Apple "Services ID" (Apple Developer → Identifiers). Leave
+// empty to hide the Apple button on the website; the iPhone app uses Apple's own sheet.
+const APPLE_WEB_CLIENT_ID = "";
+let account = null;
+try { account = JSON.parse(localStorage.getItem("account") || "null"); } catch (e) {}
+const authModal = document.getElementById("authModal");
+const nativeApple = () => window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform() && Capacitor.Plugins && Capacitor.Plugins.SignInWithApple;
+
+function renderAccountRow() {
+  const row = document.getElementById("accountRow");
+  row.textContent = "";
+  const btn = (label, fn, cls) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = e => { e.stopPropagation(); fn(); }; row.appendChild(b); };
+  if (account) {
+    const who = document.createElement("span"); who.className = "acct-email";
+    who.textContent = "Signed in" + (account.email ? " as " + account.email : " with Apple");
+    row.appendChild(who);
+    btn("Sign out", signOut);
+    btn("Delete account", deleteAccount, "danger");
+  } else {
+    btn("Sign in or create account", openAuth);
+  }
+}
+function openAuth() {
+  document.getElementById("authError").hidden = true;
+  const apple = !!nativeApple() || !!APPLE_WEB_CLIENT_ID;
+  document.getElementById("appleSignInBtn").hidden = !apple;
+  document.getElementById("authOr").hidden = !apple;
+  customizePanel.classList.remove("open");
+  authModal.classList.add("open");
+}
+function closeAuth() { authModal.classList.remove("open"); }
+function authError(msg) { const el = document.getElementById("authError"); el.textContent = msg; el.hidden = !msg; }
+async function authCall(action, body) {
+  const r = await fetch(AUTH_URL + "/" + action, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || data.error) throw new Error(data.error || "Something went wrong. Check your connection and try again.");
+  return data;
+}
+function finishSignIn(res) {
+  const acct = { email: res.email, kind: res.kind, token: res.token };
+  if (res.code === SYNC_KEY) {   // a new account keeps this device's checklist
+    account = acct; try { localStorage.setItem("account", JSON.stringify(acct)); } catch (e) {}
+    closeAuth(); renderAccountRow(); return;
+  }
+  // an existing account: load its checklist in place of this device's
+  if (getAllAssignments().length && !confirm("Load your account's checklist? The list on this device will be replaced by it.")) return;
+  try { localStorage.clear(); localStorage.setItem("syncCode", res.code); localStorage.setItem("account", JSON.stringify(acct)); } catch (e) {}
+  location.reload();
+}
+document.getElementById("authForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mode = (e.submitter && e.submitter.dataset.mode) || "login";
+  const email = document.getElementById("authEmail").value.trim(), password = document.getElementById("authPassword").value;
+  authError("");
+  try { finishSignIn(await authCall(mode, { email, password, code: SYNC_KEY })); }
+  catch (err) { authError(err.message); }
+});
+document.getElementById("appleSignInBtn").addEventListener("click", async () => {
+  authError("");
+  try {
+    let idToken, authorizationCode;
+    const nonce = Math.random().toString(36).slice(2);
+    if (nativeApple()) {
+      const r = await Capacitor.Plugins.SignInWithApple.authorize({ clientId: "com.nicktavaf.checklist", redirectURI: location.origin, scopes: "email", state: nonce, nonce });
+      idToken = r.response.identityToken; authorizationCode = r.response.authorizationCode;
+    } else {
+      if (!window.AppleID) await new Promise((ok, fail) => { const sc = document.createElement("script"); sc.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"; sc.onload = ok; sc.onerror = fail; document.head.appendChild(sc); });
+      AppleID.auth.init({ clientId: APPLE_WEB_CLIENT_ID, scope: "email", redirectURI: location.origin + location.pathname, usePopup: true, state: nonce, nonce });
+      const r = await AppleID.auth.signIn();
+      idToken = r.authorization.id_token; authorizationCode = r.authorization.code;
+    }
+    finishSignIn(await authCall("apple", { idToken, authorizationCode, code: SYNC_KEY }));
+  } catch (err) {
+    if (err && /cancel|1001|popup_closed/i.test(String(err.message || err.error || err))) return;
+    authError((err && err.message) || "Apple sign-in didn't work. Try again.");
+  }
+});
+document.getElementById("authCancel").onclick = closeAuth;
+authModal.addEventListener("click", e => { if (e.target === authModal) closeAuth(); });
+async function signOut() {
+  if (!confirm("Sign out? This device goes back to an empty checklist. Your account keeps your list.")) return;
+  try { await authCall("logout", { token: account && account.token }); } catch (e) {}
+  try { localStorage.clear(); } catch (e) {}
+  location.reload();
+}
+async function deleteAccount() {
+  if (!confirm("Delete your account and everything in it? This can't be undone.")) return;
+  try { await authCall("delete", { token: account && account.token }); }
+  catch (err) { alert(err.message); return; }
+  try { localStorage.clear(); } catch (e) {}
+  location.reload();
+}
+renderAccountRow();
 const LIVE_REFRESH_MS = 20000; // check for changes from other devices every 20s
 
 const syncStatusEl = document.getElementById("syncStatus");
