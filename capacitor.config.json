@@ -1,0 +1,20 @@
+{
+  "appId": "com.nicktavaf.checklist",
+  "appName": "Checklist",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "launchShowDuration": 3000,
+      "backgroundColor": "#2459F6",
+      "showSpinner": false
+    },
+    "LocalNotifications": {
+      "presentationOptions": ["banner", "sound", "list"]
+    }
+  }
+}
