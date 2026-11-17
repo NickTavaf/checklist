@@ -14,6 +14,7 @@
 //   Optional: instead of Cloudflare's AI you can use Claude by adding a secret
 //   named ANTHROPIC_API_KEY. If both are set, Cloudflare's AI is used.
 
+const WORKER_VERSION = "2026-11-17-accounts";
 const CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const CF_VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct"; // reads photos / scanned pages
 const MAX_IMAGES = 10;
@@ -35,7 +36,7 @@ function json(body, status = 200) {
 }
 
 function emptyBundle() {
-  return { state: {}, customAssignments: [], classColorOverrides: {}, palette: null, prefsT: 0, removedClasses: {}, docs: {} };
+  return { state: {}, customAssignments: [], classColorOverrides: {}, palette: null, theme: null, prefsT: 0, removedClasses: {}, docs: {} };
 }
 
 // When a custom assignment was added (its id is "custom-<timestamp>-n")
@@ -50,6 +51,7 @@ function merge(base, incoming) {
     customAssignments: [...(base.customAssignments || [])],
     classColorOverrides: base.classColorOverrides || {},
     palette: base.palette || null,
+    theme: base.theme || null,
     prefsT: base.prefsT || 0,
     removedClasses: { ...(base.removedClasses || {}) },
     // notebooks, notebook pages, sticky notes, trash and calendar events: one record each,
@@ -75,6 +77,7 @@ function merge(base, incoming) {
   if ((incoming.prefsT || 0) > out.prefsT) {
     out.classColorOverrides = incoming.classColorOverrides || {};
     out.palette = incoming.palette || out.palette;
+    out.theme = incoming.theme || out.theme;
     out.prefsT = incoming.prefsT;
   }
   // Drop assignments that belong to a deleted class (added before it was deleted)
@@ -380,6 +383,8 @@ export default {
     const path = new URL(request.url).pathname.replace(/\/+$/, "");
     if (path === "/parse") return handleParse(request, env);
     if (path.startsWith("/auth/")) return handleAuth(request, env, path.slice(6));
+    // Quick check that this version is the one running: open <worker url>/version in a browser
+    if (path === "/version") return json({ version: WORKER_VERSION, syncsNotebooks: true, accounts: true, syncsTheme: true, kv: !!env.SYNC, ai: !!env.AI });
 
     const code = (new URL(request.url).searchParams.get("code") || "").toUpperCase();
     if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) return json({ error: "Invalid sync code." }, 400);
