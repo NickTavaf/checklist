@@ -1357,6 +1357,27 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .nb-head { padding-left:12px; padding-right:12px; }
 }
 @media (prefers-reduced-motion:reduce) { .nb-turn { display:none; } }
+
+/* ---- phones: a tighter first screen, so assignments show without scrolling ---- */
+@media (max-width:599px) {
+  .site-nav { padding-bottom:10px; }
+  .topbar { padding-top:18px; padding-bottom:16px; gap:10px; }
+  .topbar h1 { font-size:42px; max-width:none; white-space:nowrap; }
+  .topbar .sub { margin-top:6px; }
+  .topbar .upload-btn { min-height:42px; padding:9px 12px; margin-top:2px; }
+  .customize-wrap { top:14px; }
+  .wrap { padding-top:16px; }
+  .view-tabs { margin-bottom:14px; }
+  .filters { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+             margin:0 calc(-1 * max(16px, env(safe-area-inset-left))) 14px; padding:0 max(16px, env(safe-area-inset-left)) 6px; }
+  .filters::-webkit-scrollbar { display:none; }
+  .filter-btn { flex:0 0 auto; white-space:nowrap; padding:8px 12px; }
+  .progress-wrap { padding-bottom:12px; margin-bottom:18px; }
+  .progress-label b { font-size:30px; }
+  .date-heading { font-size:24px; }
+  .date-heading.is-today { font-size:34px; border-top-width:5px; }
+  .sync-code-row .sync-code-change { margin-left:0; }
+}
 </style>
 </head>
 <body>
