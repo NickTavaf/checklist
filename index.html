@@ -599,6 +599,7 @@ body:has(#page-schedule:not([hidden])) { padding-bottom:0; }
 .smark.is-done { background:color-mix(in srgb, var(--mc) 16%, var(--poster-card-bg)); }
 .smark.is-done .mt { color:var(--poster-text-soft); }
 .smark[data-id] { cursor:pointer; }
+.smonth .smark[data-id]:hover { filter:none; }
 .smark[data-id]:hover { filter:brightness(.96); }
 .smark[data-id]:focus-visible { outline:3px solid var(--poster-ui-accent); outline-offset:1px; }
 .sdots { display:none; flex-wrap:wrap; gap:3px; }
@@ -1569,7 +1570,9 @@ function renderSchedule() {
     for (let k = first; ; k = sAdd(k, 1)) { cells.push(k); if (cells.length % 7 === 0 && sParse(k) >= last) break; }
     root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
       <div class="smonth" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${cells.map(k => dayBoxHTML(k, items[k], { month: m })).join("")}</div>`;
-    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = e => { if (!e.target.closest(".smark") || window.innerWidth < 700) openDay(el.dataset.date); });
+    // In Month, tapping anywhere in a day (markers included) opens that day
+    root.querySelectorAll(".smonth .sday").forEach(el => el.onclick = () => openDay(el.dataset.date));
+    root.querySelectorAll(".smonth .smark").forEach(m => { m.removeAttribute("role"); m.removeAttribute("tabindex"); });
     // Show as many markers as fit in each box, then "+N more"
     root.querySelectorAll(".smonth .smarks").forEach(box => {
       const chips = [...box.children], more = box.parentElement.querySelector(".smore");
@@ -1675,7 +1678,7 @@ function closePop() { schedPop.hidden = true; popId = null; popAnchor = null; }
 
 document.getElementById("schedBody").addEventListener("click", e => {
   const m = e.target.closest(".smark[data-id]");
-  if (!m || (window.innerWidth < 700 && m.closest(".smonth"))) return;
+  if (!m || m.closest(".smonth")) return;
   e.stopPropagation(); openPop(m.dataset.id, m);
 });
 document.getElementById("schedBody").addEventListener("keydown", e => {
