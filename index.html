@@ -42,7 +42,7 @@ try {
    Example: <html data-palette="blue-peach" data-header-mode="adaptive">
    Keep your existing assignment/upload JavaScript. No new backend required.
 */
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Caveat:wght@500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Caveat:wght@500;700&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Special+Elite&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 :root {
   --poster-bg:#ffffff;
   --poster-card-bg:#ffffff;
@@ -916,7 +916,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-nb[data-type="spiral"] { --cv:#1E4FB8; padding:10px 9px 8px 22px; justify-content:space-between; color:#fff;
   background:linear-gradient(120deg, #ffffff26 0 18%, transparent 30% 62%, #ffffff14 70%, transparent 82%), linear-gradient(var(--cv), color-mix(in srgb, var(--cv) 82%, #000)); }
 /* the wire coil: each loop comes up out of a punched hole and wraps around the left edge */
-.desk-nb[data-type="spiral"]::before { content:""; position:absolute; z-index:2; left:-11px; top:6px; bottom:6px; width:24px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='11' viewBox='0 0 24 11'%3E%3Cellipse cx='18.4' cy='5.6' rx='1.9' ry='1.7' fill='%230009'/%3E%3Cellipse cx='18.4' cy='5.4' rx='1.9' ry='1.6' fill='none' stroke='%23ffffff30' stroke-width='.5'/%3E%3Cpath d='M18 5.5C14 2 6 1.8 3.6 4.2 2.6 5.4 3.4 6.4 5 6.6' fill='none' stroke='%230005' stroke-width='2.1' stroke-linecap='round' transform='translate(.5 1.1)'/%3E%3Cpath d='M18 5.5C14 2 6 1.8 3.6 4.2 2.6 5.4 3.4 6.4 5 6.6' fill='none' stroke='%23a3a8ae' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M15.6 3.5C12 2.2 7 2.2 5 3.2' fill='none' stroke='%23fff' stroke-width='.6' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/24px 11px; background-repeat:no-repeat round; pointer-events:none; }
+.desk-nb[data-type="spiral"]::before { content:""; position:absolute; z-index:2; left:-11px; top:6px; bottom:6px; width:24px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='11' viewBox='0 0 24 11'%3E%3Cellipse cx='18.4' cy='5.6' rx='1.9' ry='1.7' fill='%230009'/%3E%3Cellipse cx='18.4' cy='5.4' rx='1.9' ry='1.6' fill='none' stroke='%23ffffff30' stroke-width='.5'/%3E%3Cpath d='M2.4 5.6C2.6 8 7.5 8.9 11.6 8.1' fill='none' stroke='%230004' stroke-width='2' stroke-linecap='round' transform='translate%28.3 .8%29'/%3E%3Cpath d='M2.4 5.6C2.6 8 7.5 8.9 11.6 8.1' fill='none' stroke='%236b7076' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M18 5.5C14 1.7 5.6 1.4 3.3 3.6 2.5 4.3 2.3 5 2.4 5.6' fill='none' stroke='%230005' stroke-width='2.1' stroke-linecap='round' transform='translate%28.5 1.1%29'/%3E%3Cpath d='M18 5.5C14 1.7 5.6 1.4 3.3 3.6 2.5 4.3 2.3 5 2.4 5.6' fill='none' stroke='%23a3a8ae' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M15.6 3.4C12 2 7 2 4.8 3' fill='none' stroke='%23fff' stroke-width='.6' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/24px 11px; background-repeat:no-repeat round; pointer-events:none; }
 .dn-top { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:4px; }
 .dn-mark { font:800 11px/.9 var(--poster-display); letter-spacing:.04em; text-transform:uppercase; }
 .dn-mark b { display:block; font-size:22px; }
@@ -947,6 +947,70 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-nb[data-type="comp"] .dn-count { margin-top:5px; text-align:center; }
 .desk-nb[data-type="eng"] { border-top:12px solid #3f6b34; background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/12px 12px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/12px 12px, #EAF4E2; }
 .desk-nb[data-type="eng"] .dn-name { font:600 13px/1.2 var(--poster-mono); text-transform:uppercase; }
+/* opening animation (see openFromDesk): the copy that flies, the page under its cover, the inside of the cover */
+.desk.nb-fly { position:fixed; z-index:3000; margin:0; padding:0; max-width:none; transform-origin:0 0; pointer-events:none; }
+.nb-fly .desk-nb { position:absolute; left:0; top:0; width:100%; height:100%; }
+.nb-fly .fly-cover { transform-origin:0 50%; backface-visibility:visible; }
+/* while the page grows in from the desk, everything around it waits, then fades in */
+.nb > :not(.nb-body), .nb-body > :not(.nb-page), .nb-body::before, .nb-body::after { transition:opacity .28s ease-out; }
+.nb.nb-zooming > :not(.nb-body), .nb.nb-zooming .nb-body > :not(.nb-page), .nb.nb-zooming .nb-body::before, .nb.nb-zooming .nb-body::after { opacity:0; transition:none; }
+.nb-veil { position:fixed; inset:0; z-index:2999; background:var(--poster-bg); pointer-events:none; opacity:0; }
+.desk.nb-fly .desk-nb.desk-nb.fly-latch { background:none; box-shadow:none; outline:0; border:0; padding:0; overflow:visible; }
+.nb-fly .fly-latch::after { display:none; }
+.nb-fly .fly-latch::before { display:none; }
+.nb-fly .fly-latch .dn-strap { transform-origin:100% 50%; }
+.nb-fly .fly-latch .dn-band { transform-origin:50% 50%; }
+.fly-page { position:absolute; inset:0; border-radius:2px 6px 6px 2px; background:#fff; box-shadow:2px 2px 0 #ddd, 4px 4px 0 #bbb, 0 10px 22px #0007;
+  background-image:linear-gradient(90deg, #00000022, #0000 18%), repeating-linear-gradient(#0000 0 9px, #c8d9f2 9px 10px); }
+.fly-page[data-type="legal"] { background-color:#FFF4A3; background-image:repeating-linear-gradient(#0000 0 9px, #8fb3dc 9px 10px); }
+.fly-page[data-type="eng"] { background-color:#EAF4E2; background-image:linear-gradient(#cfe3c4 1px, transparent 1px), linear-gradient(90deg, #cfe3c4 1px, transparent 1px); background-size:8px 8px; }
+.fly-page[data-type="diary-leather"] { background-color:#f8f0dc; background-image:linear-gradient(90deg, #0000002a, #0000 20%), repeating-linear-gradient(#0000 0 10px, #e2d3b2 10px 11px); }
+.fly-page[data-type="diary-linen"] { background-color:#fbfaf4; background-image:linear-gradient(90deg, #0000002a, #0000 20%), radial-gradient(circle, #1f263340 .8px, #0000 1.2px); background-size:auto, 8px 8px; }
+.fly-page[data-type="diary-rose"] { background-color:#fff6f7; background-image:linear-gradient(90deg, #0000002a, #0000 20%), repeating-linear-gradient(#0000 0 9px, #f4cdd8 9px 10px); box-shadow:2px 2px 0 #f3d98a, 4px 4px 0 #c99f45, 0 10px 22px #0007; }
+.fly-page[data-type="diary-vintage"] { background-color:#efe2c3; background-image:radial-gradient(120% 90% at 50% 45%, #0000 55%, #b8955a55), repeating-linear-gradient(#0000 0 9px, #c8b28a80 9px 10px); }
+/* the inside of the cover, seen once it swings past halfway */
+.fly-cover.inside > * { visibility:hidden; }
+.fly-cover.inside::before, .fly-cover.inside::after { opacity:0; }
+.fly-cover.inside { background:#d8d2c4; outline:0; }
+.fly-cover.inside[data-type^="diary"] { background:linear-gradient(90deg, #0000 0 82%, #0003), var(--cover-img) center/calc(var(--w) * 2.2) var(--cover); box-shadow:inset 0 0 0 calc(var(--w) * .05) #0000, inset calc(var(--w) * -.06) 0 0 0 var(--cover); }
+.fly-cover.inside[data-type="diary-leather"], .fly-cover.inside[data-type="diary-vintage"] { background:linear-gradient(#efe4c8, #e4d6b4); box-shadow:inset 0 0 0 5px #6b4524; }
+.fly-cover.inside[data-type="diary-rose"] { background:linear-gradient(#f7dfe6, #efcbd6); box-shadow:inset 0 0 0 5px #8a2f4e; }
+.fly-cover.inside[data-type="diary-linen"] { background:#ece6d6; box-shadow:inset 0 0 0 5px #22324e; }
+.fly-cover.inside[data-type="spiral"] { background:color-mix(in srgb, var(--cv, #1E4FB8) 55%, #fff); }
+.fly-cover.inside[data-type="comp"] { background:#eceae3; box-shadow:inset 0 0 0 4px #111; }
+/* ---- Diary covers (four looks to compare: leather lock, linen journal, rose keepsake, travel journal).
+   Real photo textures (CC0, Poly Haven) in textures/; sizes scale with --w so phones match. ---- */
+.desk-nb[data-type^="diary"] { --cover:#5a3a22; padding:calc(var(--w) * .1) calc(var(--w) * .12) calc(var(--w) * .1) calc(var(--w) * .16); justify-content:center; align-items:center; text-align:center; gap:calc(var(--w) * .03);
+  background:var(--cover-img) center/calc(var(--w) * 2.2) var(--cover); border-radius:3px 9px 9px 3px; color:#f3e2b8; }
+.desk-nb[data-type="diary-leather"] { --cover:#4a2c16; --cover-img:url("textures/leather-brown.jpg"); }
+.desk-nb[data-type="diary-linen"]   { --cover:#22324e; --cover-img:url("textures/linen-navy.jpg"); justify-content:flex-start; padding-top:calc(var(--w) * .3); }
+.desk-nb[data-type="diary-rose"]    { --cover:#8a2f4e; --cover-img:url("textures/leather-rose.jpg"); color:#f6d98f; }
+.desk-nb[data-type="diary-vintage"] { --cover:#8a5a26; --cover-img:url("textures/leather-tan.jpg"); color:#3a2412; }
+/* spine: the rounded hinge down the left, darker leather/cloth with a crease */
+.desk-nb[data-type^="diary"]::before { content:""; position:absolute; left:0; top:0; bottom:0; width:11%; border-radius:3px 0 0 3px; pointer-events:none;
+  background:linear-gradient(90deg, #0008, #0000004d 45%, #ffffff1a 70%, #0006 78%, #0000 100%); }
+.dn-dtitle { position:relative; z-index:1; display:block; font:600 calc(var(--w) * .2)/1 "Dancing Script", cursive; text-shadow:0 1px 0 #0007, 0 -1px 0 #fff3; }
+.desk-nb[data-type^="diary"] .dn-name { color:inherit; font-size:calc(var(--w) * .145); -webkit-line-clamp:2; text-shadow:0 1px 0 #0006; }
+.desk-nb[data-type^="diary"] .dn-count { font-size:calc(var(--w) * .062); }
+/* leather lock: a blind-stamped gold frame and a strap with a brass clasp over the right edge */
+.desk-nb[data-type="diary-leather"] { outline:1px solid #d9b46a73; outline-offset:calc(var(--w) * -.07); }
+.dn-strap, .dn-band, .dn-cord { z-index:2; } .desk-nb .dn-strap { position:absolute; right:calc(var(--w) * -.05); top:44%; width:calc(var(--w) * .22); height:calc(var(--w) * .2); border-radius:3px 0 0 3px; pointer-events:none;
+  background:radial-gradient(circle at 42% 50%, #3a2a10 0 7%, #0000 8%), radial-gradient(circle at 42% 50%, #f7e3a1, #c9a24b 45%, #7d5c1c 72%, #0000 74%) 0 0/100% 100% no-repeat, var(--cover-img) center/200px, var(--cover);
+  box-shadow:-2px 2px 3px #0007, inset 0 0 0 1px #0004; }
+/* rose keepsake: the clasp is a little gold heart */
+.desk-nb[data-type="diary-rose"] .dn-strap { background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fbe7a8'/%3E%3Cstop offset='.55' stop-color='%23d4a94e'/%3E%3Cstop offset='1' stop-color='%238a6420'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 17C4 12.5 2 10 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-2 5.5-8 10z' fill='url(%23g)' stroke='%235a3f10' stroke-width='.6'/%3E%3Ccircle cx='10' cy='9.5' r='1.3' fill='%233a2a10'/%3E%3C/svg%3E") 38% 50%/62% no-repeat, var(--cover-img) center/200px, var(--cover); }
+.desk-nb[data-type="diary-rose"] { outline:1px dashed #f6d98f80; outline-offset:calc(var(--w) * -.06); }
+/* linen journal: a cream paper label and the black elastic band down the right */
+.desk-nb[data-type="diary-linen"] .dn-plate { position:relative; z-index:1; width:calc(var(--w) * .56); align-self:flex-start; margin-left:calc(var(--w) * -.02); padding:calc(var(--w) * .05) calc(var(--w) * .04); background:#f4efe2; color:#22324e; box-shadow:0 1px 2px #0006; }
+.desk-nb[data-type="diary-linen"] .dn-plate .dn-name { font:500 calc(var(--w) * .12)/1.05 "EB Garamond", Georgia, serif; text-shadow:none; }
+.desk-nb[data-type="diary-linen"] .dn-plate .dn-count { color:#22324e; }
+.dn-band { position:absolute; top:-1px; bottom:-1px; right:13%; width:calc(var(--w) * .06); pointer-events:none;
+  background:linear-gradient(90deg, #000, #3a3a3a 45%, #0c0c0c); box-shadow:1px 0 2px #0008; }
+/* travel journal: debossed lettering and a leather cord wound round the middle */
+.desk-nb[data-type="diary-vintage"] .dn-dtitle { font:400 calc(var(--w) * .13)/1 "Special Elite", monospace; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 1px 0 #fff4, 0 -1px 0 #0006; }
+.desk-nb[data-type="diary-vintage"] .dn-name { font-family:"Special Elite", monospace; font-size:calc(var(--w) * .1); text-shadow:0 1px 0 #fff4; }
+.dn-cord { position:absolute; left:0; right:calc(var(--w) * -.04); top:70%; height:calc(var(--w) * .035); pointer-events:none;
+  background:linear-gradient(#5a3a1c, #2a170a); box-shadow:0 1px 2px #0008; border-radius:2px; }
 .desk-nb:focus-visible, .desk-sticky:focus-within { outline:3px solid var(--poster-ui-accent); outline-offset:3px; }
 /* sticky notes */
 .desk-sticky { --w:132px; --s:1; width:calc(var(--w) * var(--s)); height:calc(var(--w) * var(--s)); display:flex; flex-direction:column; background:var(--sc); color:#171914; box-shadow:2px 3px 0 #0003, 6px 10px 14px -6px #0006; }
@@ -1059,6 +1123,8 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk .desk-nb.desk-nb[data-type="eng"] { border-top-color:#3f6b34; }
 .desk .desk-nb.desk-nb[data-type="spiral"] { box-shadow:1px 1px 0 #eee, 2px 2px 0 #ccc, 3px 3px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 color-mix(in srgb, var(--cv) 70%, #000), var(--drop); }
 .desk .desk-nb.desk-nb[data-type="comp"] { box-shadow:2px 2px 0 #eee, 4px 4px 0 #bbb, 5px 5px 0 #111, var(--drop); }
+.desk .desk-nb.desk-nb[data-type^="diary"] { border:0; box-shadow:1px 1px 0 #f2ead6, 2px 2px 0 #d9ccaf, 3px 3px 0 #efe5cc, 4px 4px 0 color-mix(in srgb, var(--cover) 70%, #000), var(--drop); }
+.desk .desk-nb.desk-nb[data-type="diary-rose"] { box-shadow:1px 1px 0 #f3d98a, 2px 2px 0 #c99f45, 3px 3px 0 #f0d07a, 4px 4px 0 color-mix(in srgb, var(--cover) 70%, #000), var(--drop); }
 .desk[data-desk="mat"] .desk-sticky { box-shadow:0 1px 1px #0003, 4px 10px 16px -4px #000c; }
 .desk[data-desk="mat"] .desk-sticky::after { pointer-events:none; content:""; position:absolute; right:0; bottom:0; width:18px; height:18px; background:linear-gradient(135deg, var(--sc) 50%, #00000030 50%, #0000 70%); }
 .desk[data-desk="mat"] .desk-empty { color:#ffffff90; }
@@ -1120,6 +1186,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-trash.hot svg .lid { transform:rotate(-30deg) translate(-1px,-3px); }
 .desk-trash .dt-count { position:absolute; top:-9px; right:-9px; min-width:21px; height:21px; padding:0 5px; border-radius:11px; background:var(--poster-text); color:var(--poster-bg); font:700 11px/21px var(--poster-mono); text-align:center; }
 .desk-trash .dt-count:empty { display:none; }
+.trash-puff { position:absolute; z-index:21; width:10px; height:10px; border-radius:50%; background:#cfc6b8; pointer-events:none; filter:blur(.5px); }
 .desk-item.to-trash { scale:.82; opacity:.8; }
 .desk-sticky.crumple { background-image:linear-gradient(38deg, #0000 44%, #00000024 50%, #0000 56%), linear-gradient(-55deg, #0000 40%, #ffffff40 47%, #00000020 53%, #0000 60%), radial-gradient(circle at 35% 30%, #ffffff40, #0000 40%), radial-gradient(circle at 70% 75%, #0000, #00000030); }
 .trash-modal { max-width:460px; }
@@ -1141,7 +1208,27 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 #trashEmpty.confirm { background:var(--poster-danger); color:#fff; border-color:var(--poster-danger); }
 
 /* new-notebook form: pick a type */
-.nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+.nb-types { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px; }
+.nb-diary-pick { margin-top:12px; } .nb-diary-pick > span { display:block; margin-bottom:6px; font:600 11px/1.2 var(--poster-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--poster-text-soft); }
+.nb-diary-pick .nb-types { grid-template-columns:repeat(4, minmax(0,1fr)); }
+.nb-diaries { display:flex; flex-direction:column; gap:2px; margin:0 0 4px 18px; padding-left:8px; border-left:2px solid var(--poster-track); }
+.nb-diaries[hidden] { display:none; }
+.nb-menu { overflow:visible; }
+/* PREVIEW ONLY (remove once Nick picks): little switch for how the diary list opens */
+.dpick-try { float:right; display:inline-flex; gap:2px; font-style:normal; }
+.dpick-try button { padding:2px 5px; border:1.5px solid var(--poster-border); background:transparent; color:inherit; font:600 9.5px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; cursor:pointer; }
+.dpick-try button[aria-pressed="true"] { background:var(--poster-text); color:var(--poster-bg); }
+/* "side": the diaries slide out in a card beside the menu */
+.nb-diaries[data-mode="side"] { position:absolute; right:calc(100% + 10px); width:230px; margin:0; padding:8px; border:3px solid var(--poster-border); background:var(--poster-card-bg); box-shadow:5px 5px 0 var(--poster-border); }
+/* "fan": the four covers are dealt out in a row, like cards */
+.nb-diaries[data-mode="fan"], #newNbDiaries[data-mode="fan"] .nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; margin-left:0; padding:6px 2px 4px; border-left:0; }
+.nb-diaries[data-mode="fan"] .nb-dopt { flex-direction:column; gap:4px; padding:4px 2px; text-align:center; font-size:11px; }
+.nb-diaries[data-mode="fan"] .nb-dopt small { display:none; }
+.nb-diaries[data-mode="fan"] .nb-dopt .nb-swatch { width:40px; height:52px; box-shadow:inset 3px 0 0 #0005, 2px 3px 6px #0005; }
+@media (max-width:620px) { .nb-diaries[data-mode="side"] { position:static; width:auto; margin:0 0 4px; } }
+.nb-dopt { padding:5px 6px; font-size:14px; } .nb-dopt .nb-swatch { width:26px; height:32px; }
+.nb-caret { margin-left:auto; font:700 20px/1 var(--poster-sans); transition:transform .2s; } .nb-diary-opt[aria-expanded="true"] .nb-caret { transform:rotate(90deg); }
+@media (max-width:520px) { .nb-types { grid-template-columns:repeat(3, minmax(0,1fr)); } }
 .nb-types button { display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 4px; border:2px solid var(--poster-border); background:var(--poster-card-bg); color:var(--poster-text); font:600 11px/1.2 var(--poster-sans); }
 .nb-types button[aria-pressed="true"] { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
 .nb-menu-sep { height:2px; margin:4px 0; background:var(--poster-border); opacity:.25; }
@@ -1169,6 +1256,11 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb-swatch.legal { background:linear-gradient(90deg, transparent 8px, #e0605a 8px 9px, transparent 9px), repeating-linear-gradient(#FFF4A3 0 6px, #8fb3dc 6px 7px); border-top:6px solid #7b2f2a; }
 .nb-swatch.comp { background:repeating-conic-gradient(#111 0 12deg, #eee 12deg 17deg, #111 17deg 35deg, #ddd 35deg 38deg) 0 0/14px 14px; }
 .nb-swatch.eng { background:linear-gradient(#cfe3c4 1px, transparent 1px) 0 0/6px 6px, linear-gradient(90deg, #cfe3c4 1px, transparent 1px) 0 0/6px 6px, #EAF4E2; border-top:7px solid #EAF4E2; box-shadow:inset 0 1px 0 #6a9a5a; }
+.nb-swatch[class*="diary-"] { border-radius:2px 5px 5px 2px; background:var(--cover-img) center/120px; box-shadow:inset 3px 0 0 #0005; }
+.nb-swatch.diary-leather { --cover-img:url("textures/leather-brown.jpg"); }
+.nb-swatch.diary-linen { --cover-img:url("textures/linen-navy.jpg"); box-shadow:inset 3px 0 0 #0005, inset -7px 0 0 #0000, inset -10px 0 0 #111; }
+.nb-swatch.diary-rose { --cover-img:url("textures/leather-rose.jpg"); box-shadow:inset 3px 0 0 #0005, 2px 2px 0 #d4a94e; }
+.nb-swatch.diary-vintage { --cover-img:url("textures/leather-tan.jpg"); }
 
 .nb-body { position:relative; min-height:0; padding:0 8px 8px 0; perspective:1800px; }
 /* dictation button. Where it sits (data-mic-pos on .nb): "corner" floats on the page's bottom-right,
@@ -1284,8 +1376,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 /* ---- 1. Spiral notebook: ruled lines, red margin, wire coil, handwriting ---- */
 .nb[data-nb="spiral"] .nb-page { border:1.5px solid #b9c3d3; border-left:0; border-radius:2px 8px 8px 2px; padding-left:34px; box-shadow:4px 4px 0 var(--poster-border);
   background-image:radial-gradient(circle at 18px 50%, var(--poster-bg) 5px, #9aa4b2 5.5px, transparent 6.5px); background-size:34px 22px; background-repeat:repeat-y; }
-.nb[data-nb="spiral"] .nb-page::before { content:""; position:absolute; top:6px; bottom:6px; left:-6px; width:26px; z-index:2;
-  background:repeating-linear-gradient(transparent 0 6px, #6b7280 6px 9px, #d1d5db 9px 10px, transparent 10px 22px); border-radius:6px; }
+.nb[data-nb="spiral"] .nb-page::before { content:""; position:absolute; top:0; bottom:0; left:-19px; width:48px; z-index:2; pointer-events:none; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='11' viewBox='0 0 24 11'%3E%3Cellipse cx='18.4' cy='5.6' rx='1.9' ry='1.7' fill='%230009'/%3E%3Cellipse cx='18.4' cy='5.4' rx='1.9' ry='1.6' fill='none' stroke='%23ffffff30' stroke-width='.5'/%3E%3Cpath d='M2.4 5.6C2.6 8 7.5 8.9 11.6 8.1' fill='none' stroke='%230004' stroke-width='2' stroke-linecap='round' transform='translate%28.3 .8%29'/%3E%3Cpath d='M2.4 5.6C2.6 8 7.5 8.9 11.6 8.1' fill='none' stroke='%236b7076' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M18 5.5C14 1.7 5.6 1.4 3.3 3.6 2.5 4.3 2.3 5 2.4 5.6' fill='none' stroke='%230005' stroke-width='2.1' stroke-linecap='round' transform='translate%28.5 1.1%29'/%3E%3Cpath d='M18 5.5C14 1.7 5.6 1.4 3.3 3.6 2.5 4.3 2.3 5 2.4 5.6' fill='none' stroke='%23a3a8ae' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M15.6 3.4C12 2 7 2 4.8 3' fill='none' stroke='%23fff' stroke-width='.6' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/48px 22px repeat-y; }
 .nb[data-nb="spiral"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:88px; width:2px; background:var(--margin); opacity:.85; }
 .nb[data-nb="spiral"] .nb-head { border-bottom:2px solid var(--rule); }
 .nb[data-nb="spiral"] .nb-dow { font:700 22px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; opacity:.7; }
@@ -1306,12 +1397,12 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 
 /* ---- 3. Composition book: black-and-white marbled cover showing around the page, black cloth tape
    spine with stitching, wide-ruled white page with a pink margin and a DATE line; turns from the bottom corner ---- */
-.nb[data-nb="comp"] .nb-body { padding:10px 12px 12px 10px; background:#111 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.07 0.05' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -40 0 0 0 20.2'/%3E%3C/filter%3E%3Crect width='300' height='300' fill='%23f4f4f0'/%3E%3Crect width='300' height='300' filter='url(%23m)'/%3E%3C/svg%3E") 0 0/300px 300px; box-shadow:4px 4px 0 var(--poster-border); margin-right:8px; }
-.nb[data-nb="comp"] .nb-body::before { content:""; position:absolute; z-index:6; top:0; bottom:0; left:0; width:30px; background:#0d0d0d;
+.nb[data-nb="comp"] .nb-body { padding:0 8px 8px 0; }
+.nb[data-nb="comp"] .nb-body::before { content:""; position:absolute; z-index:6; top:0; bottom:8px; left:0; width:30px; background:#0d0d0d;
   box-shadow:inset -3px 0 4px #0008; }
-.nb[data-nb="comp"] .nb-body::after { content:""; position:absolute; z-index:7; top:6px; bottom:6px; left:21px; width:2px;
+.nb[data-nb="comp"] .nb-body::after { content:""; position:absolute; z-index:7; top:6px; bottom:14px; left:12px; width:2px;
   background:repeating-linear-gradient(#777 0 5px, transparent 5px 11px); }
-.nb[data-nb="comp"] .nb-page { --line:30px; --rule:#9ec0e6; --margin:#f2a0a8; inset:10px 12px 12px 26px; box-shadow:2px 2px 0 #0003; }
+.nb[data-nb="comp"] .nb-page { --line:30px; --rule:#9ec0e6; --margin:#f2a0a8; inset:0 8px 8px 22px; box-shadow:4px 4px 0 var(--poster-border); }
 .nb[data-nb="comp"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:54px; width:1.5px; background:var(--margin); }
 .nb[data-nb="comp"] .nb-head { justify-content:flex-end; align-items:flex-end; padding:20px 20px 10px 66px; border-bottom:1.5px solid var(--rule); }
 .nb[data-nb="comp"] .nb-label { display:flex; align-items:baseline; gap:8px; width:min(260px, 100%); font:600 11px/1 var(--poster-sans); letter-spacing:.1em; text-transform:uppercase; color:#666; }
@@ -1341,6 +1432,68 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   100% { transform:translateY(105%) translateX(8%) rotate(9deg); opacity:0; }
 }
 
+/* ---- 5. Diary (four looks to compare). The open book sits on its cover: the board shows around the page,
+   a ribbon bookmark hangs over the top, and the pages turn like a book (bottom corner). ---- */
+.nb[data-nb^="diary"] .nb-body { --cover:#4a2c16; }
+.nb[data-nb="diary-leather"] .nb-body { --cover:#4a2c16; --cover-img:url("textures/leather-brown.jpg"); --ribbon:#7a1420; }
+.nb[data-nb="diary-linen"] .nb-body   { --cover:#22324e; --cover-img:url("textures/linen-navy.jpg"); --ribbon:#111; }
+.nb[data-nb="diary-rose"] .nb-body    { --cover:#8a2f4e; --cover-img:url("textures/leather-rose.jpg"); --ribbon:#d4a94e; }
+.nb[data-nb="diary-vintage"] .nb-body { --cover:#8a5a26; --cover-img:url("textures/leather-tan.jpg"); --ribbon:#2f4a2a; }
+.nb[data-nb^="diary"] .nb-page { border-radius:2px 6px 6px 2px; box-shadow:1px 1px 0 #e9e0c9, 2px 2px 0 #d3c6a6, 3px 3px 0 #ece2c8, 6px 6px 0 var(--poster-border); }
+/* the gutter: the page curves down into the binding on the left */
+.nb[data-nb^="diary"] .nb-page::before { content:""; position:absolute; z-index:1; left:0; top:0; bottom:0; width:34px; pointer-events:none; background:linear-gradient(90deg, #0000002e, #00000010 40%, #0000); }
+/* ribbon bookmark coming over the top edge, with a notched end */
+.nb[data-nb^="diary"] .nb-body::after { content:""; position:absolute; z-index:7; top:-4px; right:56px; width:16px; height:96px; pointer-events:none;
+  background:linear-gradient(90deg, #0000004d, #fff2 40%, #0000 60%, #0003), var(--ribbon); clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%); filter:drop-shadow(1px 2px 1px #0005); }
+.nb[data-nb^="diary"] .nb-head { padding-right:96px; }
+.nb[data-nb^="diary"] .nb-label { display:block; margin-right:auto; }
+.nb[data-nb^="diary"] .nb-fmt-btn { margin-right:12px; }
+.nb[data-nb^="diary"] .nb-text { background-image:linear-gradient(transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px)); background-size:100% var(--line); }
+
+/* 5a. Leather lock diary: cream page, "Dear Diary," in script, the date in serif italic, brass-clasped strap */
+.nb[data-nb="diary-leather"] .nb-page { --paper:#f8f0dc; --ink:#3b2a1c; --rule:#e2d3b2; --line:34px; }
+.nb[data-nb="diary-leather"] .nb-head { align-items:baseline; padding-top:20px; padding-bottom:4px; }
+.nb[data-nb="diary-leather"] .nb-label { font:600 32px/1 "Dancing Script", cursive; color:#5a3a1e; }
+.nb[data-nb="diary-leather"] .nb-dow { display:none; }
+.nb[data-nb="diary-leather"] .nb-date { font:italic 400 19px/1 "EB Garamond", Georgia, serif; text-transform:none; color:#6b5038; }
+.nb[data-nb="diary-leather"] .nb-text { padding:6px 30px 24px 44px; font:500 25px/var(--line) "Caveat", cursive; }
+
+.nb-strap { display:none; position:absolute; z-index:7; right:-8px; top:38%; width:46px; height:58px; pointer-events:none; border-radius:5px 0 0 5px;
+  background:radial-gradient(circle at 46% 50%, #3a2a10 0 4px, #0000 5px), radial-gradient(circle at 46% 50%, #f7e3a1, #c9a24b 9px, #7d5c1c 15px, #0000 16px), var(--cover-img) center/300px, var(--cover); box-shadow:-3px 3px 6px #0008, inset 0 0 0 1px #0005; }
+.nb[data-nb="diary-rose"] .nb-strap { background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fbe7a8'/%3E%3Cstop offset='.55' stop-color='%23d4a94e'/%3E%3Cstop offset='1' stop-color='%238a6420'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 17C4 12.5 2 10 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-2 5.5-8 10z' fill='url(%23g)' stroke='%235a3f10' stroke-width='.6'/%3E%3Ccircle cx='10' cy='9.5' r='1.3' fill='%233a2a10'/%3E%3C/svg%3E") 42% 50%/30px no-repeat, var(--cover-img) center/300px, var(--cover); }
+
+/* 5b. Linen journal: crisp off-white dot grid, small-caps date and an entry number, elastic band on the cover */
+.nb[data-nb="diary-linen"] .nb-page { --paper:#fbfaf4; --ink:#1f2633; --rule:transparent; --line:28px; }
+.nb[data-nb="diary-linen"] .nb-head { flex-direction:row; align-items:baseline; gap:14px; padding:22px 96px 10px 40px; border-bottom:1px solid #1f263326; }
+.nb[data-nb="diary-linen"] .nb-label { order:2; margin:0 0 0 auto; font:500 13px/1 "EB Garamond", Georgia, serif; letter-spacing:.12em; text-transform:uppercase; color:#8a8f99; }
+.nb[data-nb="diary-linen"] .nb-fmt-btn { order:3; margin:0; }
+.nb[data-nb="diary-linen"] .nb-date { order:0; font:500 24px/1 "EB Garamond", Georgia, serif; text-transform:none; letter-spacing:.01em; }
+.nb[data-nb="diary-linen"] .nb-dow { order:1; font:500 13px/1 "EB Garamond", Georgia, serif; letter-spacing:.14em; opacity:.55; }
+.nb[data-nb="diary-linen"] .nb-text { padding:14px 32px 24px 40px; font:400 19px/var(--line) "EB Garamond", Georgia, serif;
+  background-image:radial-gradient(circle at 1px calc(var(--line) - 1px), #1f263340 1.1px, transparent 1.6px); background-size:var(--line) var(--line); background-position:40px 14px; }
+
+
+/* 5c. Rose keepsake: blush pages with gilt edges, double pink margin, hearts, and a gold heart clasp */
+.nb[data-nb="diary-rose"] .nb-page { --paper:#fff6f7; --ink:#5e2442; --rule:#f4cdd8; --margin:#eaa0b6; --line:32px; box-shadow:1px 1px 0 #f6dc8e, 2px 2px 0 #cfa548, 3px 3px 0 #f2d27d, 6px 6px 0 var(--poster-border); }
+.nb[data-nb="diary-rose"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:56px; width:5px; border-left:1.5px solid var(--margin); border-right:1.5px solid var(--margin); pointer-events:none; }
+.nb[data-nb="diary-rose"] .nb-head { padding:18px 96px 6px 76px; }
+.nb[data-nb="diary-rose"] .nb-fmt-btn { position:absolute; left:12px; top:16px; }
+.nb[data-nb="diary-rose"] .nb-label { font:600 30px/1 "Dancing Script", cursive; color:#b23a68; }
+.nb[data-nb="diary-rose"] .nb-label::after { content:" \2661 \2661"; font:400 18px/1 Georgia, serif; color:#e58aa8; letter-spacing:.15em; }
+.nb[data-nb="diary-rose"] .nb-dow { font:700 20px/1 "Caveat", cursive; text-transform:none; letter-spacing:0; color:#b23a68; opacity:.8; }
+.nb[data-nb="diary-rose"] .nb-date { font:700 26px/1 "Caveat", cursive; text-transform:none; color:#7a2b51; }
+.nb[data-nb="diary-rose"] .nb-text { padding:6px 30px 24px 76px; font:500 24px/var(--line) "Caveat", cursive; }
+
+/* 5d. Travel journal: aged paper, typewritten text, an entry number and a rubber-stamped date */
+.nb[data-nb="diary-vintage"] .nb-page { --paper:#efe2c3; --ink:#2b2116; --rule:#c8b28a80; --line:30px;
+  background:radial-gradient(120% 90% at 50% 45%, #0000 55%, #b8955a40 85%, #8a6a3466), radial-gradient(30% 20% at 80% 85%, #a9874d1c, #0000), radial-gradient(25% 18% at 15% 20%, #a9874d14, #0000), var(--paper); }
+.nb[data-nb="diary-vintage"] .nb-head { align-items:center; padding:22px 96px 10px 40px; border-bottom:1px dashed #6b5232aa; }
+.nb[data-nb="diary-vintage"] .nb-label { font:400 15px/1 "Special Elite", monospace; letter-spacing:.12em; text-transform:uppercase; color:#5a4428; }
+.nb[data-nb="diary-vintage"] .nb-dow { display:none; }
+.nb[data-nb="diary-vintage"] .nb-date { font:400 16px/1 "Special Elite", monospace; letter-spacing:.1em; color:#9b2a1e; padding:6px 10px 5px; border:2px solid #9b2a1ecc; outline:1px solid #9b2a1e99; outline-offset:2px; border-radius:3px; transform:rotate(-3deg); opacity:.85; mix-blend-mode:multiply; }
+.nb[data-nb="diary-vintage"] .nb-text { padding:12px 32px 24px 40px; font:400 17px/var(--line) "Special Elite", "Courier New", monospace; }
+
+
 @media (max-width:520px) {
   .nb-bar { gap:8px; }
   .nb-saved { display:none; }
@@ -1354,6 +1507,13 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .nb[data-nb="comp"] .nb-head { padding-left:48px; padding-right:12px; }
   .nb[data-nb="comp"] .nb-text { padding-left:48px; padding-right:10px; }
   .nb[data-nb="eng"] .nb-head > * { padding:8px 10px; }
+  .nb[data-nb^="diary"] .nb-head { padding-left:14px; padding-right:62px; }
+  .nb[data-nb^="diary"] .nb-body::after { right:26px; width:13px; height:76px; }
+  .nb[data-nb^="diary"] .nb-text { padding-left:22px; padding-right:16px; }
+  .nb[data-nb="diary-rose"] .nb-page::after { left:34px; }
+  .nb[data-nb="diary-rose"] .nb-text, .nb[data-nb="diary-rose"] .nb-head { padding-left:48px; }
+  .nb[data-nb="diary-leather"] .nb-label, .nb[data-nb="diary-rose"] .nb-label { font-size:26px; }
+  .nb[data-nb="diary-linen"] .nb-label { display:none; }
   .nb-head { padding-left:12px; padding-right:12px; }
 }
 @media (prefers-reduced-motion:reduce) { .nb-turn { display:none; } }
@@ -1487,6 +1647,8 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="legal"><span class="nb-swatch legal"></span><span>Legal pad<small>Yellow, flips up over the top</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="comp"><span class="nb-swatch comp"></span><span>Composition book<small>Marbled cover, turns like a book</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="eng"><span class="nb-swatch eng"></span><span>Engineering pad<small>Green grid, tear off each sheet</small></span></button>
+          <button type="button" class="nb-opt nb-diary-opt" role="menuitemradio" data-nb="diary" aria-expanded="false"><span class="nb-swatch diary-leather"></span><span>Diary<small>Pick your diary</small></span><span class="nb-caret" aria-hidden="true">&rsaquo;</span></button>
+          <div class="nb-diaries" id="nbDiaries" data-mode="slide" hidden><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-leather"><span class="nb-swatch diary-leather"></span><span>Leather lock<small>Brass clasp, cream pages</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-linen"><span class="nb-swatch diary-linen"></span><span>Linen journal<small>Elastic band, dot grid</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-rose"><span class="nb-swatch diary-rose"></span><span>Rose keepsake<small>Heart clasp, gilt edges</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-vintage"><span class="nb-swatch diary-vintage"></span><span>Travel journal<small>Leather cord, aged paper</small></span></button></div>
           <div class="nb-menu-sep"></div>
           <button type="button" class="nb-act" id="nbRename">Rename notebook</button>
           <button type="button" class="nb-act danger" id="nbDelete">Move to trash</button>
@@ -1528,6 +1690,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
     </div>
     <div class="nb-pop" id="nbPop" role="dialog" aria-label="Pick a color" hidden></div>
     <div class="nb-body" id="nbBody">
+      <div class="nb-strap" aria-hidden="true"></div>
       <div class="nb-page" id="nbPage">
         <div class="nb-head"><button type="button" class="nb-fmt-btn" id="nbFmtBtn" aria-label="Text formatting" aria-pressed="false" aria-controls="nbTools"><span aria-hidden="true">A<i>a</i></span></button><span class="nb-label" id="nbLabel"></span><span class="nb-dow" id="nbDow"></span><span class="nb-date" id="nbDate"></span></div>
         <div class="nb-text" id="nbText" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Notes for this day" data-placeholder="Start writing…" spellcheck="true"></div>
@@ -1563,7 +1726,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         <button type="button" data-t="legal" aria-pressed="false"><span class="nb-swatch legal"></span>Legal pad</button>
         <button type="button" data-t="comp" aria-pressed="false"><span class="nb-swatch comp"></span>Composition</button>
         <button type="button" data-t="eng" aria-pressed="false"><span class="nb-swatch eng"></span>Engineering</button>
+        <button type="button" data-t="diary" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Diary</button>
       </div>
+      <div class="nb-diary-pick" id="newNbDiaries" data-mode="slide" hidden><span>Which diary?</span><div class="nb-types"><button type="button" data-d="diary-leather" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Leather lock</button><button type="button" data-d="diary-linen" aria-pressed="false"><span class="nb-swatch diary-linen"></span>Linen journal</button><button type="button" data-d="diary-rose" aria-pressed="false"><span class="nb-swatch diary-rose"></span>Rose keepsake</button><button type="button" data-d="diary-vintage" aria-pressed="false"><span class="nb-swatch diary-vintage"></span>Travel journal</button></div></div>
     </div>
     <div class="modal-actions">
       <button type="button" class="modal-btn secondary" id="newNbCancel">Cancel</button>
@@ -3194,7 +3359,7 @@ if (!Array.isArray(notebooks)) {
   let style = "spiral"; try { style = localStorage.getItem("notebookStyle") || "spiral"; } catch(e) {}
   // an empty desk to start; pages from the old single notebook (if any) become "My notebook"
   const old = nbLoad("notebookPages", {});
-  notebooks = Object.keys(old).length ? [{ id: "nb-main", name: "My notebook", type: ["spiral","legal","comp","eng"].includes(style) ? style : "spiral", x: .06, y: .08, r: -2 }] : [];
+  notebooks = Object.keys(old).length ? [{ id: "nb-main", name: "My notebook", type: ["spiral","legal","comp","eng","diary-leather","diary-linen","diary-rose","diary-vintage"].includes(style) ? style : "spiral", x: .06, y: .08, r: -2 }] : [];
   nbAllPages = notebooks.length ? { "nb-main": old } : {};
   nbStore("notebooks", notebooks); nbStore("notebookPagesBy", nbAllPages);
 }
@@ -3224,6 +3389,15 @@ function fillNbPage(page, day) {
   page.querySelector(".nb-dow").textContent = (today ? "Today · " : "") + dow;
   page.querySelector(".nb-date").textContent = date;
   page.querySelector(".nb-label").innerHTML = style === "comp" ? `Date <b>${date}</b>` : style === "eng" ? `Sheet <b>${String(dayOfYear).padStart(3, "0")}</b>` : "";
+  if (style && style.startsWith("diary")) {
+    const long = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const n = String(dayOfYear).padStart(3, "0");
+    const lab = page.querySelector(".nb-label"), dt = page.querySelector(".nb-date");
+    if (style === "diary-leather") { lab.textContent = "Dear Diary,"; dt.textContent = long; }
+    else if (style === "diary-linen") { lab.textContent = "No. " + n; dt.textContent = d.toLocaleDateString("en-US", { month: "long", day: "numeric" }); }
+    else if (style === "diary-rose") { lab.textContent = "Dear Diary"; }
+    else if (style === "diary-vintage") { lab.textContent = "Entry No. " + n; dt.textContent = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase(); }
+  }
   nbSetContent(page.querySelector(".nb-text"), nbPages[day]);
 }
 // a page's writing: rich text (html), or plain text saved before formatting existed
@@ -3351,14 +3525,67 @@ function showNbPage(dir) {
 const nbEl = document.querySelector(".nb"), nbMenu = document.getElementById("nbMenu"), nbMenuBtn = document.getElementById("nbMenuBtn");
 function setNotebook(style) {
   nbEl.dataset.nb = style;
-  document.querySelectorAll(".nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.nb === style)));
+  document.querySelectorAll(".nb-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.nb === style || (o.dataset.nb === "diary" && style.startsWith("diary")))));
   const cur = notebooks.find(n => n.id === openNbId);
   if (cur && cur.type !== style) { cur.type = style; nbStore("notebooks", notebooks); }
   fillNbPage(document.getElementById("nbPage"), nbDay);
 }
-function toggleNbMenu(open) { nbMenu.hidden = !open; nbMenuBtn.setAttribute("aria-expanded", String(open)); }
+/* ---- how the Diary list opens (PREVIEW: slide / side / fan, switchable while Nick compares) ---- */
+let diaryPick = "slide";   // Slide was used for launch; "side" and "fan" are still here if wanted later
+const DPICKS = [["slide", "Slide"], ["side", "Side"], ["fan", "Fan"]];
+function paintDpickTry() {
+  document.querySelectorAll(".dpick-try").forEach(t => { t.innerHTML = DPICKS.map(([k, l]) => `<button type="button" data-dp="${k}" aria-pressed="${k === diaryPick}">${l}</button>`).join(""); });
+  document.querySelectorAll("#nbDiaries, #newNbDiaries").forEach(l => l.dataset.mode = diaryPick);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".dpick-try [data-dp]"); if (!b) return;
+  e.stopPropagation(); e.preventDefault();
+  diaryPick = b.dataset.dp; try { localStorage.setItem("diaryPickStyle", diaryPick); } catch(e) {}
+  paintDpickTry();
+  // replay the opening so the new style can be seen
+  ["nbDiaries", "newNbDiaries"].forEach(id => { const l = document.getElementById(id); if (!l.hidden) { l.hidden = true; showDiaryList(l, true); } });
+}, true);
+function showDiaryList(list, show) {
+  if (show === !list.hidden) return;
+  const items = [...(list.querySelector(".nb-types") || list).children], reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  list.getAnimations({ subtree: true }).forEach(a => a.cancel());
+  if (reduce || !list.animate) { list.hidden = !show; return; }
+  const mode = list.dataset.mode;
+  if (!show) {
+    const out = mode === "side" ? [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(10px)" }]
+      : mode === "fan" ? [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-6px) scale(.96)" }]
+      : [{ height: list.offsetHeight + "px", opacity: 1 }, { height: "0px", opacity: 0 }];
+    list.style.overflow = "hidden";
+    list.animate(out, { duration: 180, easing: "ease-in" }).onfinish = () => { list.hidden = true; list.style.overflow = ""; };
+    return;
+  }
+  list.hidden = false;
+  if (mode === "side") {
+    // a card slides out beside the menu, then its rows follow one after another
+    list.animate([{ opacity: 0, transform: "translateX(16px) scale(.97)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: "translateX(10px)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 80 + i * 45, easing: "ease-out", fill: "backwards" }));
+  } else if (mode === "fan") {
+    // the covers are dealt out from the Diary icon, each landing with a little spring
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: `translate(${-24 - i * 22}px, -14px) rotate(${-16 + i * 4}deg) scale(.55)` }, { opacity: 1, transform: "none" }],
+      { duration: 460, delay: i * 70, easing: "cubic-bezier(.3,1.45,.5,1)", fill: "backwards" }));
+  } else {
+    // the list rolls open underneath, rows easing in from just above
+    const hgt = list.scrollHeight; list.style.overflow = "hidden";
+    list.animate([{ height: "0px" }, { height: hgt + "px" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" }).onfinish = () => { list.style.overflow = ""; };
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: "translateY(-8px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 70 + i * 50, easing: "ease-out", fill: "backwards" }));
+  }
+}
+function toggleNbMenu(open) {
+  nbMenu.hidden = !open; nbMenuBtn.setAttribute("aria-expanded", String(open));
+  if (open) { paintDpickTry(); const d = (nbEl.dataset.nb || "").startsWith("diary"), dl = document.getElementById("nbDiaries"); dl.hidden = !d; if (d && diaryPick === "side") dl.style.top = nbMenu.querySelector(".nb-diary-opt").offsetTop + "px"; nbMenu.querySelector(".nb-diary-opt").setAttribute("aria-expanded", String(d)); }
+}
 nbMenuBtn.onclick = e => { e.stopPropagation(); toggleNbMenu(nbMenu.hidden); };
-nbMenu.addEventListener("click", e => { e.stopPropagation(); const o = e.target.closest(".nb-opt"); if (o) { setNotebook(o.dataset.nb); toggleNbMenu(false); } });
+nbMenu.addEventListener("click", e => {
+  e.stopPropagation(); const o = e.target.closest(".nb-opt"); if (!o) return;
+  // "Diary" opens the list of diaries underneath it; picking one of those switches to it
+  if (o.dataset.nb === "diary") { const list = document.getElementById("nbDiaries"), show = list.hidden; showDiaryList(list, show); o.setAttribute("aria-expanded", String(show)); if (diaryPick === "side" && show) list.style.top = o.offsetTop + "px"; return; }
+  setNotebook(o.dataset.nb); toggleNbMenu(false);
+});
 document.addEventListener("click", () => { if (!nbMenu.hidden) toggleNbMenu(false); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !nbMenu.hidden) { toggleNbMenu(false); nbMenuBtn.focus(); } });
 function saveNbPage() {
@@ -3722,8 +3949,14 @@ function renderDesk() {
       } else if (item.type === "comp") {
         el.innerHTML = `<span class="dn-label"><span class="dn-title">Composition Book<small>100 sheets · wide ruled</small></span>
           <span class="dn-line">NAME<i></i></span><span class="dn-line">SUBJECT<i><span class="dn-name">${sEsc(item.name)}</span></i></span>${count}</span>`;
+      } else if (item.type === "diary-linen") {
+        el.innerHTML = `<span class="dn-plate"><span class="dn-name">${sEsc(item.name)}</span>${count}</span><span class="dn-band"></span>`;
+      } else if (item.type && item.type.startsWith("diary")) {
+        const title = { "diary-leather": "Diary", "diary-rose": "My Diary", "diary-vintage": "Journal" }[item.type] || "Diary";
+        const latch = item.type === "diary-vintage" ? `<span class="dn-cord"></span>` : `<span class="dn-strap"></span>`;
+        el.innerHTML = `<span class="dn-dtitle">${title}</span><span class="dn-name">${sEsc(item.name)}</span>${count}${latch}`;
       } else el.innerHTML = `<span class="dn-name">${sEsc(item.name)}</span>${count}`;
-      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openNotebook(item.id); } });
+      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFromDesk(el, item.id); } });
     } else {
       el = document.createElement("div");
       el.className = "desk-item desk-sticky";
@@ -3765,7 +3998,7 @@ function renderDesk() {
     el._item = item; el._kind = kind;
     if (grid) {
       deskArea.querySelector(`.desk-shelf[data-k="${kind}"]`).appendChild(el);
-      if (kind === "nb") el.onclick = () => openNotebook(item.id);
+      if (kind === "nb") el.onclick = () => openFromDesk(el, item.id);
     } else { el.style.zIndex = deskArea.children.length + 1; deskArea.appendChild(el); makeDraggable(el); }
   });
   placeDeskItems();
@@ -3805,7 +4038,7 @@ function makeDraggable(el) {
       if (moved && ev.type === "pointerup" && overTrash(ev)) { item.x = ox; item.y = oy; throwAway(el); return; }
       el.classList.remove("to-trash");
       if (moved) nbStore(el._kind === "nb" ? "notebooks" : "stickyNotes", el._kind === "nb" ? notebooks : stickies);
-      else if (el._kind === "nb") openNotebook(item.id);
+      else if (el._kind === "nb") openFromDesk(el, item.id);
       else { const ta = el.querySelector("textarea"); ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; }   // tap a note to write in it
     };
     el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
@@ -3881,24 +4114,52 @@ function throwAway(el) {
       { transform: `translate(${x}px, ${y}px) rotate(${r + 18}deg) scale(.78)`, clipPath: CRUMPLE1, filter: "brightness(.95)", offset: .28 },
       { transform: `translate(${x}px, ${y - 8}px) rotate(${r + 110}deg) scale(.42)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", offset: .5 },
       { transform: `translate(${(x + tx) / 2}px, ${Math.min(y, ty) - 70}px) rotate(${r + 230}deg) scale(.36)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", offset: .74 },
-      { transform: `translate(${tx}px, ${ty}px) rotate(${r + 330}deg) scale(.2)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", opacity: .2, offset: 1 },
+      { transform: `translate(${tx}px, ${ty - 46}px) rotate(${r + 300}deg) scale(.24)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", zIndex: 999, offset: .88 },
+      { transform: `translate(${tx}px, ${ty - 40}px) rotate(${r + 305}deg) scale(.23)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", zIndex: 1, offset: .9 },
+      { transform: `translate(${tx}px, ${ty + 4}px) rotate(${r + 330}deg) scale(.2)`, clipPath: BALL, filter: "brightness(.86) contrast(1.15)", zIndex: 1, offset: 1 },
     ];
   } else {
     ms = 800;
     frames = [
       { transform: `translate(${x}px, ${y}px) rotate(${r}deg) scale(1)`, offset: 0 },
       { transform: `translate(${x}px, ${y - 16}px) rotate(${r - 10}deg) scale(1.04)`, offset: .2 },
-      { transform: `translate(${(x + tx) / 2}px, ${Math.min(y, ty) - 60}px) rotate(${r + 35}deg) scale(.55)`, offset: .62 },
-      { transform: `translate(${tx}px, ${ty}px) rotate(${r + 85}deg) scale(.12)`, opacity: .15, offset: 1 },
+      { transform: `translate(${(x + tx) / 2}px, ${Math.min(y, ty) - 60}px) rotate(${r + 35}deg) scale(.55)`, zIndex: 999, offset: .6 },
+      { transform: `translate(${tx}px, ${ty - 50}px) rotate(${r + 80}deg) scale(.2)`, zIndex: 999, offset: .86 },
+      { transform: `translate(${tx}px, ${ty - 44}px) rotate(${r + 84}deg) scale(.19)`, zIndex: 1, offset: .88 },
+      { transform: `translate(${tx}px, ${ty + 6}px) rotate(${r + 90}deg) scale(.14)`, zIndex: 1, offset: 1 },
     ];
   }
-  trashBtn.classList.add("hot");
+  trashLid(true);
   const anim = el.animate(frames, { duration: ms, easing: "cubic-bezier(.45,0,.55,1)", fill: "forwards" });
   anim.onfinish = () => {
-    trashBtn.classList.remove("hot");
     moveToTrash(kind, item);
-    trashBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.16) rotate(-7deg)" }, { transform: "scale(.94) rotate(3deg)" }, { transform: "scale(1)" }], { duration: 420, easing: "ease-out" });
+    trashLid(false); trashThud();
   };
+}
+// trash can motion: the lid springs open on its hinge, then slams shut with a bounce; the can squashes,
+// a little dust puffs out of the rim, and the count badge pops
+function trashLid(open) {
+  const lid = trashBtn.querySelector(".lid"); if (!lid || !lid.animate) return;
+  const up = "translate(-1px, -5px) rotate(-40deg)";
+  lid.getAnimations().forEach(a => a.cancel());
+  if (open) lid.animate([{ transform: "none" }, { transform: "translate(-1px, -6px) rotate(-48deg)", offset: .6 }, { transform: up }], { duration: 320, easing: "cubic-bezier(.3,1.4,.5,1)", fill: "forwards" });
+  else lid.animate([{ transform: up }, { transform: "rotate(5deg)", offset: .45 }, { transform: "rotate(-4deg)", offset: .7 }, { transform: "rotate(1.5deg)", offset: .86 }, { transform: "none" }], { duration: 460, easing: "ease-in" });
+}
+function trashThud() {
+  trashBtn.classList.remove("hot");
+  trashBtn.animate([{ transform: "none" }, { transform: "translateY(3px) scale(1.14, .84)", offset: .22 }, { transform: "translateY(-4px) scale(.93, 1.09)", offset: .5 },
+    { transform: "translateY(1px) scale(1.03, .97)", offset: .76 }, { transform: "none" }], { duration: 560, easing: "ease-out" });
+  const badge = trashBtn.querySelector(".dt-count");
+  if (badge) badge.animate([{ transform: "scale(.4)" }, { transform: "scale(1.35)", offset: .6 }, { transform: "scale(1)" }], { duration: 380, delay: 120, easing: "ease-out" });
+  const host = trashBtn.parentElement, tr = trashBtn.getBoundingClientRect(), hr = host.getBoundingClientRect();
+  for (let i = 0; i < 7; i++) {
+    const p = document.createElement("span"); p.className = "trash-puff";
+    p.style.left = (tr.left - hr.left + tr.width / 2 - 5) + "px"; p.style.top = (tr.top - hr.top + 6) + "px";
+    host.appendChild(p);
+    const a = -Math.PI * (.1 + .8 * i / 6), d = 22 + Math.random() * 14;
+    p.animate([{ transform: "translate(0,0) scale(.5)", opacity: .55 }, { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d * .7}px) scale(${1.6 + Math.random()})`, opacity: 0 }],
+      { duration: 520 + Math.random() * 200, delay: 60, easing: "cubic-bezier(.2,.8,.3,1)" }).onfinish = () => p.remove();
+  }
 }
 function renderTrash() {
   const list = document.getElementById("trashList");
@@ -4022,6 +4283,146 @@ function openNotebook(id) {
   setNotebook(n.type);
   showNbPage(0);
 }
+/* ---- Opening a notebook from the desk. Diaries come undone first (the clasp swings off to the right,
+   the elastic band snaps off sideways, the cord unwinds), then the cover swings open on its spine
+   (spiral, composition, diaries), and then we zoom into the page. Built on the Web Animations API. ---- */
+// small frame-by-frame tween (for the elastic band and the cord, which bend as they come off)
+const tween = (ms, fn, ease = t => t) => new Promise(res => { const t0 = performance.now(); const f = now => { const t = Math.min(1, (now - t0) / ms); fn(ease(t), t); t < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); });
+const easeInOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, easeOut = t => 1 - Math.pow(1 - t, 3), easeIn = t => t * t * t;
+const svgEl = (tag, attrs) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+// elastic band: a finger hooks it in the middle and pulls it out to the right (it bows and thins as it
+// stretches), the top end slips off the corner, and it snaps away and drops
+async function unBand(box, band, w, h) {
+  const bx = w * .84, sw = w * .06;
+  const svg = svgEl("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, style: "position:absolute;left:0;top:0;overflow:visible;z-index:3" });
+  const g = svgEl("g", {}), shade = svgEl("path", { fill: "none", stroke: "#0006", "stroke-linecap": "round" }), body = svgEl("path", { fill: "none", stroke: "#111", "stroke-linecap": "round" }), shine = svgEl("path", { fill: "none", stroke: "#5a5a5a", "stroke-linecap": "round" });
+  g.append(shade, body, shine); svg.appendChild(g); box.appendChild(svg); band.style.visibility = "hidden";
+  const draw = (tx, ty, cx, bot, thick) => {
+    const d = `M${tx} ${ty} Q${cx} ${(ty + bot) / 2} ${tx} ${bot}`;
+    shade.setAttribute("d", d); shade.setAttribute("transform", "translate(2 2)");
+    [shade, body].forEach(p => { p.setAttribute("d", d); p.setAttribute("stroke-width", thick); });
+    shine.setAttribute("d", d); shine.setAttribute("stroke-width", thick * .22); shine.setAttribute("transform", `translate(${-thick * .2} 0)`);
+  };
+  // pinch it in the middle and draw it out a little, then slide it along the top and bottom edges
+  // off the right side (the middle leads, the ends drag behind); past the edge it snaps shut and drops away
+  const bow = w * .07, edge = w + 3;
+  await tween(170, e => draw(bx, -1, bx + 2 * bow * e, h + 1, sw * (1 - .12 * e)), easeOut);
+  await tween(480, e => { const x = bx + (edge - bx) * e; draw(x, -1, x + 2 * bow * (1 - .3 * e), h + 1, sw * (.88 - .1 * e)); }, easeInOut);
+  await tween(300, (e, t) => {
+    const top = -1 + h * .34 * e, bot = h + 1 - h * .34 * e;
+    draw(edge + w * .05 * e, top, edge + 2 * bow * .7 * (1 - e) + w * .1 * e, bot, sw * (.78 + .5 * e));
+    g.setAttribute("transform", `translate(${w * .12 * e} ${h * .1 * e * e})`); svg.style.opacity = String(1 - t * t);
+  }, easeOut);
+  svg.remove();
+}
+// leather cord: the knot loosens and the loose end wriggles, then the wrap peels off around the right
+// edge (its left end whips up and over), and the cord slides off and drops
+async function unCord(box, cord, w, h) {
+  const y = h * .7 + w * .0175, R = w * 1.04, sw = Math.max(2, w * .035);
+  const svg = svgEl("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, style: "position:absolute;left:0;top:0;overflow:visible;z-index:3" });
+  const g = svgEl("g", {}), shade = svgEl("path", { fill: "none", stroke: "#0007", "stroke-linecap": "round", "stroke-linejoin": "round" }),
+    body = svgEl("path", { fill: "none", stroke: "#3b2412", "stroke-linecap": "round", "stroke-linejoin": "round" }),
+    shine = svgEl("path", { fill: "none", stroke: "#8a5f3a", "stroke-linecap": "round", "stroke-linejoin": "round" }), knot = svgEl("circle", { fill: "#2a170a" });
+  g.append(shade, body, shine, knot); svg.appendChild(g); box.appendChild(svg); cord.style.visibility = "hidden";
+  const draw = (lx, ly, cx, cy, wig, slack) => {
+    // left end -> (bend) -> the knot at the right edge -> the loose tail hanging down
+    const d = `M${lx} ${ly} Q${cx} ${cy} ${R} ${y} q${6 + wig} ${4 + slack} ${2 - wig * 1.5} ${14 + slack * 2} t${wig} ${10 + slack}`;
+    [shade, body, shine].forEach(p => p.setAttribute("d", d));
+    shade.setAttribute("stroke-width", sw * 1.2); shade.setAttribute("transform", "translate(1.5 2)");
+    body.setAttribute("stroke-width", sw); shine.setAttribute("stroke-width", sw * .3); shine.setAttribute("transform", `translate(0 ${-sw * .2})`);
+    knot.setAttribute("cx", R); knot.setAttribute("cy", y); knot.setAttribute("r", sw * (1.1 - slack * .02));
+  };
+  await tween(420, (e, t) => draw(0, y, R / 2, y, Math.sin(t * Math.PI * 4) * 5 * (1 - t * .5), 6 * e), easeOut);   // knot loosens, tail wriggles
+  await tween(560, e => {                                                                                         // the wrap peels off, left end whips over
+    const a = Math.PI * e, lx = R / 2 - (R / 2) * Math.cos(a) * (1 - .1 * e), ly = y - h * .32 * Math.sin(a);
+    draw(lx, ly, (lx + R) / 2, Math.min(ly, y) - h * .12 * Math.sin(a), 2 * (1 - e), 6 + 4 * e);
+  }, easeInOut);
+  await tween(380, (e, t) => {                                                                                    // slides off and drops
+    draw(R - 6, y - 4 + 10 * e, R + 6, y - 10 + 20 * e, 0, 10 + 8 * e);
+    g.setAttribute("transform", `translate(${w * .3 * e} ${h * .2 * e * e}) rotate(${24 * e} ${R} ${y})`); svg.style.opacity = String(1 - t * t);
+  }, easeIn);
+  svg.remove();
+}
+const COVER_TYPES = ["spiral", "comp", "diary-leather", "diary-linen", "diary-rose", "diary-vintage"];
+let nbFlying = false;
+function openFromDesk(el, id) {
+  const n = notebooks.find(x => x.id === id);
+  if (!n || nbFlying) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !el.animate) { openNotebook(id); return; }
+  nbFlying = true;
+  const type = n.type || "spiral", w = el.offsetWidth, h = el.offsetHeight, br = el.getBoundingClientRect();
+  const L = br.left + br.width / 2 - w / 2, T = br.top + br.height / 2 - h / 2, r = el.closest(".desk-shelf") ? 0 : (n.r || 0);
+  // a copy of the notebook, laid over the page, that we animate (class "desk" keeps its desk look)
+  const fly = document.createElement("div");
+  fly.className = "desk nb-fly"; fly.dataset.desk = desk.dataset.desk || "";
+  fly.style.cssText = `left:${L}px; top:${T}px; width:${w}px; height:${h}px;`;
+  const fw = getComputedStyle(el).getPropertyValue("--w");
+  const page = document.createElement("div"); page.className = "fly-page"; page.dataset.type = type;
+  const cover = el.cloneNode(true); cover.className = "desk-nb fly-cover"; cover.dataset.type = type; cover.removeAttribute("style");
+  ["--cv"].forEach(v => { const val = el.style.getPropertyValue(v); if (val) cover.style.setProperty(v, val); });
+  cover.querySelectorAll("button").forEach(b => b.remove());
+  fly.append(page, cover);
+  fly.querySelectorAll(".desk-nb").forEach(x => x.style.setProperty("--w", fw));
+  // the clasp, band or cord belongs to the back of the book, so it stays put while the cover opens
+  const latch = cover.querySelector(".dn-strap, .dn-band, .dn-cord");
+  const latchBox = document.createElement("div"); latchBox.className = "desk-nb fly-latch"; latchBox.dataset.type = type; latchBox.style.setProperty("--w", fw);
+  if (latch) { latchBox.appendChild(latch); fly.appendChild(latchBox); }
+  const center = `translate(${w / 2}px, ${h / 2}px) rotate(${r}deg) translate(${-w / 2}px, ${-h / 2}px)`;
+  fly.style.transform = center;
+  document.body.appendChild(fly);
+  el.style.visibility = "hidden";
+  const go = (t, kf, o) => t.animate(kf, Object.assign({ fill: "forwards", easing: "cubic-bezier(.4,0,.2,1)" }, o)).finished;
+  const lift = go(fly, [{ transform: center }, { transform: `translate(0, -6px) ${center} scale(1.04)` }], { duration: 220 });
+  (async () => {
+    try {
+      await lift;
+      const lifted = `translate(0, -6px) ${center} scale(1.04)`;
+      if (latch && latch.classList.contains("dn-strap")) {
+        // the clasp clicks, then the strap swings out to the right on its hinge
+        await go(latch, [{ transform: "none" }, { transform: "translateX(-2px) scale(.94)", offset: .18 }, { transform: "translateX(1px) scale(1.04)", offset: .32 },
+          { transform: "perspective(240px) rotateY(-175deg)" }], { duration: 620, easing: "cubic-bezier(.45,0,.25,1.15)" });
+      } else if (latch && latch.classList.contains("dn-band")) {
+        await unBand(latchBox, latch, w, h);
+      } else if (latch && latch.classList.contains("dn-cord")) {
+        await unCord(latchBox, latch, w, h);
+      }
+      if (COVER_TYPES.includes(type)) {
+        // the cover swings open on its spine; halfway round we see its inside
+        const open = go(cover, [{ transform: "perspective(1100px) rotateY(0)" }, { transform: "perspective(1100px) rotateY(-178deg)" }], { duration: 760, easing: "cubic-bezier(.5,.05,.25,1)" });
+        setTimeout(() => cover.classList.add("inside"), 300);
+        await open;
+      } else {
+        // pads: the top sheet lifts a little before we go in
+        await go(fly, [{ transform: lifted }, { transform: `translate(0, -10px) ${center} scale(1.06)` }], { duration: 200 });
+      }
+      // a breath to see the open page, then the real page itself grows out of it: it starts at the
+      // little page's size and place (scaled evenly, cropped to that shape) and opens out to full size,
+      // so the writing, lines and dots never stretch. The desk eases away behind it.
+      await new Promise(res => setTimeout(res, 160));
+      const S = page.getBoundingClientRect();
+      const veil = document.createElement("div"); veil.className = "nb-veil"; document.body.insertBefore(veil, fly);
+      openNotebook(id);
+      const real = document.getElementById("nbPage");
+      nbEl.style.position = "relative"; nbEl.style.zIndex = "3001"; nbEl.style.opacity = "";
+      nbEl.classList.add("nb-zooming");
+      const P = real.getBoundingClientRect();
+      const s = Math.max(S.width / P.width, S.height / P.height);
+      const cropR = Math.max(0, P.width - S.width / s), cropB = Math.max(0, P.height - S.height / s);
+      const ZOOM = 640, ease = "cubic-bezier(.5,0,.15,1)";
+      fly.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, delay: 40, fill: "forwards" });
+      veil.animate([{ opacity: 0 }, { opacity: .96 }], { duration: ZOOM * .8, easing: "ease-out", fill: "forwards" });
+      await real.animate([
+        { transformOrigin: "0 0", transform: `translate(${S.left - P.left}px, ${S.top - P.top}px) scale(${s})`, clipPath: `inset(0 ${cropR}px ${cropB}px 0 round 3px)` },
+        { transformOrigin: "0 0", transform: "translate(0, 0) scale(1)", clipPath: "inset(-14px -14px -14px -14px round 3px)" }], { duration: ZOOM, easing: ease }).finished;
+      // the bar, tools and ribbon fade in around the page, and the desk's screen comes back
+      nbEl.classList.remove("nb-zooming");
+      await veil.animate([{ opacity: .96 }, { opacity: 0 }], { duration: 260, easing: "ease-out", fill: "forwards" }).finished;
+      nbEl.style.position = ""; nbEl.style.zIndex = "";
+      veil.remove();
+    } catch (e) { if (!openNbId) openNotebook(id); }
+    fly.remove(); nbEl.style.opacity = ""; el.style.visibility = ""; nbFlying = false;
+  })();
+}
 function closeNotebook() {
   if (typeof stopDictation === "function") stopDictation();
   saveNbPage();
@@ -4037,8 +4438,15 @@ document.getElementById("deskAddSticky").onclick = addSticky;
 // New notebook / rename
 const newNbModal = document.getElementById("newNbModal");
 let newNbType = "spiral", renamingNb = false;
-function paintNbTypes() { document.querySelectorAll("#newNbTypes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === newNbType))); }
-document.getElementById("newNbTypes").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (b) { newNbType = b.dataset.t; paintNbTypes(); } });
+let lastDiary = "diary-leather";
+function paintNbTypes() {
+  const diary = newNbType.startsWith("diary");
+  document.querySelectorAll("#newNbTypes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === newNbType || (diary && b.dataset.t === "diary"))));
+  showDiaryList(document.getElementById("newNbDiaries"), diary);
+  document.querySelectorAll("#newNbDiaries [data-d]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.d === newNbType)));
+}
+document.getElementById("newNbTypes").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (b) { newNbType = b.dataset.t === "diary" ? lastDiary : b.dataset.t; paintNbTypes(); } });
+document.getElementById("newNbDiaries").addEventListener("click", e => { const b = e.target.closest("[data-d]"); if (b) { newNbType = lastDiary = b.dataset.d; paintNbTypes(); } });
 function openNewNb(rename) {
   renamingNb = !!rename;
   const cur = notebooks.find(n => n.id === openNbId);
@@ -4046,6 +4454,7 @@ function openNewNb(rename) {
   document.getElementById("newNbSave").textContent = rename ? "Save" : "Create";
   document.getElementById("newNbName").value = rename && cur ? cur.name : "";
   document.getElementById("newNbTypes").closest(".ev-field").hidden = !!rename;
+  document.getElementById("newNbDiaries").hidden = true; paintDpickTry();
   newNbType = "spiral"; paintNbTypes();
   newNbModal.classList.add("open");
   setTimeout(() => document.getElementById("newNbName").focus(), 30);
