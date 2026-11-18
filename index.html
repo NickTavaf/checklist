@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <title>Checklist</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+// iPhone Safari zooms in by itself when you tap a small text box (a sticky note) and can leave you stuck in a corner.
+// maximum-scale=1 stops that self-zoom; Safari still lets you pinch to zoom in and out with two fingers.
+// (Not in the iOS app: its web view would honour the limit and block pinching.)
+if (/iP(hone|ad|od)/.test(navigator.userAgent) && !window.Capacitor)
+  document.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1.0, maximum-scale=1.0";
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -902,9 +909,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk[hidden], .nb[hidden] { display:none; }
 .desk-bar { display:flex; align-items:center; gap:10px; margin:0 0 14px; }
 .desk-bar h1 { margin:0 auto 0 0; min-width:0; font:800 clamp(28px,4vw,44px)/.9 var(--poster-display); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.desk-area { position:relative; min-height:320px; overflow:hidden; touch-action:none; }
+.desk-area { position:relative; min-height:320px; overflow:hidden; touch-action:manipulation; }   /* two-finger pinch + panning work on the desk */
 .desk-empty { position:absolute; inset:0; display:grid; place-items:center; text-align:center; font:600 12px/1.5 var(--poster-mono); text-transform:uppercase; color:var(--poster-text-soft); }
-.desk-item { position:absolute; left:0; top:0; cursor:grab; user-select:none; -webkit-user-select:none; touch-action:none; transition:box-shadow .15s, filter .15s; }
+.desk-item { position:absolute; left:0; top:0; cursor:grab; user-select:none; -webkit-user-select:none; touch-action:pinch-zoom; transition:box-shadow .15s, filter .15s; }
 .desk-area.tidying .desk-item { transition:transform .4s cubic-bezier(.2,.8,.2,1); }
 .desk-item.dragging { cursor:grabbing; filter:drop-shadow(8px 12px 10px #0006); transition:none; }
 /* a closed notebook seen from above */
@@ -4174,6 +4181,7 @@ function makeDraggable(el) {
     const up = ev => {
       el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up);
       el.classList.remove("dragging"); trashBtn.classList.remove("hot");
+      if (ev.type === "pointercancel" && !moved) { el.classList.remove("to-trash"); return; }   // a second finger came down (pinch): not a tap
       if (moved && ev.type === "pointerup" && overTrash(ev)) { item.x = ox; item.y = oy; throwAway(el); return; }
       el.classList.remove("to-trash");
       if (moved) nbStore(el._kind === "nb" ? "notebooks" : "stickyNotes", el._kind === "nb" ? notebooks : stickies);
