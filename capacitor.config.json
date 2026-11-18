@@ -4,7 +4,8 @@
   "webDir": "www",
   "ios": {
     "contentInset": "never",
-    "scrollEnabled": true
+    "scrollEnabled": true,
+    "zoomEnabled": true
   },
   "plugins": {
     "SplashScreen": {
