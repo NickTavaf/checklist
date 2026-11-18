@@ -3531,7 +3531,7 @@ function setNotebook(style) {
   fillNbPage(document.getElementById("nbPage"), nbDay);
 }
 /* ---- how the Diary list opens (PREVIEW: slide / side / fan, switchable while Nick compares) ---- */
-let diaryPick = "slide";   // Slide was used for launch; "side" and "fan" are still here if wanted later
+let diaryPick = "fan";   // Nick picked Fan; "slide" and "side" are still here if wanted later
 const DPICKS = [["slide", "Slide"], ["side", "Side"], ["fan", "Fan"]];
 function paintDpickTry() {
   document.querySelectorAll(".dpick-try").forEach(t => { t.innerHTML = DPICKS.map(([k, l]) => `<button type="button" data-dp="${k}" aria-pressed="${k === diaryPick}">${l}</button>`).join(""); });
@@ -3546,11 +3546,24 @@ document.addEventListener("click", e => {
   ["nbDiaries", "newNbDiaries"].forEach(id => { const l = document.getElementById(id); if (!l.hidden) { l.hidden = true; showDiaryList(l, true); } });
 }, true);
 function showDiaryList(list, show) {
-  if (show === !list.hidden) return;
+  if (show === !list.hidden && !list._closing) return;
+  list._closing = false;
   const items = [...(list.querySelector(".nb-types") || list).children], reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   list.getAnimations({ subtree: true }).forEach(a => a.cancel());
   if (reduce || !list.animate) { list.hidden = !show; return; }
   const mode = list.dataset.mode;
+  if (!show && mode === "fan") {
+    // the covers gather back into the Diary icon (last one first) while the space they took folds shut
+    list._closing = true; list.style.overflow = "hidden";
+    const hgt = list.offsetHeight, n = items.length;
+    items.forEach((it, i) => it.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: `translate(${-24 - i * 22}px, -14px) rotate(${-16 + i * 4}deg) scale(.55)` }],
+      { duration: 240, delay: (n - 1 - i) * 45, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" }));
+    list.animate([{ height: hgt + "px" }, { height: hgt + "px", offset: .3 }, { height: "0px" }], { duration: 240 + (n - 1) * 45 + 60, easing: "cubic-bezier(.4,0,.2,1)" }).onfinish = () => {
+      if (!list._closing) return;
+      list._closing = false; list.hidden = true; list.style.overflow = ""; items.forEach(it => it.getAnimations().forEach(a => a.cancel()));
+    };
+    return;
+  }
   if (!show) {
     const out = mode === "side" ? [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(10px)" }]
       : mode === "fan" ? [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-6px) scale(.96)" }]
@@ -3565,7 +3578,9 @@ function showDiaryList(list, show) {
     list.animate([{ opacity: 0, transform: "translateX(16px) scale(.97)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
     items.forEach((it, i) => it.animate([{ opacity: 0, transform: "translateX(10px)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 80 + i * 45, easing: "ease-out", fill: "backwards" }));
   } else if (mode === "fan") {
-    // the covers are dealt out from the Diary icon, each landing with a little spring
+    // the space opens smoothly, and the covers are dealt out from the Diary icon, each landing with a little spring
+    const hgt = list.scrollHeight; list.style.overflow = "hidden";
+    list.animate([{ height: "0px" }, { height: hgt + "px" }], { duration: 280, easing: "cubic-bezier(.2,.8,.2,1)" }).onfinish = () => { list.style.overflow = "visible"; };
     items.forEach((it, i) => it.animate([{ opacity: 0, transform: `translate(${-24 - i * 22}px, -14px) rotate(${-16 + i * 4}deg) scale(.55)` }, { opacity: 1, transform: "none" }],
       { duration: 460, delay: i * 70, easing: "cubic-bezier(.3,1.45,.5,1)", fill: "backwards" }));
   } else {
