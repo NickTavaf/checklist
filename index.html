@@ -1642,7 +1642,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <div class="nb-menu-wrap">
         <button type="button" class="nb-menu-btn" id="nbMenuBtn" aria-label="Choose notebook" aria-expanded="false" aria-haspopup="true"><span></span><span></span><span></span></button>
         <div class="nb-menu" id="nbMenu" role="menu" hidden>
-          <div class="nb-menu-title">Notebook <i class="dpick-try" aria-label="Preview: how the diary list opens"></i></div>
+          <div class="nb-menu-title">Notebook</div>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="spiral"><span class="nb-swatch spiral"></span><span>Spiral notebook<small>Lined, turns sideways</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="legal"><span class="nb-swatch legal"></span><span>Legal pad<small>Yellow, flips up over the top</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="comp"><span class="nb-swatch comp"></span><span>Composition book<small>Marbled cover, turns like a book</small></span></button>
@@ -1728,7 +1728,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         <button type="button" data-t="eng" aria-pressed="false"><span class="nb-swatch eng"></span>Engineering</button>
         <button type="button" data-t="diary" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Diary</button>
       </div>
-      <div class="nb-diary-pick" id="newNbDiaries" data-mode="slide" hidden><span>Which diary? <i class="dpick-try" aria-label="Preview: how the diary list opens"></i></span><div class="nb-types"><button type="button" data-d="diary-leather" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Leather lock</button><button type="button" data-d="diary-linen" aria-pressed="false"><span class="nb-swatch diary-linen"></span>Linen journal</button><button type="button" data-d="diary-rose" aria-pressed="false"><span class="nb-swatch diary-rose"></span>Rose keepsake</button><button type="button" data-d="diary-vintage" aria-pressed="false"><span class="nb-swatch diary-vintage"></span>Travel journal</button></div></div>
+      <div class="nb-diary-pick" id="newNbDiaries" data-mode="slide" hidden><span>Which diary?</span><div class="nb-types"><button type="button" data-d="diary-leather" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Leather lock</button><button type="button" data-d="diary-linen" aria-pressed="false"><span class="nb-swatch diary-linen"></span>Linen journal</button><button type="button" data-d="diary-rose" aria-pressed="false"><span class="nb-swatch diary-rose"></span>Rose keepsake</button><button type="button" data-d="diary-vintage" aria-pressed="false"><span class="nb-swatch diary-vintage"></span>Travel journal</button></div></div>
     </div>
     <div class="modal-actions">
       <button type="button" class="modal-btn secondary" id="newNbCancel">Cancel</button>
@@ -3531,7 +3531,7 @@ function setNotebook(style) {
   fillNbPage(document.getElementById("nbPage"), nbDay);
 }
 /* ---- how the Diary list opens (PREVIEW: slide / side / fan, switchable while Nick compares) ---- */
-let diaryPick = "slide"; try { diaryPick = localStorage.getItem("diaryPickStyle") || "slide"; } catch(e) {}
+let diaryPick = "slide";   // Slide was used for launch; "side" and "fan" are still here if wanted later
 const DPICKS = [["slide", "Slide"], ["side", "Side"], ["fan", "Fan"]];
 function paintDpickTry() {
   document.querySelectorAll(".dpick-try").forEach(t => { t.innerHTML = DPICKS.map(([k, l]) => `<button type="button" data-dp="${k}" aria-pressed="${k === diaryPick}">${l}</button>`).join(""); });
