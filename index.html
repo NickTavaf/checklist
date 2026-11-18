@@ -951,6 +951,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk.nb-fly { position:fixed; z-index:3000; margin:0; padding:0; max-width:none; transform-origin:0 0; pointer-events:none; }
 .nb-fly .desk-nb { position:absolute; left:0; top:0; width:100%; height:100%; }
 .nb-fly .fly-cover { transform-origin:0 50%; backface-visibility:visible; }
+/* while the page grows in from the desk, everything around it waits, then fades in */
+.nb > :not(.nb-body), .nb-body > :not(.nb-page), .nb-body::before, .nb-body::after { transition:opacity .28s ease-out; }
+.nb.nb-zooming > :not(.nb-body), .nb.nb-zooming .nb-body > :not(.nb-page), .nb.nb-zooming .nb-body::before, .nb.nb-zooming .nb-body::after { opacity:0; transition:none; }
 .nb-veil { position:fixed; inset:0; z-index:2999; background:var(--poster-bg); pointer-events:none; opacity:0; }
 .desk.nb-fly .desk-nb.desk-nb.fly-latch { background:none; box-shadow:none; outline:0; border:0; padding:0; overflow:visible; }
 .nb-fly .fly-latch::after { display:none; }
@@ -998,7 +1001,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk-nb[data-type="diary-rose"] .dn-strap { background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fbe7a8'/%3E%3Cstop offset='.55' stop-color='%23d4a94e'/%3E%3Cstop offset='1' stop-color='%238a6420'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 17C4 12.5 2 10 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-2 5.5-8 10z' fill='url(%23g)' stroke='%235a3f10' stroke-width='.6'/%3E%3Ccircle cx='10' cy='9.5' r='1.3' fill='%233a2a10'/%3E%3C/svg%3E") 38% 50%/62% no-repeat, var(--cover-img) center/200px, var(--cover); }
 .desk-nb[data-type="diary-rose"] { outline:1px dashed #f6d98f80; outline-offset:calc(var(--w) * -.06); }
 /* linen journal: a cream paper label and the black elastic band down the right */
-.desk-nb[data-type="diary-linen"] .dn-plate { position:relative; z-index:1; width:86%; padding:calc(var(--w) * .05) calc(var(--w) * .04); background:#f4efe2; color:#22324e; box-shadow:0 1px 2px #0006; }
+.desk-nb[data-type="diary-linen"] .dn-plate { position:relative; z-index:1; width:calc(var(--w) * .56); align-self:flex-start; margin-left:calc(var(--w) * -.02); padding:calc(var(--w) * .05) calc(var(--w) * .04); background:#f4efe2; color:#22324e; box-shadow:0 1px 2px #0006; }
 .desk-nb[data-type="diary-linen"] .dn-plate .dn-name { font:500 calc(var(--w) * .12)/1.05 "EB Garamond", Georgia, serif; text-shadow:none; }
 .desk-nb[data-type="diary-linen"] .dn-plate .dn-count { color:#22324e; }
 .dn-band { position:absolute; top:-1px; bottom:-1px; right:13%; width:calc(var(--w) * .06); pointer-events:none;
@@ -4295,18 +4298,20 @@ async function unBand(box, band, w, h) {
   const g = svgEl("g", {}), shade = svgEl("path", { fill: "none", stroke: "#0006", "stroke-linecap": "round" }), body = svgEl("path", { fill: "none", stroke: "#111", "stroke-linecap": "round" }), shine = svgEl("path", { fill: "none", stroke: "#5a5a5a", "stroke-linecap": "round" });
   g.append(shade, body, shine); svg.appendChild(g); box.appendChild(svg); band.style.visibility = "hidden";
   const draw = (tx, ty, cx, bot, thick) => {
-    const d = `M${tx} ${ty} Q${cx} ${(ty + bot) / 2} ${bx} ${bot}`;
+    const d = `M${tx} ${ty} Q${cx} ${(ty + bot) / 2} ${tx} ${bot}`;
     shade.setAttribute("d", d); shade.setAttribute("transform", "translate(2 2)");
     [shade, body].forEach(p => { p.setAttribute("d", d); p.setAttribute("stroke-width", thick); });
     shine.setAttribute("d", d); shine.setAttribute("stroke-width", thick * .22); shine.setAttribute("transform", `translate(${-thick * .2} 0)`);
   };
-  const pull = w * .34;
-  await tween(140, e => draw(bx, -1, bx + 2 * pull * .08 * e, h + 1, sw * (1 + .15 * e)), easeOut);            // hooked
-  await tween(380, e => draw(bx, -1, bx + 2 * pull * (.08 + .92 * e), h + 1, sw * (1.15 - .45 * e)), easeInOut); // stretched out
-  await tween(170, e => draw(bx + (w - bx + 10) * e, -1 + h * .14 * e, bx + 2 * pull * (1 - .25 * e), h + 1, sw * .7), easeIn); // top slips off the corner
-  await tween(360, (e, t) => {                                                                                   // snaps away and falls
-    draw(w + 10 - 8 * e, h * .14 + h * .2 * e, bx + 2 * pull * .75 * (1 - e) + (w * .3) * e, h + 1 - h * .1 * e, sw * (.7 + .3 * e));
-    g.setAttribute("transform", `translate(${w * .25 * e} ${h * .18 * e * e})`); svg.style.opacity = String(1 - t * t);
+  // pinch it in the middle and draw it out a little, then slide it along the top and bottom edges
+  // off the right side (the middle leads, the ends drag behind); past the edge it snaps shut and drops away
+  const bow = w * .07, edge = w + 3;
+  await tween(170, e => draw(bx, -1, bx + 2 * bow * e, h + 1, sw * (1 - .12 * e)), easeOut);
+  await tween(480, e => { const x = bx + (edge - bx) * e; draw(x, -1, x + 2 * bow * (1 - .3 * e), h + 1, sw * (.88 - .1 * e)); }, easeInOut);
+  await tween(300, (e, t) => {
+    const top = -1 + h * .34 * e, bot = h + 1 - h * .34 * e;
+    draw(edge + w * .05 * e, top, edge + 2 * bow * .7 * (1 - e) + w * .1 * e, bot, sw * (.78 + .5 * e));
+    g.setAttribute("transform", `translate(${w * .12 * e} ${h * .1 * e * e})`); svg.style.opacity = String(1 - t * t);
   }, easeOut);
   svg.remove();
 }
@@ -4390,29 +4395,29 @@ function openFromDesk(el, id) {
         // pads: the top sheet lifts a little before we go in
         await go(fly, [{ transform: lifted }, { transform: `translate(0, -10px) ${center} scale(1.06)` }], { duration: 200 });
       }
-      // a breath to see the open page, then glide in: the desk fades back, the cover slides away,
-      // and the page grows onto the real notebook page; then the real page takes over
+      // a breath to see the open page, then the real page itself grows out of it: it starts at the
+      // little page's size and place (scaled evenly, cropped to that shape) and opens out to full size,
+      // so the writing, lines and dots never stretch. The desk eases away behind it.
       await new Promise(res => setTimeout(res, 160));
+      const S = page.getBoundingClientRect();
       const veil = document.createElement("div"); veil.className = "nb-veil"; document.body.insertBefore(veil, fly);
       openNotebook(id);
-      nbEl.style.opacity = "0";
-      const pr = document.getElementById("nbPage").getBoundingClientRect();
-      const to = `translate(${pr.left - L}px, ${pr.top - T}px) scale(${pr.width / w}, ${pr.height / h})`;
-      const from = getComputedStyle(fly).transform;
-      fly.getAnimations().forEach(a => { a.commitStyles && a.commitStyles(); a.cancel(); });
-      const ZOOM = 720, ease = "cubic-bezier(.6,0,.15,1)";
-      veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: ZOOM * .7, easing: "ease-out", fill: "forwards" });
-      [cover, latchBox].forEach(x => x.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ZOOM * .35, easing: "ease-in", fill: "forwards" }));
-      page.animate([{ boxShadow: getComputedStyle(page).boxShadow }, { boxShadow: "none" }], { duration: ZOOM, fill: "forwards" });
-      // the real page sits above the veil and dissolves in over the second half of the glide
-      nbEl.style.position = "relative"; nbEl.style.zIndex = "3001";
-      const fadeIn = nbEl.animate([{ opacity: 0 }, { opacity: 0, offset: .45 }, { opacity: 1 }], { duration: ZOOM + 120, easing: "ease-out", fill: "forwards" });
-      await go(fly, [{ transform: from }, { transform: to }], { duration: ZOOM, easing: ease });
-      await fadeIn.finished;
-      fly.style.visibility = "hidden";
-      // then the rest of the screen (nav, background) fades back in around it
-      await veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: "ease-out", fill: "forwards" }).finished;
-      nbEl.getAnimations().forEach(a => a.cancel()); nbEl.style.position = ""; nbEl.style.zIndex = "";
+      const real = document.getElementById("nbPage");
+      nbEl.style.position = "relative"; nbEl.style.zIndex = "3001"; nbEl.style.opacity = "";
+      nbEl.classList.add("nb-zooming");
+      const P = real.getBoundingClientRect();
+      const s = Math.max(S.width / P.width, S.height / P.height);
+      const cropR = Math.max(0, P.width - S.width / s), cropB = Math.max(0, P.height - S.height / s);
+      const ZOOM = 640, ease = "cubic-bezier(.5,0,.15,1)";
+      fly.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, delay: 40, fill: "forwards" });
+      veil.animate([{ opacity: 0 }, { opacity: .96 }], { duration: ZOOM * .8, easing: "ease-out", fill: "forwards" });
+      await real.animate([
+        { transformOrigin: "0 0", transform: `translate(${S.left - P.left}px, ${S.top - P.top}px) scale(${s})`, clipPath: `inset(0 ${cropR}px ${cropB}px 0 round 3px)` },
+        { transformOrigin: "0 0", transform: "translate(0, 0) scale(1)", clipPath: "inset(-14px -14px -14px -14px round 3px)" }], { duration: ZOOM, easing: ease }).finished;
+      // the bar, tools and ribbon fade in around the page, and the desk's screen comes back
+      nbEl.classList.remove("nb-zooming");
+      await veil.animate([{ opacity: .96 }, { opacity: 0 }], { duration: 260, easing: "ease-out", fill: "forwards" }).finished;
+      nbEl.style.position = ""; nbEl.style.zIndex = "";
       veil.remove();
     } catch (e) { if (!openNbId) openNotebook(id); }
     fly.remove(); nbEl.style.opacity = ""; el.style.visibility = ""; nbFlying = false;
