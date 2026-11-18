@@ -3196,11 +3196,11 @@ function updateTodayBtn() {
   document.getElementById("schedToday").disabled = here;
 }
 
-// Calendar look (month view). "poster" is the original boxed look; the others are flatter,
-// app-style looks. CAL_LOOK_TESTER shows a picker so they can be compared (test only).
+// Calendar look. "clean" (the default) is flat with thin lines; "poster" is the original boxed look.
+// "dots" and "lines" are month-only alternatives. CAL_LOOK_TESTER shows a picker to compare them.
 const CAL_LOOKS = [["poster", "Current"], ["clean", "Clean"], ["dots", "Dots"], ["lines", "Lines"]];
-const CAL_LOOK_TESTER = true;
-function calLook() { try { const v = localStorage.getItem("calLook"); return CAL_LOOKS.some(l => l[0] === v) ? v : "poster"; } catch(e) { return "poster"; } }
+const CAL_LOOK_TESTER = false;
+function calLook() { try { const v = localStorage.getItem("calLook"); return CAL_LOOKS.some(l => l[0] === v) ? v : "clean"; } catch(e) { return "clean"; } }
 function paintCalLookPicker() {
   const page = document.getElementById("page-schedule");
   page.dataset.cal = calLook();
