@@ -2732,20 +2732,35 @@ async function imageFileToJpeg(file) {
     return canvasToJpeg(c);
   } finally { URL.revokeObjectURL(url); }
 }
+// Puts a PDF page's text pieces back into lines by where they sit on the page, so a table
+// row stays on one line even when the PDF stores it column by column.
+function pdfItemsToText(items) {
+  const parts = items.filter(it => it.str && it.str.trim() && it.transform)
+    .map(it => ({ s: it.str, x: it.transform[4], y: it.transform[5], w: it.width || 0, h: Math.abs(it.transform[3]) || 10 }));
+  parts.sort((a, b) => b.y - a.y || a.x - b.x);
+  const rows = [];
+  for (const p of parts) {
+    const r = rows.find(r => Math.abs(r.y - p.y) <= Math.max(2, Math.min(r.h, p.h) * 0.45));
+    if (r) r.items.push(p); else rows.push({ y: p.y, h: p.h, items: [p] });
+  }
+  rows.sort((a, b) => b.y - a.y);
+  return rows.map(r => {
+    r.items.sort((a, b) => a.x - b.x);
+    let line = "", end = null;
+    for (const p of r.items) {
+      if (end !== null) { const gap = p.x - end; line += gap > p.h * 1.5 ? "   " : gap > p.h * 0.15 ? " " : ""; }
+      line += p.s; end = p.x + p.w;
+    }
+    return line.trimEnd();
+  }).join("\n");
+}
 async function readPdf(file) {
   const pdfjs = await loadPdfJs();
   const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
   let text = "";
   for (let n = 1; n <= pdf.numPages; n++) {
     const page = await pdf.getPage(n);
-    const tc = await page.getTextContent();
-    let line = "", lastY = null;
-    for (const it of tc.items) {
-      const y = it.transform ? Math.round(it.transform[5]) : lastY;
-      if (lastY !== null && y !== lastY) { text += line.trimEnd() + "\n"; line = ""; }
-      line += it.str + (it.hasEOL ? "\n" : " "); lastY = y;
-    }
-    text += line.trimEnd() + "\n\n";
+    text += pdfItemsToText((await page.getTextContent()).items) + "\n\n";
   }
   const pages = pdf.numPages;
   if (text.replace(/\s+/g, "").length >= 40 * Math.min(pages, 3)) return { text, note: `${pages} page${pages === 1 ? "" : "s"}` };
@@ -2829,11 +2844,11 @@ parseBtn.onclick = async () => {
     const resp = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(images.length ? { syllabusText: text, images } : { syllabusText: text })
+      body: JSON.stringify(images.length ? { syllabusText: text, images, today: getTodayStr() } : { syllabusText: text, today: getTodayStr() })
     });
     const data = await resp.json();
     if (!resp.ok || data.error) {
-      modalStatus.innerHTML = `<div class="modal-status error">${data.error || "Something went wrong."}</div>`;
+      modalStatus.innerHTML = `<div class="modal-status error">${sEsc(data.error || "Something went wrong.")}</div>`;
       parseBtn.disabled = false;
       return;
     }
@@ -2848,8 +2863,8 @@ parseBtn.onclick = async () => {
       <div class="preview-item">
         <input type="checkbox" checked data-idx="${i}" id="pi-${i}">
         <label for="pi-${i}">
-          <div class="pi-title">${a.title}</div>
-          <div class="pi-meta">${a.class} · ${a.date} · ${a.time || ""}</div>
+          <div class="pi-title">${sEsc(a.title)}</div>
+          <div class="pi-meta">${[a.class, sParse(a.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }), a.time].filter(Boolean).map(sEsc).join(" · ")}</div>
         </label>
       </div>
     `).join("");
@@ -2870,8 +2885,20 @@ document.getElementById("addPreviewBtn").onclick = () => {
   customAssignments = [...customAssignments, ...toAdd];
   saveCustomAssignments();
   scheduleSync();
-  closeModal();
   render();
+  if (!toAdd.length) { closeModal(); return; }
+  // Offer a jump to the calendar, opened on the month of the first new due date.
+  const first = toAdd.map(a => a.date).sort()[0];
+  previewList.innerHTML = "";
+  confirmActions.style.display = "none";
+  modalStatus.innerHTML = `<div class="modal-status">Added ${toAdd.length} assignment${toAdd.length === 1 ? "" : "s"}. They're on your Homework list and on the calendar.</div>
+    <div class="modal-actions"><button class="modal-btn secondary" id="addedDoneBtn">Done</button><button class="modal-btn primary" id="addedCalBtn">See them on the calendar</button></div>`;
+  document.getElementById("addedDoneBtn").onclick = closeModal;
+  document.getElementById("addedCalBtn").onclick = () => {
+    sched.showAssignments = true; sched.view = "month"; sched.date = first; saveSchedPrefs();
+    closeModal();
+    if (location.hash === "#schedule") renderSchedule(); else location.hash = "#schedule";
+  };
 };
 
 /* ---- site nav: show one page at a time, chosen by the link's #hash ---- */
