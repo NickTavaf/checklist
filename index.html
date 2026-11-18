@@ -1517,6 +1517,64 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .nb-head { padding-left:12px; padding-right:12px; }
 }
 @media (prefers-reduced-motion:reduce) { .nb-turn { display:none; } }
+
+/* ---- Calendar looks (month view). "poster" = the original boxes; these three are flat, app-style. ---- */
+#calLookBar { position:fixed; left:0; right:0; margin:0 auto; width:max-content; white-space:nowrap; bottom:max(10px, env(safe-area-inset-bottom)); z-index:30; display:flex; align-items:center; gap:4px; padding:4px; border-radius:999px; background:#111; color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.25); font:600 12px/1 var(--poster-sans); }
+#calLookBar span { padding:0 6px 0 8px; opacity:.6; text-transform:uppercase; font-size:10px; letter-spacing:.06em; }
+#calLookBar button { border:0; border-radius:999px; padding:8px 11px; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+#calLookBar button[aria-checked="true"] { background:#fff; color:#111; }
+#page-schedule:not([data-cal="poster"]) { --cl-line:color-mix(in srgb, var(--poster-text) 14%, transparent); --cl-sun:#e5484d; }
+#page-schedule:not([data-cal="poster"]) .smonth { gap:0; }
+#page-schedule:not([data-cal="poster"]) .smonth .sday { border:0; border-radius:0; box-shadow:none; background:transparent; color:var(--poster-text); opacity:1; padding:4px 3px; gap:3px; }
+#page-schedule:not([data-cal="poster"]) .smonth .sday.is-out .sday-num { opacity:.3; }
+#page-schedule:not([data-cal="poster"]) .smonth .sday.is-out .smarks, #page-schedule:not([data-cal="poster"]) .smonth .sday.is-out .sdots { opacity:.45; }
+#page-schedule:not([data-cal="poster"]) .smonth .sday-num { font:600 14px/1 var(--poster-sans); min-width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; }
+#page-schedule:not([data-cal="poster"]) .smonth .sday.is-sun .sday-num { color:var(--cl-sun); }
+#page-schedule:not([data-cal="poster"]) .smonth .sday.is-today .sday-num { background:var(--poster-ui-accent); color:var(--poster-on-accent); }
+#page-schedule:not([data-cal="poster"]) .smonth .shol-star { display:none; }
+#page-schedule:not([data-cal="poster"]) .smonth .shol-line { font:500 9px/1.15 var(--poster-sans); text-transform:none; letter-spacing:0; color:var(--poster-text-soft); }
+#page-schedule:not([data-cal="poster"]) .smonth-dows { margin-bottom:2px; gap:0; }
+#page-schedule:not([data-cal="poster"]) .smonth-dows span { font:600 11px/1.6 var(--poster-sans); text-transform:none; letter-spacing:0; text-align:center; padding:0; }
+#page-schedule:not([data-cal="poster"]) .smonth-dows span.is-sun { color:var(--cl-sun); }
+#page-schedule:not([data-cal="poster"]) .smonth .smark { border:0; border-radius:4px; box-shadow:none; font:600 11px/1.25 var(--poster-sans); padding:2px 4px; }
+#page-schedule:not([data-cal="poster"]) .smonth .smark::before { display:none; }
+#page-schedule:not([data-cal="poster"]) .smonth .smark.is-done .mt { text-decoration:line-through; opacity:.7; }
+#page-schedule:not([data-cal="poster"]) .smonth .smore { font:600 9px/1.2 var(--poster-sans); text-transform:none; color:var(--poster-text-soft); }
+@media (max-width:699px) {
+  #page-schedule:not([data-cal="poster"]) .smonth .sday { padding:2px 1px; gap:2px; }
+  #page-schedule:not([data-cal="poster"]) .smonth .sday-num { font-size:12px; min-width:21px; height:21px; }
+  #page-schedule:not([data-cal="poster"]) .smonth .smark { font-size:8.5px; line-height:1.15; padding:1px 2px; border-radius:3px; }
+  #page-schedule:not([data-cal="poster"]) .smonth-dows span { font-size:10px; }
+}
+/* Clean: hairline grid, centered dates, solid colour bars with white text */
+#page-schedule[data-cal="clean"] .smonth { border-top:1px solid var(--cl-line); }
+#page-schedule[data-cal="clean"] .smonth .sday { border-bottom:1px solid var(--cl-line); border-right:1px solid var(--cl-line); }
+#page-schedule[data-cal="clean"] .smonth .sday:nth-child(7n) { border-right:0; }
+#page-schedule[data-cal="clean"] .smonth .sday-head { justify-content:center; }
+#page-schedule[data-cal="clean"] .smonth .smark { background:var(--mc); color:#fff; }
+#page-schedule[data-cal="clean"] .smonth .smark.is-done { opacity:.55; }
+/* Lines: rows split by lines only, dates on the left, soft tinted labels in the class colour */
+#page-schedule[data-cal="lines"] .smonth .sday { border-top:1px solid var(--cl-line); }
+#page-schedule[data-cal="lines"] .smonth .sday.is-sun, #page-schedule[data-cal="lines"] .smonth .sday.is-sat { background:color-mix(in srgb, var(--poster-text) 4%, transparent); }
+#page-schedule[data-cal="lines"] .smonth .sday-head { justify-content:flex-start; }
+#page-schedule[data-cal="lines"] .smonth .sday.is-today .sday-num { border-radius:6px; }
+#page-schedule[data-cal="lines"] .smonth .smark { background:color-mix(in srgb, var(--mc) 18%, transparent); color:color-mix(in srgb, var(--mc) 62%, var(--poster-text)); border-left:2px solid var(--mc); border-radius:2px; }
+/* Dots: just dates and coloured dots; the picked day is listed underneath */
+#page-schedule[data-cal="dots"] .smonth.has-pick { flex:0 0 auto; height:min(48%, 300px); }
+#page-schedule[data-cal="dots"] .smonth .sday { align-items:center; justify-content:flex-start; padding-top:4px; }
+#page-schedule[data-cal="dots"] .smonth .sday-head { justify-content:center; }
+#page-schedule[data-cal="dots"] .smonth .smarks, #page-schedule[data-cal="dots"] .smonth .smore, #page-schedule[data-cal="dots"] .smonth .shol-line, #page-schedule[data-cal="dots"] .smonth .shol-inline { display:none !important; }
+#page-schedule[data-cal="dots"] .smonth .sdots { display:flex; justify-content:center; max-width:30px; gap:3px; }
+#page-schedule[data-cal="dots"] .smonth .sdot { width:6px; height:6px; border:0; }
+#page-schedule[data-cal="dots"] .smonth .sday.is-picked { outline:0; }
+#page-schedule[data-cal="dots"] .smonth .sday.is-picked:not(.is-today) .sday-num { box-shadow:inset 0 0 0 1.5px var(--poster-text); }
+#page-schedule[data-cal="dots"] .smonth-pick { margin-top:8px; border-top:1px solid var(--cl-line); padding-top:8px; }
+#page-schedule[data-cal="dots"] .smonth-pick .sday { border:0; box-shadow:none; background:transparent; color:var(--poster-text); padding:2px 2px 8px; }
+#page-schedule[data-cal="dots"] .smonth-pick .sday-num { font:700 15px/1.2 var(--poster-sans); }
+#page-schedule[data-cal="dots"] .smonth-pick .sdots, #page-schedule[data-cal="dots"] .smonth-pick .smore { display:none; }
+#page-schedule[data-cal="dots"] .smonth-pick .smark { border:0; border-radius:8px; box-shadow:none; background:color-mix(in srgb, var(--poster-text) 5%, transparent); border-left:4px solid var(--mc); font:500 13px/1.3 var(--poster-sans); padding:8px 10px; }
+#page-schedule[data-cal="dots"] .smonth-pick .smark::before { display:none; }
+#page-schedule[data-cal="dots"] .smonth-pick .sopen-day { border:0; padding:4px 0; font:600 12px/1 var(--poster-sans); text-transform:none; letter-spacing:0; color:var(--poster-ui-accent); }
 </style>
 </head>
 <body>
@@ -3053,7 +3111,7 @@ function dayBoxHTML(key, items, opts) {
   const list = items || [];
   const hol = holidayOn(key);
   const shown = list;
-  return `<${tag} class="sday${today ? " is-today" : ""}${out ? " is-out" : ""}" data-date="${key}"${opts.month ? ` role="button" tabindex="0" aria-label="${fmtDate(key)}, ${list.length} item${list.length === 1 ? "" : "s"}${hol ? ", " + hol : ""}"` : ""}>
+  return `<${tag} class="sday${today ? " is-today" : ""}${out ? " is-out" : ""}${d.getDay() === 0 ? " is-sun" : d.getDay() === 6 ? " is-sat" : ""}" data-date="${key}"${opts.month ? ` role="button" tabindex="0" aria-label="${fmtDate(key)}, ${list.length} item${list.length === 1 ? "" : "s"}${hol ? ", " + hol : ""}"` : ""}>
     <div class="sday-head">${opts.month ? `<span class="sday-num">${d.getDate()}${hol ? `<span class="shol-star" aria-hidden="true">★</span>` : ""}</span>${hol ? `<span class="shol shol-inline" title="${hol}">★ ${hol}</span>` : ""}` : `<span class="sday-dow">${today ? `<span class="tlabel">Today · </span>` : ""}${dow}</span><span class="sday-num">${num}</span>`}</div>
     ${hol ? `<div class="shol shol-line">★ ${hol}</div>` : ""}
     ${list.length ? `<div class="smarks">${shown.map(it => markHTML(it, opts.long)).join("")}</div>` : (opts.month ? "" : `<div class="sday-empty">Nothing due</div>`)}
@@ -3107,7 +3165,7 @@ function fitSchedule() {
   const body = document.getElementById("schedBody");
   if (!body || document.getElementById("page-schedule").hidden) return;
   const top = body.getBoundingClientRect().top + window.scrollY;
-  body.style.height = Math.max(300, window.innerHeight - top - 12) + "px";
+  body.style.height = Math.max(300, window.innerHeight - top - (document.getElementById("calLookBar") ? 58 : 12)) + "px";
 }
 window.addEventListener("resize", fitSchedule);
 
@@ -3118,10 +3176,29 @@ function updateTodayBtn() {
   document.getElementById("schedToday").disabled = here;
 }
 
+// Calendar look (month view). "poster" is the original boxed look; the others are flatter,
+// app-style looks. CAL_LOOK_TESTER shows a picker so they can be compared (test only).
+const CAL_LOOKS = [["poster", "Current"], ["clean", "Clean"], ["dots", "Dots"], ["lines", "Lines"]];
+const CAL_LOOK_TESTER = true;
+function calLook() { try { const v = localStorage.getItem("calLook"); return CAL_LOOKS.some(l => l[0] === v) ? v : "poster"; } catch(e) { return "poster"; } }
+function paintCalLookPicker() {
+  const page = document.getElementById("page-schedule");
+  page.dataset.cal = calLook();
+  if (!CAL_LOOK_TESTER) return;
+  let bar = document.getElementById("calLookBar");
+  if (!bar) {
+    bar = document.createElement("div"); bar.id = "calLookBar"; bar.setAttribute("role", "radiogroup"); bar.setAttribute("aria-label", "Calendar look");
+    page.appendChild(bar);
+    bar.onclick = e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("calLook", b.dataset.look); } catch(err) {} if (sched.view !== "month") { sched.view = "month"; saveSchedPrefs(); } renderSchedule(); };
+  }
+  bar.innerHTML = `<span>Look</span>` + CAL_LOOKS.map(([k, n]) => `<button type="button" role="radio" data-look="${k}" aria-checked="${k === calLook()}">${n}</button>`).join("");
+}
+
 let schedObserver = null;
 function renderSchedule() {
   const root = document.getElementById("schedBody");
   if (!root) return;
+  paintCalLookPicker();
   fitSchedule();
   const items = schedItemsByDate();
   const title = document.getElementById("schedTitle");
@@ -3159,10 +3236,11 @@ function renderSchedule() {
     markHTML.inMonth = true;
     // On a phone the boxes are too small for names, so the month gets a little shorter and the day
     // you tap is written out underneath (today to start)
-    const phone = false;   // phone: names go right in the boxes (no panel underneath)
-    const blankOut = window.innerWidth < 700;   // phone: leave other months' days blank to save room
+    const look = calLook();
+    const phone = look === "dots";   // Dots look: days show dots, the picked day is listed underneath
+    const blankOut = look === "poster" && window.innerWidth < 700;   // poster look on a phone: other months' days left blank
     if (phone && (!sched.pick || sched.pick.slice(0, 7) !== sKey(m).slice(0, 7))) sched.pick = getTodayStr().slice(0, 7) === sKey(m).slice(0, 7) ? getTodayStr() : sKey(m);
-    root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span>${d.slice(0,3)}</span>`).join("")}</div>
+    root.innerHTML = `<div class="smonth-dows">${DOW.map(d => `<span${/^sun/i.test(d) ? ' class="is-sun"' : ""}>${d.slice(0,3)}</span>`).join("")}</div>
       <div class="smonth${phone ? " has-pick" : ""}" style="grid-template-rows:repeat(${cells.length / 7}, minmax(0,1fr))">${(blankOut ? monthCellsPhone(cells, m, items) : cells.map(k => dayBoxHTML(k, items[k], { month: m })).join(""))}</div>`;
     markHTML.inMonth = false;
     if (phone) {
