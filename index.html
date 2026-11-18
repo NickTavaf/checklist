@@ -951,7 +951,9 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .desk.nb-fly { position:fixed; z-index:3000; margin:0; padding:0; max-width:none; transform-origin:0 0; pointer-events:none; }
 .nb-fly .desk-nb { position:absolute; left:0; top:0; width:100%; height:100%; }
 .nb-fly .fly-cover { transform-origin:0 50%; backface-visibility:visible; }
-.nb-fly .fly-latch { background:none; box-shadow:none; outline:0; padding:0; overflow:visible; }
+.nb-veil { position:fixed; inset:0; z-index:2999; background:var(--poster-bg); pointer-events:none; opacity:0; }
+.desk.nb-fly .desk-nb.desk-nb.fly-latch { background:none; box-shadow:none; outline:0; border:0; padding:0; overflow:visible; }
+.nb-fly .fly-latch::after { display:none; }
 .nb-fly .fly-latch::before { display:none; }
 .nb-fly .fly-latch .dn-strap { transform-origin:100% 50%; }
 .nb-fly .fly-latch .dn-band { transform-origin:50% 50%; }
@@ -1208,6 +1210,19 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb-diary-pick .nb-types { grid-template-columns:repeat(4, minmax(0,1fr)); }
 .nb-diaries { display:flex; flex-direction:column; gap:2px; margin:0 0 4px 18px; padding-left:8px; border-left:2px solid var(--poster-track); }
 .nb-diaries[hidden] { display:none; }
+.nb-menu { overflow:visible; }
+/* PREVIEW ONLY (remove once Nick picks): little switch for how the diary list opens */
+.dpick-try { float:right; display:inline-flex; gap:2px; font-style:normal; }
+.dpick-try button { padding:2px 5px; border:1.5px solid var(--poster-border); background:transparent; color:inherit; font:600 9.5px/1 var(--poster-mono); text-transform:uppercase; letter-spacing:.04em; cursor:pointer; }
+.dpick-try button[aria-pressed="true"] { background:var(--poster-text); color:var(--poster-bg); }
+/* "side": the diaries slide out in a card beside the menu */
+.nb-diaries[data-mode="side"] { position:absolute; right:calc(100% + 10px); width:230px; margin:0; padding:8px; border:3px solid var(--poster-border); background:var(--poster-card-bg); box-shadow:5px 5px 0 var(--poster-border); }
+/* "fan": the four covers are dealt out in a row, like cards */
+.nb-diaries[data-mode="fan"], #newNbDiaries[data-mode="fan"] .nb-types { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; margin-left:0; padding:6px 2px 4px; border-left:0; }
+.nb-diaries[data-mode="fan"] .nb-dopt { flex-direction:column; gap:4px; padding:4px 2px; text-align:center; font-size:11px; }
+.nb-diaries[data-mode="fan"] .nb-dopt small { display:none; }
+.nb-diaries[data-mode="fan"] .nb-dopt .nb-swatch { width:40px; height:52px; box-shadow:inset 3px 0 0 #0005, 2px 3px 6px #0005; }
+@media (max-width:620px) { .nb-diaries[data-mode="side"] { position:static; width:auto; margin:0 0 4px; } }
 .nb-dopt { padding:5px 6px; font-size:14px; } .nb-dopt .nb-swatch { width:26px; height:32px; }
 .nb-caret { margin-left:auto; font:700 20px/1 var(--poster-sans); transition:transform .2s; } .nb-diary-opt[aria-expanded="true"] .nb-caret { transform:rotate(90deg); }
 @media (max-width:520px) { .nb-types { grid-template-columns:repeat(3, minmax(0,1fr)); } }
@@ -1379,12 +1394,12 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 
 /* ---- 3. Composition book: black-and-white marbled cover showing around the page, black cloth tape
    spine with stitching, wide-ruled white page with a pink margin and a DATE line; turns from the bottom corner ---- */
-.nb[data-nb="comp"] .nb-body { padding:10px 12px 12px 10px; background:#111 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.07 0.05' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -40 0 0 0 20.2'/%3E%3C/filter%3E%3Crect width='300' height='300' fill='%23f4f4f0'/%3E%3Crect width='300' height='300' filter='url(%23m)'/%3E%3C/svg%3E") 0 0/300px 300px; box-shadow:4px 4px 0 var(--poster-border); margin-right:8px; }
-.nb[data-nb="comp"] .nb-body::before { content:""; position:absolute; z-index:6; top:0; bottom:0; left:0; width:30px; background:#0d0d0d;
+.nb[data-nb="comp"] .nb-body { padding:0 8px 8px 0; }
+.nb[data-nb="comp"] .nb-body::before { content:""; position:absolute; z-index:6; top:0; bottom:8px; left:0; width:30px; background:#0d0d0d;
   box-shadow:inset -3px 0 4px #0008; }
-.nb[data-nb="comp"] .nb-body::after { content:""; position:absolute; z-index:7; top:6px; bottom:6px; left:21px; width:2px;
+.nb[data-nb="comp"] .nb-body::after { content:""; position:absolute; z-index:7; top:6px; bottom:14px; left:12px; width:2px;
   background:repeating-linear-gradient(#777 0 5px, transparent 5px 11px); }
-.nb[data-nb="comp"] .nb-page { --line:30px; --rule:#9ec0e6; --margin:#f2a0a8; inset:10px 12px 12px 26px; box-shadow:2px 2px 0 #0003; }
+.nb[data-nb="comp"] .nb-page { --line:30px; --rule:#9ec0e6; --margin:#f2a0a8; inset:0 8px 8px 22px; box-shadow:4px 4px 0 var(--poster-border); }
 .nb[data-nb="comp"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:54px; width:1.5px; background:var(--margin); }
 .nb[data-nb="comp"] .nb-head { justify-content:flex-end; align-items:flex-end; padding:20px 20px 10px 66px; border-bottom:1.5px solid var(--rule); }
 .nb[data-nb="comp"] .nb-label { display:flex; align-items:baseline; gap:8px; width:min(260px, 100%); font:600 11px/1 var(--poster-sans); letter-spacing:.1em; text-transform:uppercase; color:#666; }
@@ -1416,17 +1431,16 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 
 /* ---- 5. Diary (four looks to compare). The open book sits on its cover: the board shows around the page,
    a ribbon bookmark hangs over the top, and the pages turn like a book (bottom corner). ---- */
-.nb[data-nb^="diary"] .nb-body { --cover:#4a2c16; padding:0; margin-right:8px; border-radius:6px 12px 12px 6px; background:var(--cover-img) center/360px var(--cover);
-  box-shadow:inset 0 0 0 1px #0005, inset 0 0 40px #0008, 4px 4px 0 var(--poster-border); }
+.nb[data-nb^="diary"] .nb-body { --cover:#4a2c16; }
 .nb[data-nb="diary-leather"] .nb-body { --cover:#4a2c16; --cover-img:url("textures/leather-brown.jpg"); --ribbon:#7a1420; }
 .nb[data-nb="diary-linen"] .nb-body   { --cover:#22324e; --cover-img:url("textures/linen-navy.jpg"); --ribbon:#111; }
 .nb[data-nb="diary-rose"] .nb-body    { --cover:#8a2f4e; --cover-img:url("textures/leather-rose.jpg"); --ribbon:#d4a94e; }
 .nb[data-nb="diary-vintage"] .nb-body { --cover:#8a5a26; --cover-img:url("textures/leather-tan.jpg"); --ribbon:#2f4a2a; }
-.nb[data-nb^="diary"] .nb-page { inset:14px 18px 18px 14px; border-radius:2px 5px 5px 2px; box-shadow:1px 1px 0 #e9e0c9, 2px 2px 0 #d3c6a6, 3px 3px 0 #ece2c8, 4px 4px 0 #0005; }
+.nb[data-nb^="diary"] .nb-page { border-radius:2px 6px 6px 2px; box-shadow:1px 1px 0 #e9e0c9, 2px 2px 0 #d3c6a6, 3px 3px 0 #ece2c8, 6px 6px 0 var(--poster-border); }
 /* the gutter: the page curves down into the binding on the left */
 .nb[data-nb^="diary"] .nb-page::before { content:""; position:absolute; z-index:1; left:0; top:0; bottom:0; width:34px; pointer-events:none; background:linear-gradient(90deg, #0000002e, #00000010 40%, #0000); }
 /* ribbon bookmark coming over the top edge, with a notched end */
-.nb[data-nb^="diary"] .nb-body::after { content:""; position:absolute; z-index:7; top:4px; right:56px; width:16px; height:96px; pointer-events:none;
+.nb[data-nb^="diary"] .nb-body::after { content:""; position:absolute; z-index:7; top:-4px; right:56px; width:16px; height:96px; pointer-events:none;
   background:linear-gradient(90deg, #0000004d, #fff2 40%, #0000 60%, #0003), var(--ribbon); clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%); filter:drop-shadow(1px 2px 1px #0005); }
 .nb[data-nb^="diary"] .nb-head { padding-right:96px; }
 .nb[data-nb^="diary"] .nb-label { display:block; margin-right:auto; }
@@ -1440,7 +1454,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-nb="diary-leather"] .nb-dow { display:none; }
 .nb[data-nb="diary-leather"] .nb-date { font:italic 400 19px/1 "EB Garamond", Georgia, serif; text-transform:none; color:#6b5038; }
 .nb[data-nb="diary-leather"] .nb-text { padding:6px 30px 24px 44px; font:500 25px/var(--line) "Caveat", cursive; }
-.nb[data-nb="diary-leather"] .nb-body > .nb-strap, .nb[data-nb="diary-rose"] .nb-body > .nb-strap { display:block; }
+
 .nb-strap { display:none; position:absolute; z-index:7; right:-8px; top:38%; width:46px; height:58px; pointer-events:none; border-radius:5px 0 0 5px;
   background:radial-gradient(circle at 46% 50%, #3a2a10 0 4px, #0000 5px), radial-gradient(circle at 46% 50%, #f7e3a1, #c9a24b 9px, #7d5c1c 15px, #0000 16px), var(--cover-img) center/300px, var(--cover); box-shadow:-3px 3px 6px #0008, inset 0 0 0 1px #0005; }
 .nb[data-nb="diary-rose"] .nb-strap { background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fbe7a8'/%3E%3Cstop offset='.55' stop-color='%23d4a94e'/%3E%3Cstop offset='1' stop-color='%238a6420'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 17C4 12.5 2 10 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-2 5.5-8 10z' fill='url(%23g)' stroke='%235a3f10' stroke-width='.6'/%3E%3Ccircle cx='10' cy='9.5' r='1.3' fill='%233a2a10'/%3E%3C/svg%3E") 42% 50%/30px no-repeat, var(--cover-img) center/300px, var(--cover); }
@@ -1454,10 +1468,10 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-nb="diary-linen"] .nb-dow { order:1; font:500 13px/1 "EB Garamond", Georgia, serif; letter-spacing:.14em; opacity:.55; }
 .nb[data-nb="diary-linen"] .nb-text { padding:14px 32px 24px 40px; font:400 19px/var(--line) "EB Garamond", Georgia, serif;
   background-image:radial-gradient(circle at 1px calc(var(--line) - 1px), #1f263340 1.1px, transparent 1.6px); background-size:var(--line) var(--line); background-position:40px 14px; }
-.nb[data-nb="diary-linen"] .nb-body::before { content:""; position:absolute; z-index:7; top:0; bottom:0; right:4px; width:9px; pointer-events:none; background:linear-gradient(90deg, #000, #3d3d3d 45%, #0b0b0b); box-shadow:1px 0 3px #0009; }
+
 
 /* 5c. Rose keepsake: blush pages with gilt edges, double pink margin, hearts, and a gold heart clasp */
-.nb[data-nb="diary-rose"] .nb-page { --paper:#fff6f7; --ink:#5e2442; --rule:#f4cdd8; --margin:#eaa0b6; --line:32px; box-shadow:1px 1px 0 #f6dc8e, 2px 2px 0 #cfa548, 3px 3px 0 #f2d27d, 4px 4px 0 #0005; }
+.nb[data-nb="diary-rose"] .nb-page { --paper:#fff6f7; --ink:#5e2442; --rule:#f4cdd8; --margin:#eaa0b6; --line:32px; box-shadow:1px 1px 0 #f6dc8e, 2px 2px 0 #cfa548, 3px 3px 0 #f2d27d, 6px 6px 0 var(--poster-border); }
 .nb[data-nb="diary-rose"] .nb-page::after { content:""; position:absolute; top:0; bottom:0; left:56px; width:5px; border-left:1.5px solid var(--margin); border-right:1.5px solid var(--margin); pointer-events:none; }
 .nb[data-nb="diary-rose"] .nb-head { padding:18px 96px 6px 76px; }
 .nb[data-nb="diary-rose"] .nb-fmt-btn { position:absolute; left:12px; top:16px; }
@@ -1475,7 +1489,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
 .nb[data-nb="diary-vintage"] .nb-dow { display:none; }
 .nb[data-nb="diary-vintage"] .nb-date { font:400 16px/1 "Special Elite", monospace; letter-spacing:.1em; color:#9b2a1e; padding:6px 10px 5px; border:2px solid #9b2a1ecc; outline:1px solid #9b2a1e99; outline-offset:2px; border-radius:3px; transform:rotate(-3deg); opacity:.85; mix-blend-mode:multiply; }
 .nb[data-nb="diary-vintage"] .nb-text { padding:12px 32px 24px 40px; font:400 17px/var(--line) "Special Elite", "Courier New", monospace; }
-.nb[data-nb="diary-vintage"] .nb-body::before { content:""; position:absolute; z-index:7; right:-10px; top:52%; width:46px; height:4px; pointer-events:none; border-radius:2px; background:linear-gradient(#6b4524, #2a170a); box-shadow:0 2px 3px #0008; }
+
 
 @media (max-width:520px) {
   .nb-bar { gap:8px; }
@@ -1490,7 +1504,6 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
   .nb[data-nb="comp"] .nb-head { padding-left:48px; padding-right:12px; }
   .nb[data-nb="comp"] .nb-text { padding-left:48px; padding-right:10px; }
   .nb[data-nb="eng"] .nb-head > * { padding:8px 10px; }
-  .nb[data-nb^="diary"] .nb-page { inset:10px 12px 14px 10px; }
   .nb[data-nb^="diary"] .nb-head { padding-left:14px; padding-right:62px; }
   .nb[data-nb^="diary"] .nb-body::after { right:26px; width:13px; height:76px; }
   .nb[data-nb^="diary"] .nb-text { padding-left:22px; padding-right:16px; }
@@ -1626,13 +1639,13 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
       <div class="nb-menu-wrap">
         <button type="button" class="nb-menu-btn" id="nbMenuBtn" aria-label="Choose notebook" aria-expanded="false" aria-haspopup="true"><span></span><span></span><span></span></button>
         <div class="nb-menu" id="nbMenu" role="menu" hidden>
-          <div class="nb-menu-title">Notebook</div>
+          <div class="nb-menu-title">Notebook <i class="dpick-try" aria-label="Preview: how the diary list opens"></i></div>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="spiral"><span class="nb-swatch spiral"></span><span>Spiral notebook<small>Lined, turns sideways</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="legal"><span class="nb-swatch legal"></span><span>Legal pad<small>Yellow, flips up over the top</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="comp"><span class="nb-swatch comp"></span><span>Composition book<small>Marbled cover, turns like a book</small></span></button>
           <button type="button" class="nb-opt" role="menuitemradio" data-nb="eng"><span class="nb-swatch eng"></span><span>Engineering pad<small>Green grid, tear off each sheet</small></span></button>
           <button type="button" class="nb-opt nb-diary-opt" role="menuitemradio" data-nb="diary" aria-expanded="false"><span class="nb-swatch diary-leather"></span><span>Diary<small>Pick your diary</small></span><span class="nb-caret" aria-hidden="true">&rsaquo;</span></button>
-          <div class="nb-diaries" id="nbDiaries" hidden><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-leather"><span class="nb-swatch diary-leather"></span><span>Leather lock<small>Brass clasp, cream pages</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-linen"><span class="nb-swatch diary-linen"></span><span>Linen journal<small>Elastic band, dot grid</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-rose"><span class="nb-swatch diary-rose"></span><span>Rose keepsake<small>Heart clasp, gilt edges</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-vintage"><span class="nb-swatch diary-vintage"></span><span>Travel journal<small>Leather cord, aged paper</small></span></button></div>
+          <div class="nb-diaries" id="nbDiaries" data-mode="slide" hidden><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-leather"><span class="nb-swatch diary-leather"></span><span>Leather lock<small>Brass clasp, cream pages</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-linen"><span class="nb-swatch diary-linen"></span><span>Linen journal<small>Elastic band, dot grid</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-rose"><span class="nb-swatch diary-rose"></span><span>Rose keepsake<small>Heart clasp, gilt edges</small></span></button><button type="button" class="nb-opt nb-dopt" role="menuitemradio" data-nb="diary-vintage"><span class="nb-swatch diary-vintage"></span><span>Travel journal<small>Leather cord, aged paper</small></span></button></div>
           <div class="nb-menu-sep"></div>
           <button type="button" class="nb-act" id="nbRename">Rename notebook</button>
           <button type="button" class="nb-act danger" id="nbDelete">Move to trash</button>
@@ -1712,7 +1725,7 @@ body:has(#page-notebook:not([hidden])) { padding-bottom:0; }
         <button type="button" data-t="eng" aria-pressed="false"><span class="nb-swatch eng"></span>Engineering</button>
         <button type="button" data-t="diary" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Diary</button>
       </div>
-      <div class="nb-diary-pick" id="newNbDiaries" hidden><span>Which diary?</span><div class="nb-types"><button type="button" data-d="diary-leather" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Leather lock</button><button type="button" data-d="diary-linen" aria-pressed="false"><span class="nb-swatch diary-linen"></span>Linen journal</button><button type="button" data-d="diary-rose" aria-pressed="false"><span class="nb-swatch diary-rose"></span>Rose keepsake</button><button type="button" data-d="diary-vintage" aria-pressed="false"><span class="nb-swatch diary-vintage"></span>Travel journal</button></div></div>
+      <div class="nb-diary-pick" id="newNbDiaries" data-mode="slide" hidden><span>Which diary? <i class="dpick-try" aria-label="Preview: how the diary list opens"></i></span><div class="nb-types"><button type="button" data-d="diary-leather" aria-pressed="false"><span class="nb-swatch diary-leather"></span>Leather lock</button><button type="button" data-d="diary-linen" aria-pressed="false"><span class="nb-swatch diary-linen"></span>Linen journal</button><button type="button" data-d="diary-rose" aria-pressed="false"><span class="nb-swatch diary-rose"></span>Rose keepsake</button><button type="button" data-d="diary-vintage" aria-pressed="false"><span class="nb-swatch diary-vintage"></span>Travel journal</button></div></div>
     </div>
     <div class="modal-actions">
       <button type="button" class="modal-btn secondary" id="newNbCancel">Cancel</button>
@@ -3514,15 +3527,60 @@ function setNotebook(style) {
   if (cur && cur.type !== style) { cur.type = style; nbStore("notebooks", notebooks); }
   fillNbPage(document.getElementById("nbPage"), nbDay);
 }
+/* ---- how the Diary list opens (PREVIEW: slide / side / fan, switchable while Nick compares) ---- */
+let diaryPick = "slide"; try { diaryPick = localStorage.getItem("diaryPickStyle") || "slide"; } catch(e) {}
+const DPICKS = [["slide", "Slide"], ["side", "Side"], ["fan", "Fan"]];
+function paintDpickTry() {
+  document.querySelectorAll(".dpick-try").forEach(t => { t.innerHTML = DPICKS.map(([k, l]) => `<button type="button" data-dp="${k}" aria-pressed="${k === diaryPick}">${l}</button>`).join(""); });
+  document.querySelectorAll("#nbDiaries, #newNbDiaries").forEach(l => l.dataset.mode = diaryPick);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".dpick-try [data-dp]"); if (!b) return;
+  e.stopPropagation(); e.preventDefault();
+  diaryPick = b.dataset.dp; try { localStorage.setItem("diaryPickStyle", diaryPick); } catch(e) {}
+  paintDpickTry();
+  // replay the opening so the new style can be seen
+  ["nbDiaries", "newNbDiaries"].forEach(id => { const l = document.getElementById(id); if (!l.hidden) { l.hidden = true; showDiaryList(l, true); } });
+}, true);
+function showDiaryList(list, show) {
+  if (show === !list.hidden) return;
+  const items = [...(list.querySelector(".nb-types") || list).children], reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  list.getAnimations({ subtree: true }).forEach(a => a.cancel());
+  if (reduce || !list.animate) { list.hidden = !show; return; }
+  const mode = list.dataset.mode;
+  if (!show) {
+    const out = mode === "side" ? [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(10px)" }]
+      : mode === "fan" ? [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-6px) scale(.96)" }]
+      : [{ height: list.offsetHeight + "px", opacity: 1 }, { height: "0px", opacity: 0 }];
+    list.style.overflow = "hidden";
+    list.animate(out, { duration: 180, easing: "ease-in" }).onfinish = () => { list.hidden = true; list.style.overflow = ""; };
+    return;
+  }
+  list.hidden = false;
+  if (mode === "side") {
+    // a card slides out beside the menu, then its rows follow one after another
+    list.animate([{ opacity: 0, transform: "translateX(16px) scale(.97)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: "translateX(10px)" }, { opacity: 1, transform: "none" }], { duration: 220, delay: 80 + i * 45, easing: "ease-out", fill: "backwards" }));
+  } else if (mode === "fan") {
+    // the covers are dealt out from the Diary icon, each landing with a little spring
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: `translate(${-24 - i * 22}px, -14px) rotate(${-16 + i * 4}deg) scale(.55)` }, { opacity: 1, transform: "none" }],
+      { duration: 460, delay: i * 70, easing: "cubic-bezier(.3,1.45,.5,1)", fill: "backwards" }));
+  } else {
+    // the list rolls open underneath, rows easing in from just above
+    const hgt = list.scrollHeight; list.style.overflow = "hidden";
+    list.animate([{ height: "0px" }, { height: hgt + "px" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" }).onfinish = () => { list.style.overflow = ""; };
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: "translateY(-8px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 70 + i * 50, easing: "ease-out", fill: "backwards" }));
+  }
+}
 function toggleNbMenu(open) {
   nbMenu.hidden = !open; nbMenuBtn.setAttribute("aria-expanded", String(open));
-  if (open) { const d = (nbEl.dataset.nb || "").startsWith("diary"); document.getElementById("nbDiaries").hidden = !d; nbMenu.querySelector(".nb-diary-opt").setAttribute("aria-expanded", String(d)); }
+  if (open) { paintDpickTry(); const d = (nbEl.dataset.nb || "").startsWith("diary"), dl = document.getElementById("nbDiaries"); dl.hidden = !d; if (d && diaryPick === "side") dl.style.top = nbMenu.querySelector(".nb-diary-opt").offsetTop + "px"; nbMenu.querySelector(".nb-diary-opt").setAttribute("aria-expanded", String(d)); }
 }
 nbMenuBtn.onclick = e => { e.stopPropagation(); toggleNbMenu(nbMenu.hidden); };
 nbMenu.addEventListener("click", e => {
   e.stopPropagation(); const o = e.target.closest(".nb-opt"); if (!o) return;
   // "Diary" opens the list of diaries underneath it; picking one of those switches to it
-  if (o.dataset.nb === "diary") { const list = document.getElementById("nbDiaries"); list.hidden = !list.hidden; o.setAttribute("aria-expanded", String(!list.hidden)); return; }
+  if (o.dataset.nb === "diary") { const list = document.getElementById("nbDiaries"), show = list.hidden; showDiaryList(list, show); o.setAttribute("aria-expanded", String(show)); if (diaryPick === "side" && show) list.style.top = o.offsetTop + "px"; return; }
   setNotebook(o.dataset.nb); toggleNbMenu(false);
 });
 document.addEventListener("click", () => { if (!nbMenu.hidden) toggleNbMenu(false); });
@@ -4225,6 +4283,61 @@ function openNotebook(id) {
 /* ---- Opening a notebook from the desk. Diaries come undone first (the clasp swings off to the right,
    the elastic band snaps off sideways, the cord unwinds), then the cover swings open on its spine
    (spiral, composition, diaries), and then we zoom into the page. Built on the Web Animations API. ---- */
+// small frame-by-frame tween (for the elastic band and the cord, which bend as they come off)
+const tween = (ms, fn, ease = t => t) => new Promise(res => { const t0 = performance.now(); const f = now => { const t = Math.min(1, (now - t0) / ms); fn(ease(t), t); t < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); });
+const easeInOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, easeOut = t => 1 - Math.pow(1 - t, 3), easeIn = t => t * t * t;
+const svgEl = (tag, attrs) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+// elastic band: a finger hooks it in the middle and pulls it out to the right (it bows and thins as it
+// stretches), the top end slips off the corner, and it snaps away and drops
+async function unBand(box, band, w, h) {
+  const bx = w * .84, sw = w * .06;
+  const svg = svgEl("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, style: "position:absolute;left:0;top:0;overflow:visible;z-index:3" });
+  const g = svgEl("g", {}), shade = svgEl("path", { fill: "none", stroke: "#0006", "stroke-linecap": "round" }), body = svgEl("path", { fill: "none", stroke: "#111", "stroke-linecap": "round" }), shine = svgEl("path", { fill: "none", stroke: "#5a5a5a", "stroke-linecap": "round" });
+  g.append(shade, body, shine); svg.appendChild(g); box.appendChild(svg); band.style.visibility = "hidden";
+  const draw = (tx, ty, cx, bot, thick) => {
+    const d = `M${tx} ${ty} Q${cx} ${(ty + bot) / 2} ${bx} ${bot}`;
+    shade.setAttribute("d", d); shade.setAttribute("transform", "translate(2 2)");
+    [shade, body].forEach(p => { p.setAttribute("d", d); p.setAttribute("stroke-width", thick); });
+    shine.setAttribute("d", d); shine.setAttribute("stroke-width", thick * .22); shine.setAttribute("transform", `translate(${-thick * .2} 0)`);
+  };
+  const pull = w * .34;
+  await tween(140, e => draw(bx, -1, bx + 2 * pull * .08 * e, h + 1, sw * (1 + .15 * e)), easeOut);            // hooked
+  await tween(380, e => draw(bx, -1, bx + 2 * pull * (.08 + .92 * e), h + 1, sw * (1.15 - .45 * e)), easeInOut); // stretched out
+  await tween(170, e => draw(bx + (w - bx + 10) * e, -1 + h * .14 * e, bx + 2 * pull * (1 - .25 * e), h + 1, sw * .7), easeIn); // top slips off the corner
+  await tween(360, (e, t) => {                                                                                   // snaps away and falls
+    draw(w + 10 - 8 * e, h * .14 + h * .2 * e, bx + 2 * pull * .75 * (1 - e) + (w * .3) * e, h + 1 - h * .1 * e, sw * (.7 + .3 * e));
+    g.setAttribute("transform", `translate(${w * .25 * e} ${h * .18 * e * e})`); svg.style.opacity = String(1 - t * t);
+  }, easeOut);
+  svg.remove();
+}
+// leather cord: the knot loosens and the loose end wriggles, then the wrap peels off around the right
+// edge (its left end whips up and over), and the cord slides off and drops
+async function unCord(box, cord, w, h) {
+  const y = h * .7 + w * .0175, R = w * 1.04, sw = Math.max(2, w * .035);
+  const svg = svgEl("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, style: "position:absolute;left:0;top:0;overflow:visible;z-index:3" });
+  const g = svgEl("g", {}), shade = svgEl("path", { fill: "none", stroke: "#0007", "stroke-linecap": "round", "stroke-linejoin": "round" }),
+    body = svgEl("path", { fill: "none", stroke: "#3b2412", "stroke-linecap": "round", "stroke-linejoin": "round" }),
+    shine = svgEl("path", { fill: "none", stroke: "#8a5f3a", "stroke-linecap": "round", "stroke-linejoin": "round" }), knot = svgEl("circle", { fill: "#2a170a" });
+  g.append(shade, body, shine, knot); svg.appendChild(g); box.appendChild(svg); cord.style.visibility = "hidden";
+  const draw = (lx, ly, cx, cy, wig, slack) => {
+    // left end -> (bend) -> the knot at the right edge -> the loose tail hanging down
+    const d = `M${lx} ${ly} Q${cx} ${cy} ${R} ${y} q${6 + wig} ${4 + slack} ${2 - wig * 1.5} ${14 + slack * 2} t${wig} ${10 + slack}`;
+    [shade, body, shine].forEach(p => p.setAttribute("d", d));
+    shade.setAttribute("stroke-width", sw * 1.2); shade.setAttribute("transform", "translate(1.5 2)");
+    body.setAttribute("stroke-width", sw); shine.setAttribute("stroke-width", sw * .3); shine.setAttribute("transform", `translate(0 ${-sw * .2})`);
+    knot.setAttribute("cx", R); knot.setAttribute("cy", y); knot.setAttribute("r", sw * (1.1 - slack * .02));
+  };
+  await tween(420, (e, t) => draw(0, y, R / 2, y, Math.sin(t * Math.PI * 4) * 5 * (1 - t * .5), 6 * e), easeOut);   // knot loosens, tail wriggles
+  await tween(560, e => {                                                                                         // the wrap peels off, left end whips over
+    const a = Math.PI * e, lx = R / 2 - (R / 2) * Math.cos(a) * (1 - .1 * e), ly = y - h * .32 * Math.sin(a);
+    draw(lx, ly, (lx + R) / 2, Math.min(ly, y) - h * .12 * Math.sin(a), 2 * (1 - e), 6 + 4 * e);
+  }, easeInOut);
+  await tween(380, (e, t) => {                                                                                    // slides off and drops
+    draw(R - 6, y - 4 + 10 * e, R + 6, y - 10 + 20 * e, 0, 10 + 8 * e);
+    g.setAttribute("transform", `translate(${w * .3 * e} ${h * .2 * e * e}) rotate(${24 * e} ${R} ${y})`); svg.style.opacity = String(1 - t * t);
+  }, easeIn);
+  svg.remove();
+}
 const COVER_TYPES = ["spiral", "comp", "diary-leather", "diary-linen", "diary-rose", "diary-vintage"];
 let nbFlying = false;
 function openFromDesk(el, id) {
@@ -4264,13 +4377,9 @@ function openFromDesk(el, id) {
         await go(latch, [{ transform: "none" }, { transform: "translateX(-2px) scale(.94)", offset: .18 }, { transform: "translateX(1px) scale(1.04)", offset: .32 },
           { transform: "perspective(240px) rotateY(-175deg)" }], { duration: 620, easing: "cubic-bezier(.45,0,.25,1.15)" });
       } else if (latch && latch.classList.contains("dn-band")) {
-        // the elastic stretches, then snaps off to the side
-        await go(latch, [{ transform: "none" }, { transform: "translateX(-3px) scaleX(1.5)", offset: .35 }, { transform: "translateX(6px) scaleX(1.2) rotate(3deg)", offset: .5 },
-          { transform: `translateX(${w * .7}px) rotate(18deg) scaleX(.9)`, opacity: 0 }], { duration: 560, easing: "cubic-bezier(.5,0,.6,1)" });
+        await unBand(latchBox, latch, w, h);
       } else if (latch && latch.classList.contains("dn-cord")) {
-        // the cord loosens, then unwinds around the edge and slides off
-        await go(latch, [{ transform: "none" }, { transform: "translateY(-2px) rotate(-2deg)", offset: .2 }, { transform: "translateY(2px) rotate(1.5deg)", offset: .4 },
-          { transform: "translate(18px, 6px) rotate(8deg) scaleX(.8)", offset: .7 }, { transform: `translate(${w * .6}px, ${h * .2}px) rotate(24deg) scaleX(.4)`, opacity: 0 }], { duration: 700 });
+        await unCord(latchBox, latch, w, h);
       }
       if (COVER_TYPES.includes(type)) {
         // the cover swings open on its spine; halfway round we see its inside
@@ -4281,14 +4390,30 @@ function openFromDesk(el, id) {
         // pads: the top sheet lifts a little before we go in
         await go(fly, [{ transform: lifted }, { transform: `translate(0, -10px) ${center} scale(1.06)` }], { duration: 200 });
       }
-      // now open the real notebook underneath and zoom the copy's page onto it
+      // a breath to see the open page, then glide in: the desk fades back, the cover slides away,
+      // and the page grows onto the real notebook page; then the real page takes over
+      await new Promise(res => setTimeout(res, 160));
+      const veil = document.createElement("div"); veil.className = "nb-veil"; document.body.insertBefore(veil, fly);
       openNotebook(id);
       nbEl.style.opacity = "0";
       const pr = document.getElementById("nbPage").getBoundingClientRect();
       const to = `translate(${pr.left - L}px, ${pr.top - T}px) scale(${pr.width / w}, ${pr.height / h})`;
-      const zoom = go(fly, [{ transform: fly.getAnimations().length ? getComputedStyle(fly).transform : center, opacity: 1 }, { transform: to, opacity: 1, offset: .75 }, { transform: to, opacity: 0 }], { duration: 760, easing: "cubic-bezier(.65,0,.25,1)" });
-      nbEl.animate([{ opacity: 0 }, { opacity: 0, offset: .6 }, { opacity: 1 }], { duration: 760 });
-      await zoom;
+      const from = getComputedStyle(fly).transform;
+      fly.getAnimations().forEach(a => { a.commitStyles && a.commitStyles(); a.cancel(); });
+      const ZOOM = 720, ease = "cubic-bezier(.6,0,.15,1)";
+      veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: ZOOM * .7, easing: "ease-out", fill: "forwards" });
+      [cover, latchBox].forEach(x => x.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ZOOM * .35, easing: "ease-in", fill: "forwards" }));
+      page.animate([{ boxShadow: getComputedStyle(page).boxShadow }, { boxShadow: "none" }], { duration: ZOOM, fill: "forwards" });
+      // the real page sits above the veil and dissolves in over the second half of the glide
+      nbEl.style.position = "relative"; nbEl.style.zIndex = "3001";
+      const fadeIn = nbEl.animate([{ opacity: 0 }, { opacity: 0, offset: .45 }, { opacity: 1 }], { duration: ZOOM + 120, easing: "ease-out", fill: "forwards" });
+      await go(fly, [{ transform: from }, { transform: to }], { duration: ZOOM, easing: ease });
+      await fadeIn.finished;
+      fly.style.visibility = "hidden";
+      // then the rest of the screen (nav, background) fades back in around it
+      await veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: "ease-out", fill: "forwards" }).finished;
+      nbEl.getAnimations().forEach(a => a.cancel()); nbEl.style.position = ""; nbEl.style.zIndex = "";
+      veil.remove();
     } catch (e) { if (!openNbId) openNotebook(id); }
     fly.remove(); nbEl.style.opacity = ""; el.style.visibility = ""; nbFlying = false;
   })();
@@ -4312,7 +4437,7 @@ let lastDiary = "diary-leather";
 function paintNbTypes() {
   const diary = newNbType.startsWith("diary");
   document.querySelectorAll("#newNbTypes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === newNbType || (diary && b.dataset.t === "diary"))));
-  document.getElementById("newNbDiaries").hidden = !diary;
+  showDiaryList(document.getElementById("newNbDiaries"), diary);
   document.querySelectorAll("#newNbDiaries [data-d]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.d === newNbType)));
 }
 document.getElementById("newNbTypes").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (b) { newNbType = b.dataset.t === "diary" ? lastDiary : b.dataset.t; paintNbTypes(); } });
@@ -4324,7 +4449,7 @@ function openNewNb(rename) {
   document.getElementById("newNbSave").textContent = rename ? "Save" : "Create";
   document.getElementById("newNbName").value = rename && cur ? cur.name : "";
   document.getElementById("newNbTypes").closest(".ev-field").hidden = !!rename;
-  document.getElementById("newNbDiaries").hidden = true;
+  document.getElementById("newNbDiaries").hidden = true; paintDpickTry();
   newNbType = "spiral"; paintNbTypes();
   newNbModal.classList.add("open");
   setTimeout(() => document.getElementById("newNbName").focus(), 30);
