@@ -14,7 +14,7 @@
 //   Optional: instead of Cloudflare's AI you can use Claude by adding a secret
 //   named ANTHROPIC_API_KEY. If both are set, Cloudflare's AI is used.
 
-const WORKER_VERSION = "2026-11-17-accounts";
+const WORKER_VERSION = "2026-11-18-parser2";
 const CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const CF_VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct"; // reads photos / scanned pages
 const MAX_IMAGES = 10;
@@ -93,28 +93,66 @@ function merge(base, incoming) {
 const PARSE_INSTRUCTIONS = `You extract every graded or due item from a college course syllabus.
 
 Return ONLY a JSON object, no other text, in exactly this shape:
-{"assignments":[{"class":"...","title":"...","date":"YYYY-MM-DD","time":"...","desc":"..."}]}
+{"termStart":"","assignments":[{"class":"...","title":"...","date":"YYYY-MM-DD","time":"...","desc":"...","week":0,"weekday":""}]}
 
 Rules:
-- "class": a short course name (e.g. "Aesthetics", "Thesis 1"), the same for every item from this syllabus.
+- "class": a short course name (e.g. "Aesthetics", "Thesis 1"), the same for every item from one course. If the text holds several courses, give each item its own course's name.
 - "title": short and specific (e.g. "Response Paper #3: Plato's Cave").
 - "date": the due date as YYYY-MM-DD. Use the term/year stated in the syllabus; if no year is given, use the year from TODAY below, rolling into next year only for months clearly after the term starts.
 - "time": the due time as written ("11:59pm", "10am", "in class", "before class"). Use "" if none is given.
 - "desc": one or two sentences on what to do, from the syllabus. If two sources in the syllabus disagree about a date, mention that.
-- Include readings or classes only if something is actually due or graded. Skip items with no date at all.
+- Include readings or classes only if something is actually due or graded. Skip items with no date at all, and items whose date is "TBD", "to be announced", or similar.
+- If a date was changed (moved, rescheduled, postponed, "was X"), use only the NEW date. Leave out anything marked cancelled.
+- If an item is given only as a week number (e.g. "Week 3, Wednesday"), set "date" to "", "week" to the number, and "weekday" to the day ("Mon", "Tue", ...; "" if none). Also set the top-level "termStart" to the first day of classes (YYYY-MM-DD) if the syllabus gives it. Never work out week dates yourself.
+- Repeating items ("every Friday from Jan 15 to Feb 5") become one item per date.
+- Ignore stray OCR mistakes like "0ct" for "Oct" or "l5" for "15".
 - Sort by date.`;
 
+// Pull the JSON object out of the model's answer, even when it's wrapped in prose or ``` fences.
 function extractJson(text) {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start === -1 || end <= start) throw new Error("no JSON");
-  return JSON.parse(text.slice(start, end + 1));
+  if (text && typeof text === "object") return text;
+  text = String(text || "").replace(/```(?:json)?/gi, "");
+  const tryParse = t => { try { return JSON.parse(t); } catch (e) { return null; } };
+  // try each balanced {...} block, longest first, then fix trailing commas
+  const blocks = [];
+  for (let i = text.indexOf("{"); i !== -1; i = text.indexOf("{", i + 1)) {
+    let depth = 0, inStr = false, esc = false;
+    for (let j = i; j < text.length; j++) {
+      const ch = text[j];
+      if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') inStr = true; else if (ch === "{") depth++; else if (ch === "}" && --depth === 0) { blocks.push(text.slice(i, j + 1)); break; }
+    }
+  }
+  blocks.sort((a, b) => b.length - a.length);
+  for (const b of blocks) {
+    const v = tryParse(b) || tryParse(b.replace(/,\s*([}\]])/g, "$1"));
+    if (v && typeof v === "object") return v;
+  }
+  throw new Error("no JSON");
+}
+
+// A real calendar date (rejects 2027-02-30 and years far off).
+function realDate(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [y, m, d] = s.split("-").map(Number), dt = new Date(Date.UTC(y, m - 1, d));
+  return y >= 2000 && y <= 2100 && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+// "Week 3, Wed" → a date, counting from the week the term starts in (weeks start Monday).
+function weekToDate(termStart, week, weekday) {
+  if (!realDate(termStart) || !(week >= 1 && week <= 60)) return "";
+  const start = new Date(termStart + "T00:00:00Z");
+  const monday = new Date(start); monday.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+  const wd = WEEKDAYS.indexOf(String(weekday || "").trim().slice(0, 3).toLowerCase());
+  const day = new Date(monday); day.setUTCDate(monday.getUTCDate() + (week - 1) * 7 + (wd === -1 ? 0 : (wd + 6) % 7));
+  if (wd === -1 && day < start) return termStart;
+  return day.toISOString().slice(0, 10);
 }
 
 function cleanAssignment(a) {
   if (!a || typeof a !== "object") return null;
   const date = String(a.date || "").trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  if (!realDate(date)) return null;
   const title = String(a.title || "").trim();
   if (!title) return null;
   return {
@@ -126,16 +164,48 @@ function cleanAssignment(a) {
   };
 }
 
+// Turn the model's answer into clean assignments: real dates only, week numbers
+// worked out here (models get that maths wrong), duplicates dropped, sorted.
+function finishAssignments(parsed) {
+  const seen = new Set(), out = [];
+  for (const raw of (parsed && parsed.assignments) || []) {
+    if (raw && typeof raw === "object" && !realDate(String(raw.date || "").trim()) && raw.week) {
+      raw.date = weekToDate(String(parsed.termStart || "").trim(), Number(raw.week), raw.weekday);
+    }
+    const a = cleanAssignment(raw);
+    if (!a) continue;
+    const key = [a.class, a.title, a.date].join("|").toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key); out.push(a);
+  }
+  return out.sort((x, y) => x.date.localeCompare(y.date));
+}
+
 // Cloudflare's built-in AI. Returns the model's text answer.
+const ANSWER_SCHEMA = {
+  type: "object",
+  properties: {
+    termStart: { type: "string" },
+    assignments: { type: "array", items: { type: "object", properties: {
+      class: { type: "string" }, title: { type: "string" }, date: { type: "string" }, time: { type: "string" },
+      desc: { type: "string" }, week: { type: "integer" }, weekday: { type: "string" },
+    }, required: ["class", "title", "date"] } },
+  },
+  required: ["assignments"],
+};
 async function askCloudflareAI(env, today, text) {
-  const out = await env.AI.run(CF_MODEL, {
+  const input = {
     messages: [
       { role: "system", content: PARSE_INSTRUCTIONS },
       { role: "user", content: `TODAY: ${today}\n\nSYLLABUS:\n${text}` },
     ],
     max_tokens: 4096,
     temperature: 0,
-  });
+  };
+  let out;
+  // JSON mode keeps the answer readable; fall back to plain text if the model refuses it.
+  try { out = await env.AI.run(CF_MODEL, { ...input, response_format: { type: "json_schema", json_schema: ANSWER_SCHEMA } }); }
+  catch (e) { if (/limit|quota|neuron|429/i.test(String(e && e.message || e))) throw e; out = await env.AI.run(CF_MODEL, input); }
   const r = out && out.response;
   return typeof r === "string" ? r : JSON.stringify(r || {});
 }
@@ -179,7 +249,7 @@ async function handleParse(request, env) {
   const images = cleanImages(body.images);
   if (text.length < 30 && !images.length) return json({ error: "Upload a PDF or photos, or paste in more of the syllabus first." }, 400);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = /^\d{4}-\d{2}-\d{2}$/.test(body.today || "") ? body.today : new Date().toISOString().slice(0, 10);
 
   // Photos: with Cloudflare's AI, copy out each page's text first, then read it like pasted text.
   if (images.length && env.AI) {
@@ -211,7 +281,7 @@ async function handleParse(request, env) {
     try { parsed = extractJson(outText); } catch (e) {
       return json({ error: "The AI's answer couldn't be read. Try pasting just the schedule part." }, 502);
     }
-    return json({ assignments: (parsed.assignments || []).map(cleanAssignment).filter(Boolean) });
+    return json({ assignments: finishAssignments(parsed) });
   }
 
   let resp;
@@ -248,8 +318,7 @@ async function handleParse(request, env) {
   try { parsed = extractJson(outText); } catch (e) {
     return json({ error: "The AI's answer couldn't be read. Try pasting the syllabus again." }, 502);
   }
-  const assignments = (parsed.assignments || []).map(cleanAssignment).filter(Boolean);
-  return json({ assignments });
+  return json({ assignments: finishAssignments(parsed) });
 }
 
 /* ---------- accounts: email + password, and Sign in with Apple ----------
